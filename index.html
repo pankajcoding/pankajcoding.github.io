@@ -4,8 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="favicon.png">
-  <title>Pankaj Kumar – Portfolio</title>
+  <title>Pankaj Kumar – Senior Software Engineer & UI Specialist</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Pankaj Kumar — Senior Software Engineer at Mastercard with 4.5+ years building high-scale fintech platforms. IIT Kharagpur CS grad specialising in frontend performance, AI-powered tooling, and data-rich dashboards.">
+  <meta name="keywords" content="Pankaj Kumar, Senior Software Engineer, Frontend Engineer, React, TypeScript, Mastercard, IIT Kharagpur, Web Performance, AI, Full-Stack Developer, Portfolio">
+  <meta name="author" content="Pankaj Kumar">
+  <link rel="canonical" href="https://pankajcoding.github.io/">
+
+  <!-- Open Graph (LinkedIn, Slack, WhatsApp previews) -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pankajcoding.github.io/">
+  <meta property="og:title" content="Pankaj Kumar – Senior Software Engineer & UI Specialist">
+  <meta property="og:description" content="Senior Software Engineer at Mastercard building fintech platforms that drive $500M+ in annual revenue. IIT Kharagpur CS grad specialising in React, performance optimisation, and AI tooling.">
+  <meta property="og:image" content="https://pankajcoding.github.io/images/avatar.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Pankaj Kumar – Senior Software Engineer & UI Specialist">
+  <meta name="twitter:description" content="Senior Software Engineer at Mastercard building fintech platforms that drive $500M+ in annual revenue. IIT Kharagpur CS grad specialising in React, performance optimisation, and AI tooling.">
+  <meta name="twitter:image" content="https://pankajcoding.github.io/images/avatar.png">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B1J4GLC9QM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-B1J4GLC9QM');
+  </script>
+
   <!-- GSAP and ScrollTrigger for horizontal scroll and parallax -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -940,6 +968,11 @@
       transform: translateX(0);
     }
 
+    .experience-items {
+      display: flex;
+      flex-direction: column;
+    }
+
     .experience-item:nth-child(1) { transition-delay: 0.1s; }
     .experience-item:nth-child(2) { transition-delay: 0.28s; }
     .experience-item:nth-child(3) { transition-delay: 0.46s; }
@@ -958,8 +991,9 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .experience-item:nth-child(2) .timeline-dot { border-color: #EA4335; }
-    .experience-item:nth-child(3) .timeline-dot { border-color: #34A853; }
+    .experience-item:nth-child(1) .timeline-dot { border-color: #F59E0B; }
+    .experience-item:nth-child(2) .timeline-dot { border-color: #34A853; }
+    .experience-item:nth-child(3) .timeline-dot { border-color: #4285F4; }
 
     .experience-item:hover .timeline-dot {
       transform: scale(1.5);
@@ -976,8 +1010,9 @@
       display: block;
     }
 
-    .experience-item:nth-child(2) .timeline-date { color: #EA4335; }
-    .experience-item:nth-child(3) .timeline-date { color: #34A853; }
+    .experience-item:nth-child(1) .timeline-date { color: #F59E0B; }
+    .experience-item:nth-child(2) .timeline-date { color: #34A853; }
+    .experience-item:nth-child(3) .timeline-date { color: #4285F4; }
 
     .experience-card {
       background: var(--google-white);
@@ -986,6 +1021,7 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
       border: 1px solid #DADCE0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
 
     .experience-card:hover {
@@ -994,11 +1030,39 @@
       border-color: #4285F4;
     }
 
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
     .company-header {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-award {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .award-pill {
+      background: #FFFBEB;
+      border: 1px solid #FCD34D;
+      color: #92400E;
+      padding: 0.18rem 0.55rem;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      white-space: nowrap;
     }
 
     .company-logo {
@@ -1026,10 +1090,13 @@
     }
 
     .company-info .role {
-      color: #6366f1;
       font-weight: 600;
       font-size: 0.78rem;
     }
+
+    .experience-item:nth-child(1) .company-info .role { color: #F59E0B; }
+    .experience-item:nth-child(2) .company-info .role { color: #34A853; }
+    .experience-item:nth-child(3) .company-info .role { color: #4285F4; }
 
     .achievements-list {
       list-style: none;
@@ -1048,10 +1115,24 @@
     }
 
     .achievement-icon {
-      font-size: 0.85rem;
       flex-shrink: 0;
-      margin-top: 1px;
+      margin-top: 2px;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
+    .achievement-icon svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
+    .experience-item:nth-child(1) .achievement-icon { color: #F59E0B; }
+    .experience-item:nth-child(2) .achievement-icon { color: #34A853; }
+    .experience-item:nth-child(3) .achievement-icon { color: #4285F4; }
 
     .achievement-text strong {
       color: #0f172a;
@@ -1532,14 +1613,6 @@
               </div>
 
 
-              <div class="about-skills">
-                <span class="skill-bubble bubble-1">React</span>
-                <span class="skill-bubble bubble-2">TypeScript</span>
-                <span class="skill-bubble bubble-3">Design</span>
-                <span class="skill-bubble bubble-4">Leadership</span>
-                <span class="skill-bubble bubble-5">Java</span>
-                <span class="skill-bubble bubble-6">Angular</span>
-              </div>
             </div>
 
             <div class="about-visual parallax-mid" id="aboutVisual">
@@ -1575,51 +1648,56 @@
                 <div class="timeline-progress-fill" id="timelineProgress"></div>
               </div>
 
+              <div class="experience-items">
               <div class="experience-item" data-preview="Mastercard · 2024–Present">
                 <div class="timeline-dot"></div>
                 <div class="timeline-date">2024 – Present</div>
                 <div class="experience-card">
-                  <div class="company-header">
-                    <div class="company-logo">
-                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                  <div class="card-top">
+                    <div class="company-header">
+                      <div class="company-logo">
+                        <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                      </div>
+                      <div class="company-info">
+                        <h3>Senior Software Engineer</h3>
+                        <div class="role">Frontend Architecture · Mastercard</div>
+                      </div>
                     </div>
-                    <div class="company-info">
-                      <h3>Senior Software Engineer</h3>
-                      <div class="role">Frontend Architecture · Mastercard</div>
+                    <div class="card-award">
+                      <span class="award-pill">🏆 D&S Hackathon</span>
                     </div>
                   </div>
                   <ul class="achievements-list">
                     <li class="achievement-item">
-                      <span class="achievement-icon">🚀</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg></span>
                       <div class="achievement-text"><strong>Led frontend of OR</strong> ($500M+ revenue) — shipped one-click checkout, WCAG 2.2 accessibility & catalog search</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">⚡</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
                       <div class="achievement-text"><strong>Cut LCP from 4.1s → 0.4s</strong> (90%) via Brotli compression, lazy loading & code splitting</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">📊</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
                       <div class="achievement-text"><strong>Built metrics dashboard</strong> (React + Spring Boot) giving first-ever business visibility — drove 20% YoY growth</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🤖</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                       <div class="achievement-text"><strong>Built AI chatbot</strong> (Angular, Python, Hugging Face LLMs) — natural language report queries, cut support tickets</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🎓</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
                       <div class="achievement-text"><strong>Mentored interns & new hires</strong> through bootcamps on React, JavaScript, and frontend practices</div>
                     </li>
                   </ul>
                   <div class="skills-gained">
                     <div class="skills-tags">
                       <span class="skill-tag">React</span>
+                      <span class="skill-tag">TypeScript</span>
+                      <span class="skill-tag">Design</span>
                       <span class="skill-tag">Performance</span>
                       <span class="skill-tag">AI/LLM</span>
                       <span class="skill-tag">WCAG 2.2</span>
                       <span class="skill-tag">Team Leadership</span>
-                    </div>
-                    <div class="skills-tags" style="margin-top: 0.5rem;">
-                      <span class="award-badge">🏆 D&S Hackathon Winner</span>
                     </div>
                   </div>
                 </div>
@@ -1629,30 +1707,36 @@
                 <div class="timeline-dot"></div>
                 <div class="timeline-date">2020 – 2024</div>
                 <div class="experience-card">
-                  <div class="company-header">
-                    <div class="company-logo">
-                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                  <div class="card-top">
+                    <div class="company-header">
+                      <div class="company-logo">
+                        <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                      </div>
+                      <div class="company-info">
+                        <h3>Software Engineer</h3>
+                        <div class="role">Full-Stack Developer · Mastercard</div>
+                      </div>
                     </div>
-                    <div class="company-info">
-                      <h3>Software Engineer</h3>
-                      <div class="role">Full-Stack Developer · Mastercard</div>
+                    <div class="card-award">
+                      <span class="award-pill">🥇 Sandbox Winner</span>
+                      <span class="award-pill">⭐ OI Innovation</span>
                     </div>
                   </div>
                   <ul class="achievements-list">
                     <li class="achievement-item">
-                      <span class="achievement-icon">🚀</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
                       <div class="achievement-text"><strong>Built onboarding tool</strong> — saved 600+ engineering hours/year, cut launch time from weeks to days</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">💰</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
                       <div class="achievement-text"><strong>Delivered 10M-line reports</strong> generating $450M annual revenue; optimised rendering & pagination</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🔗</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
                       <div class="achievement-text"><strong>Integrated GraphQL & REST APIs</strong> for real-time data retrieval, improving dashboard speed</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🛡️</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
                       <div class="achievement-text"><strong>Led PCI DSS Certification</strong> & architecture redesign for Indian data localisation</div>
                     </li>
                   </ul>
@@ -1662,10 +1746,8 @@
                       <span class="skill-tag">GraphQL</span>
                       <span class="skill-tag">REST APIs</span>
                       <span class="skill-tag">PCI DSS</span>
-                    </div>
-                    <div class="skills-tags" style="margin-top: 0.5rem;">
-                      <span class="award-badge">🥇 Sandbox Challenge Winner</span>
-                      <span class="award-badge">⭐ OI Innovation Award</span>
+                      <span class="skill-tag">Java</span>
+                      <span class="skill-tag">Angular</span>
                     </div>
                   </div>
                 </div>
@@ -1675,39 +1757,44 @@
                 <div class="timeline-dot"></div>
                 <div class="timeline-date">2020</div>
                 <div class="experience-card">
-                  <div class="company-header">
-                    <div class="company-logo">
-                      <img src="images/iitkgp.png" alt="IIT Kharagpur" loading="lazy">
-                    </div>
-                    <div class="company-info">
-                      <h3>IIT Kharagpur</h3>
-                      <div class="role">M.Tech + B.Tech (Dual)</div>
+                  <div class="card-top">
+                    <div class="company-header">
+                      <div class="company-logo">
+                        <img src="images/iitkgp.png" alt="IIT Kharagpur" loading="lazy">
+                      </div>
+                      <div class="company-info">
+                        <h3>IIT Kharagpur</h3>
+                        <div class="role">M.Tech + B.Tech (Dual)</div>
+                      </div>
                     </div>
                   </div>
                   <ul class="achievements-list">
                     <li class="achievement-item">
-                      <span class="achievement-icon">🎓</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
                       <div class="achievement-text"><strong>Dual Degree</strong> in Computer Science & Engineering</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🏆</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
                       <div class="achievement-text"><strong>KVPY Scholarship</strong> — National research fellowship</div>
                     </li>
                     <li class="achievement-item">
-                      <span class="achievement-icon">🤝</span>
+                      <span class="achievement-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
                       <div class="achievement-text"><strong>NSS Community Dev</strong> — Set up village library</div>
                     </li>
                   </ul>
                   <div class="skills-gained">
                     <div class="skills-tags">
                       <span class="skill-tag">Algorithms</span>
-                      <span class="skill-tag">Networks</span>
-                      <span class="skill-tag">ML</span>
-                      <span class="skill-tag">Leadership</span>
+                      <span class="skill-tag">Deep Learning</span>
+                      <span class="skill-tag">AI/ML</span>
+                      <span class="skill-tag">Compiler Design</span>
+                      <span class="skill-tag">Computer Architecture</span>
+                      <span class="skill-tag">Computer Networks</span>
                     </div>
                   </div>
                 </div>
               </div>
+              </div><!-- end experience-items -->
             </div>
           </div>
         </section>
