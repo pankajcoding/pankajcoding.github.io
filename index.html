@@ -391,6 +391,7 @@
       transform: translateY(-2px);
     }
 
+
     /* Hero Visual */
     .hero-visual {
       position: relative;
@@ -836,6 +837,24 @@
       z-index: 0;
     }
 
+    .about-awards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .award-badge {
+      background: #FFFBEB;
+      border: 1px solid #FCD34D;
+      color: #92400E;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
     .about-skills {
       display: flex;
       flex-wrap: wrap;
@@ -863,118 +882,145 @@
     }
 
     .experience-container {
-      max-width: 1400px;
+      max-width: 860px;
       width: 100%;
-      padding: 0 4rem;
+      padding: 3rem 4rem;
       display: flex;
       flex-direction: column;
       height: 100%;
-      justify-content: center;
+      overflow-y: auto;
     }
 
     .experience-header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
+      flex-shrink: 0;
     }
 
+    /* Vertical timeline */
     .experience-timeline {
       position: relative;
       display: flex;
-      justify-content: center;
-      gap: 3rem;
-      padding-top: 60px;
+      flex-direction: column;
     }
 
-    .experience-timeline::before {
-      content: '';
+    .timeline-track {
       position: absolute;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 200px);
-      height: 3px;
-      background: #E0E0E0;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: #E8EAED;
       border-radius: 2px;
+    }
+
+    .timeline-progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 0%;
+      background: linear-gradient(to bottom, #4285F4, #34A853);
+      border-radius: 2px;
+      transition: height 2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .experience-item {
       position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 0 0 2rem 2.75rem;
+      opacity: 0;
+      transform: translateX(-18px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
     }
+
+    .experience-item:last-child { padding-bottom: 0; }
+
+    .experience-item.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .experience-item:nth-child(1) { transition-delay: 0.1s; }
+    .experience-item:nth-child(2) { transition-delay: 0.28s; }
+    .experience-item:nth-child(3) { transition-delay: 0.46s; }
 
     .timeline-dot {
       position: absolute;
-      top: -36px;
-      width: 20px;
-      height: 20px;
-      background: var(--google-blue);
-      border: 4px solid white;
+      left: 0;
+      top: 5px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
+      background: white;
+      border: 3px solid #4285F4;
       z-index: 2;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .experience-item:nth-child(2) .timeline-dot { border-color: #EA4335; }
+    .experience-item:nth-child(3) .timeline-dot { border-color: #34A853; }
+
+    .experience-item:hover .timeline-dot {
+      transform: scale(1.5);
+      box-shadow: 0 0 0 5px rgba(66, 133, 244, 0.12);
     }
 
     .timeline-date {
-      position: absolute;
-      top: -60px;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       font-weight: 600;
       font-family: 'JetBrains Mono', monospace;
-      color: var(--google-blue);
+      color: #4285F4;
       letter-spacing: 0.08em;
-      white-space: nowrap;
+      margin-bottom: 0.45rem;
+      display: block;
     }
+
+    .experience-item:nth-child(2) .timeline-date { color: #EA4335; }
+    .experience-item:nth-child(3) .timeline-date { color: #34A853; }
 
     .experience-card {
       background: var(--google-white);
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-      width: 340px;
-      min-height: 500px;
+      padding: 1.1rem 1.25rem;
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
       border: 1px solid #DADCE0;
-      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      opacity: 0;
-      transform: translateY(60px);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .experience-card.animate {
-      opacity: 1;
-      transform: translateY(0);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .experience-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transform: translateX(5px);
+      border-color: #4285F4;
     }
 
     .company-header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
     }
 
     .company-logo {
-      width: 60px;
-      filter: drop-shadow(4px -1px 8px #0000004d);
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.15));
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .company-logo img {
       width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .company-info h3 {
       margin: 0;
-      font-size: 1.2rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #0f172a;
     }
@@ -982,61 +1028,29 @@
     .company-info .role {
       color: #6366f1;
       font-weight: 600;
-      font-size: 0.85rem;
-    }
-
-    .timeline-year {
-      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-      color: #6366f1;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: 20px;
-      display: inline-block;
-      margin-bottom: 1rem;
-      border: 1px solid #e2e8f0;
+      font-size: 0.78rem;
     }
 
     .achievements-list {
       list-style: none;
       padding: 0;
-      margin: 0;
+      margin: 0 0 0.65rem 0;
     }
 
     .achievement-item {
       display: flex;
       align-items: flex-start;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-      padding: 0.75rem;
-      background: var(--google-light);
-      border-radius: 8px;
-      border-left: 3px solid var(--google-blue);
-      transition: all 0.3s ease;
-    }
-
-    .achievement-item:hover {
-      background: #E8F0FE;
-      transform: translateX(4px);
+      gap: 0.5rem;
+      padding: 0.22rem 0;
+      font-size: 0.8rem;
+      color: #475569;
+      line-height: 1.45;
     }
 
     .achievement-icon {
-      width: 20px;
-      height: 20px;
-      background: var(--google-blue);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .achievement-text {
       font-size: 0.85rem;
-      line-height: 1.5;
-      color: #475569;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .achievement-text strong {
@@ -1045,34 +1059,43 @@
     }
 
     .skills-gained {
-      margin-top: auto;
-      padding-top: 1rem;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .skills-gained h4 {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #64748b;
-      margin-bottom: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      padding-top: 0.6rem;
+      border-top: 1px solid #f1f5f9;
     }
 
     .skills-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
+      gap: 0.3rem;
+      margin-top: 0.35rem;
     }
 
     .skill-tag {
-      background: #E8F0FE;
-      color: var(--google-blue);
-      padding: 0.3rem 0.6rem;
+      background: #EEF2FF;
+      color: #4285F4;
+      padding: 0.15rem 0.5rem;
       border-radius: 4px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 500;
     }
+
+    /* Timeline dot hover tooltip */
+    .timeline-preview {
+      position: fixed;
+      background: #0f172a;
+      color: white;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .timeline-preview.show { opacity: 1; }
 
 
     /* Contact Section */
@@ -1319,41 +1342,10 @@
 
       /* Experience Mobile */
       .experience-container {
-        padding: 4rem 2rem;
-      }
-
-      .experience-timeline {
-        flex-direction: column;
-        padding-top: 0;
-        gap: 2rem;
-      }
-
-      .experience-timeline::before {
-        display: none;
+        padding: 3rem 1.5rem;
       }
 
       .experience-item {
-        width: 100%;
-        max-width: 400px;
-      }
-
-      .timeline-dot {
-        display: none;
-      }
-
-      .timeline-date {
-        position: static;
-        margin-bottom: 1rem;
-        display: inline-block;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-      }
-
-      .experience-card {
-        width: 100%;
-        min-height: auto;
         opacity: 1;
         transform: none;
       }
@@ -1505,11 +1497,11 @@
               <div class="hero-greeting typing-cursor" id="heroGreeting"></div>
               <h1 class="hero-title" id="heroTitle">Pankaj Kumar</h1>
               <div class="hero-subtitle" id="heroSubtitle">Senior Software Engineer & UI Specialist</div>
-              <p class="hero-description" id="heroDescription">I graduated from IIT Kharagpur in 2020 with a degree in Computer Science, and these days I work as a senior software engineer at Mastercard. Currently I am leading frontend team for operational reports team.</p>
-              <p class="hero-personal" id="heroPersonal">I love reading books, building cool projects on the internet, and trying to make art whenever I can. Thanks for stopping by—this is my cozy little corner online.</p>
+              <p class="hero-description" id="heroDescription">Full-stack engineer with 5.5+ years at Mastercard building fintech platforms that process millions of transactions and drive $500M+ in annual revenue. I specialise in frontend performance, AI-powered tooling, and data-rich dashboards.</p>
+              <p class="hero-personal" id="heroPersonal">IIT Kharagpur CS grad. When I'm not shipping features, I'm playing basketball, volunteering with MC Cares, or building side projects for fun. Glad you stopped by.</p>
               <div class="hero-buttons" id="heroButtons">
-                <button class="btn btn-primary" onclick="navigateToPanel(4)">Reach Out</button>
-                <button class="btn btn-secondary" onclick="navigateToPanel(3)">View My Work</button>
+                <a class="btn btn-primary" href="images/Pankaj_Kumar_Resume.pdf" target="_blank">Download Resume</a>
+                <button class="btn btn-secondary" onclick="navigateToPanel(4)">Reach Out</button>
               </div>
             </div>
 
@@ -1534,10 +1526,11 @@
               <p class="section-subtitle" style="color: #64748b; margin-bottom: 2rem;">Building digital experiences with passion and precision</p>
 
               <div class="about-text">
-                <p>I'm a passionate software engineer with a strong background in frontend development and UI/UX design. My journey began at IIT Kharagpur, where I developed a deep understanding of computer science fundamentals.</p>
-                <p>At Mastercard, I lead a talented frontend team working on operational reports that process millions of transactions. I believe in creating software that's not just functional, but delightful to use.</p>
-                <p>When I'm not coding, you'll find me exploring new technologies, reading about design patterns, or working on creative side projects that push the boundaries of what's possible on the web.</p>
+                <p>I'm a full-stack software engineer with 5.5+ years in fintech, specialising in frontend performance, data-rich dashboards, and AI-powered tooling. My journey began at IIT Kharagpur with a Dual Degree in Computer Science.</p>
+                <p>At Mastercard, I lead frontend development for Operational Reports — a platform processing millions of transactions and driving $500M+ in annual revenue. I've cut page load times by 90%, shipped AI chatbots, and mentored the next generation of engineers.</p>
+                <p>Off-screen, I volunteer with MC Cares — organising education drives and community initiatives. I play basketball competitively and love building side projects that push the web forward.</p>
               </div>
+
 
               <div class="about-skills">
                 <span class="skill-bubble bubble-1">React</span>
@@ -1578,10 +1571,110 @@
             </div>
 
             <div class="experience-timeline">
-              <div class="experience-item">
-                <div class="timeline-date">2020</div>
+              <div class="timeline-track">
+                <div class="timeline-progress-fill" id="timelineProgress"></div>
+              </div>
+
+              <div class="experience-item" data-preview="Mastercard · 2024–Present">
                 <div class="timeline-dot"></div>
-                <div class="experience-card" data-delay="0">
+                <div class="timeline-date">2024 – Present</div>
+                <div class="experience-card">
+                  <div class="company-header">
+                    <div class="company-logo">
+                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                    </div>
+                    <div class="company-info">
+                      <h3>Senior Software Engineer</h3>
+                      <div class="role">Frontend Architecture · Mastercard</div>
+                    </div>
+                  </div>
+                  <ul class="achievements-list">
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🚀</span>
+                      <div class="achievement-text"><strong>Led frontend of OR</strong> ($500M+ revenue) — shipped one-click checkout, WCAG 2.2 accessibility & catalog search</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">⚡</span>
+                      <div class="achievement-text"><strong>Cut LCP from 4.1s → 0.4s</strong> (90%) via Brotli compression, lazy loading & code splitting</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">📊</span>
+                      <div class="achievement-text"><strong>Built metrics dashboard</strong> (React + Spring Boot) giving first-ever business visibility — drove 20% YoY growth</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🤖</span>
+                      <div class="achievement-text"><strong>Built AI chatbot</strong> (Angular, Python, Hugging Face LLMs) — natural language report queries, cut support tickets</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🎓</span>
+                      <div class="achievement-text"><strong>Mentored interns & new hires</strong> through bootcamps on React, JavaScript, and frontend practices</div>
+                    </li>
+                  </ul>
+                  <div class="skills-gained">
+                    <div class="skills-tags">
+                      <span class="skill-tag">React</span>
+                      <span class="skill-tag">Performance</span>
+                      <span class="skill-tag">AI/LLM</span>
+                      <span class="skill-tag">WCAG 2.2</span>
+                      <span class="skill-tag">Team Leadership</span>
+                    </div>
+                    <div class="skills-tags" style="margin-top: 0.5rem;">
+                      <span class="award-badge">🏆 D&S Hackathon Winner</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="experience-item" data-preview="Mastercard · 2020–2024">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2020 – 2024</div>
+                <div class="experience-card">
+                  <div class="company-header">
+                    <div class="company-logo">
+                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
+                    </div>
+                    <div class="company-info">
+                      <h3>Software Engineer</h3>
+                      <div class="role">Full-Stack Developer · Mastercard</div>
+                    </div>
+                  </div>
+                  <ul class="achievements-list">
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🚀</span>
+                      <div class="achievement-text"><strong>Built onboarding tool</strong> — saved 600+ engineering hours/year, cut launch time from weeks to days</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">💰</span>
+                      <div class="achievement-text"><strong>Delivered 10M-line reports</strong> generating $450M annual revenue; optimised rendering & pagination</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🔗</span>
+                      <div class="achievement-text"><strong>Integrated GraphQL & REST APIs</strong> for real-time data retrieval, improving dashboard speed</div>
+                    </li>
+                    <li class="achievement-item">
+                      <span class="achievement-icon">🛡️</span>
+                      <div class="achievement-text"><strong>Led PCI DSS Certification</strong> & architecture redesign for Indian data localisation</div>
+                    </li>
+                  </ul>
+                  <div class="skills-gained">
+                    <div class="skills-tags">
+                      <span class="skill-tag">Full-Stack</span>
+                      <span class="skill-tag">GraphQL</span>
+                      <span class="skill-tag">REST APIs</span>
+                      <span class="skill-tag">PCI DSS</span>
+                    </div>
+                    <div class="skills-tags" style="margin-top: 0.5rem;">
+                      <span class="award-badge">🥇 Sandbox Challenge Winner</span>
+                      <span class="award-badge">⭐ OI Innovation Award</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="experience-item" data-preview="IIT Kharagpur · 2020">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2020</div>
+                <div class="experience-card">
                   <div class="company-header">
                     <div class="company-logo">
                       <img src="images/iitkgp.png" alt="IIT Kharagpur" loading="lazy">
@@ -1591,129 +1684,26 @@
                       <div class="role">M.Tech + B.Tech (Dual)</div>
                     </div>
                   </div>
-
                   <ul class="achievements-list">
                     <li class="achievement-item">
-                      <div class="achievement-icon">🎓</div>
-                      <div class="achievement-text">
-                        <strong>Dual Degree</strong> in Computer Science & Engineering
-                      </div>
+                      <span class="achievement-icon">🎓</span>
+                      <div class="achievement-text"><strong>Dual Degree</strong> in Computer Science & Engineering</div>
                     </li>
                     <li class="achievement-item">
-                      <div class="achievement-icon">🏆</div>
-                      <div class="achievement-text">
-                        <strong>KVPY Scholarship</strong> - National research fellowship
-                      </div>
+                      <span class="achievement-icon">🏆</span>
+                      <div class="achievement-text"><strong>KVPY Scholarship</strong> — National research fellowship</div>
                     </li>
                     <li class="achievement-item">
-                      <div class="achievement-icon">🤝</div>
-                      <div class="achievement-text">
-                        <strong>NSS Community Dev</strong> - Set up village library
-                      </div>
+                      <span class="achievement-icon">🤝</span>
+                      <div class="achievement-text"><strong>NSS Community Dev</strong> — Set up village library</div>
                     </li>
                   </ul>
-
                   <div class="skills-gained">
-                    <h4>Foundation</h4>
                     <div class="skills-tags">
                       <span class="skill-tag">Algorithms</span>
                       <span class="skill-tag">Networks</span>
                       <span class="skill-tag">ML</span>
                       <span class="skill-tag">Leadership</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="experience-item">
-                <div class="timeline-date">2020 - 2024</div>
-                <div class="timeline-dot"></div>
-                <div class="experience-card" data-delay="200">
-                  <div class="company-header">
-                    <div class="company-logo">
-                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
-                    </div>
-                    <div class="company-info">
-                      <h3>Software Engineer</h3>
-                      <div class="role">Full-Stack Developer</div>
-                    </div>
-                  </div>
-
-                  <ul class="achievements-list">
-                    <li class="achievement-item">
-                      <div class="achievement-icon">🚀</div>
-                      <div class="achievement-text">
-                        <strong>Cut development time by 600+ hours</strong> annually via automation
-                      </div>
-                    </li>
-                    <li class="achievement-item">
-                      <div class="achievement-icon">💰</div>
-                      <div class="achievement-text">
-                        <strong>Generated $450M revenue</strong> processing 10M+ report lines
-                      </div>
-                    </li>
-                    <li class="achievement-item">
-                      <div class="achievement-icon">🛡️</div>
-                      <div class="achievement-text">
-                        <strong>Led PCI DSS Certification</strong> and architecture redesign
-                      </div>
-                    </li>
-                  </ul>
-
-                  <div class="skills-gained">
-                    <h4>Key Skills</h4>
-                    <div class="skills-tags">
-                      <span class="skill-tag">Full-Stack</span>
-                      <span class="skill-tag">GraphQL</span>
-                      <span class="skill-tag">REST APIs</span>
-                      <span class="skill-tag">PCI DSS</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="experience-item">
-                <div class="timeline-date">2024 - Present</div>
-                <div class="timeline-dot"></div>
-                <div class="experience-card" data-delay="400">
-                  <div class="company-header">
-                    <div class="company-logo">
-                      <img src="images/Mastercard-logo.svg.png" alt="Mastercard" loading="lazy">
-                    </div>
-                    <div class="company-info">
-                      <h3>Senior Software Engineer</h3>
-                      <div class="role">Frontend Architecture</div>
-                    </div>
-                  </div>
-
-                  <ul class="achievements-list">
-                    <li class="achievement-item">
-                      <div class="achievement-icon">📊</div>
-                      <div class="achievement-text">
-                        <strong>Built metrics dashboard</strong> for OR application using React and Spring Boot
-                      </div>
-                    </li>
-                    <li class="achievement-item">
-                      <div class="achievement-icon">⚡</div>
-                      <div class="achievement-text">
-                        <strong>Reduced LCP from 4.1s to 0.4s</strong> (90% improvement) via optimization
-                      </div>
-                    </li>
-                    <li class="achievement-item">
-                      <div class="achievement-icon">🏆</div>
-                      <div class="achievement-text">
-                        <strong>Won Mastercard Hackathon</strong> - developed Index Hub for Marketing
-                      </div>
-                    </li>
-                  </ul>
-
-                  <div class="skills-gained">
-                    <h4>Key Skills</h4>
-                    <div class="skills-tags">
-                      <span class="skill-tag">Team Leadership</span>
-                      <span class="skill-tag">React</span>
-                      <span class="skill-tag">Performance</span>
-                      <span class="skill-tag">AI Integration</span>
                     </div>
                   </div>
                 </div>
@@ -1989,23 +1979,22 @@
         });
       });
 
-      // Animate experience cards when panel comes into view
+      // Animate experience timeline when panel comes into view
       const experiencePanel = document.getElementById('panel-2');
-      const expCards = experiencePanel.querySelectorAll('.experience-card');
+      const expItems = experiencePanel.querySelectorAll('.experience-item');
+      const timelineFill = experiencePanel.querySelector('.timeline-progress-fill');
 
       ScrollTrigger.create({
         trigger: experiencePanel,
         containerAnimation: scrollTriggerInstance,
         start: 'left 35%',
         onEnter: () => {
-          expCards.forEach((card, i) => {
-            const delay = parseInt(card.dataset.delay) || (i * 200);
-            setTimeout(() => {
-              card.classList.add('animate');
-            }, delay);
-          });
+          expItems.forEach(item => item.classList.add('visible'));
+          if (timelineFill) setTimeout(() => { timelineFill.style.height = '100%'; }, 200);
         }
       });
+
+      initTimelinePreviews();
 
       // Show bottom nav
       document.getElementById('bottomNav').classList.add('visible');
@@ -2039,12 +2028,11 @@
                 setTimeout(() => document.getElementById(id)?.classList.add('animate'), 200 + i * 200);
               });
             }
-            // Animate experience cards when panel-2 enters view
+            // Animate experience timeline when panel-2 enters view
             if (entry.target.id === 'panel-2') {
-              entry.target.querySelectorAll('.experience-card').forEach((card, i) => {
-                const delay = parseInt(card.dataset.delay) || (i * 200);
-                setTimeout(() => card.classList.add('animate'), delay);
-              });
+              entry.target.querySelectorAll('.experience-item').forEach(item => item.classList.add('visible'));
+              const fill = entry.target.querySelector('.timeline-progress-fill');
+              if (fill) setTimeout(() => { fill.style.height = '100%'; }, 200);
             }
           }
         });
@@ -2095,6 +2083,35 @@
     function updateNavDots() {
       document.querySelectorAll('.nav-dot').forEach((dot, index) => {
         dot.classList.toggle('active', index === currentPanel);
+      });
+    }
+
+    // Timeline dot hover previews
+    function initTimelinePreviews() {
+      document.querySelectorAll('.experience-item').forEach(item => {
+        const dot = item.querySelector('.timeline-dot');
+        const previewText = item.getAttribute('data-preview');
+        if (!dot || !previewText) return;
+        let preview = null;
+
+        dot.addEventListener('mouseenter', () => {
+          preview = document.createElement('div');
+          preview.className = 'timeline-preview';
+          preview.textContent = previewText;
+          document.body.appendChild(preview);
+          const rect = dot.getBoundingClientRect();
+          preview.style.left = (rect.left + rect.width / 2) + 'px';
+          preview.style.top = (rect.top - 38) + 'px';
+          preview.style.transform = 'translateX(-50%)';
+          setTimeout(() => preview.classList.add('show'), 10);
+        });
+
+        dot.addEventListener('mouseleave', () => {
+          if (preview) {
+            preview.classList.remove('show');
+            setTimeout(() => { preview?.parentNode?.removeChild(preview); preview = null; }, 250);
+          }
+        });
       });
     }
 
