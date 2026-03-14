@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deep Work Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --card: #1a1b23;
+      --border: #2a2b35;
+      --blue: #4285F4;
+      --green: #34A853;
+      --yellow: #FBBC05;
+      --red: #EA4335;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --ring-size: 270px;
+      --ring-stroke: 10;
+      --dial-inner: #1e2030;
+      --dial-outer: #0f1117;
+      --tick-major: #3a3d55;
+      --tick-minor: #252736;
+      --ring-track: #1e2030;
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f2f8;
+      --card: #ffffff;
+      --border: #dde1ee;
+      --text: #1a1b2e;
+      --muted: #8892a4;
+      --dial-inner: #e8eaf5;
+      --dial-outer: #f0f2f8;
+      --tick-major: #c0c5d8;
+      --tick-minor: #dde1ee;
+      --ring-track: #e2e6f5;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 16px 48px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .header-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    /* Auth status */
+    .auth-status {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Tab bar */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Panel */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Timer ring */
+    .ring-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 4px 0 28px;
+      position: relative;
+    }
+
+    .ring-svg {
+      width: var(--ring-size);
+      height: var(--ring-size);
+      transform: rotate(-90deg);
+      overflow: visible;
+    }
+
+    .ring-bg {
+      fill: none;
+      stroke: var(--ring-track);
+      stroke-width: 10;
+    }
+
+    .ring-glow {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 10;
+      stroke-linecap: round;
+      opacity: 0.25;
+      transition: stroke 0.4s ease, stroke-dashoffset 0.9s linear;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.9s linear, stroke 0.4s ease;
+    }
+
+    .ring-tip {
+      fill: var(--blue);
+      transition: fill 0.4s ease, cx 0.9s linear, cy 0.9s linear;
+      filter: drop-shadow(0 0 4px var(--blue));
+    }
+
+    .ring-center {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timer-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: -1px;
+      color: var(--text);
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(66,133,244,0.15);
+    }
+
+    .timer-state-label {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Label input */
+    .label-wrap {
+      margin-bottom: 24px;
+    }
+
+    .label-input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .label-input::placeholder { color: var(--muted); }
+    .label-input:focus { border-color: var(--blue); }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--muted); }
+
+    .btn-danger {
+      background: rgba(234, 67, 53, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(234, 67, 53, 0.25);
+    }
+
+    .btn-danger:hover { background: rgba(234, 67, 53, 0.2); }
+
+    /* Today section */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .section-total {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .sessions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .session-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .session-card:hover { border-color: var(--muted); }
+
+    .session-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .session-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .session-label-input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid transparent;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      padding: 1px 0;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+
+    .session-label-input:focus { border-bottom-color: var(--border); }
+
+    .session-time-range {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .session-duration {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .session-delete {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .session-delete:hover { color: var(--red); }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Stats panel */
+    .stats-section {
+      margin-bottom: 28px;
+    }
+
+    .stat-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Bar chart */
+    .chart-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 60px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bar-day {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .bar-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--blue);
+      transition: width 0.6s ease;
+    }
+
+    .bar-fill.today { background: var(--green); }
+
+    .bar-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Streak badge */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(251, 188, 5, 0.1);
+      border: 1px solid rgba(251, 188, 5, 0.25);
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--yellow);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+    }
+
+    /* Offline / error banner */
+    .banner {
+      background: rgba(234, 67, 53, 0.1);
+      border: 1px solid rgba(234, 67, 53, 0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: #f87171;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .banner.show { display: block; }
+
+    /* Login overlay */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+    }
+
+    .login-box {
+      text-align: center;
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .login-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+      margin: 0 auto 20px;
+      box-shadow: 0 0 16px var(--blue);
+    }
+
+    .login-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .login-box p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .login-input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .login-input:focus { border-color: var(--blue); }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: auto;
+      padding: 4px;
+      line-height: 1;
+      transition: transform 0.3s;
+    }
+    .theme-toggle:hover { transform: rotate(20deg); }
+    .auth-status { margin-left: 8px; }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 16px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Pomodoro controls */
+    .pomodoro-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .duration-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .pill {
+      padding: 5px 11px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill.selected { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .pomo-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-left: 12px;
+    }
+
+    .pomo-counter span { color: var(--text); font-size: 15px; }
+
+    /* Completion flash */
+    @keyframes pomoFlash { 0% { opacity:0; } 20% { opacity:0.2; } 100% { opacity:0; } }
+    .pomo-flash {
+      position: fixed; inset: 0;
+      background: var(--green);
+      pointer-events: none; opacity: 0;
+      animation: pomoFlash 1.4s ease-out forwards;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-dot" id="statusDot"></div>
+    <h1>deep work tracker</h1>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark">🌙</button>
+    <span class="auth-status" id="authStatus">connecting…</span>
+  </div>
+
+  <div class="banner" id="errorBanner"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="timer">TIMER</button>
+    <button class="tab" data-tab="stats">STATS</button>
+  </div>
+
+  <!-- TIMER PANEL -->
+  <div class="panel active" id="panel-timer">
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" data-mode="stopwatch">STOPWATCH</button>
+      <button class="mode-btn" data-mode="pomodoro">POMODORO</button>
+    </div>
+
+    <div class="pomodoro-controls" id="pomodoroControls" style="display:none">
+      <div class="duration-pills" id="durationPills">
+        <button class="pill" data-mins="15">15m</button>
+        <button class="pill" data-mins="20">20m</button>
+        <button class="pill selected" data-mins="25">25m</button>
+        <button class="pill" data-mins="30">30m</button>
+        <button class="pill" data-mins="40">40m</button>
+        <button class="pill" data-mins="45">45m</button>
+        <button class="pill" data-mins="50">50m</button>
+      </div>
+      <div class="pomo-counter">🍅 <span id="pomoCount">0</span> today</div>
+    </div>
+
+    <div class="ring-container">
+      <svg class="ring-svg" id="ringSvg" viewBox="0 0 260 260">
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="dialBg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--dial-inner)"/>
+            <stop offset="100%" stop-color="var(--dial-outer)"/>
+          </radialGradient>
+        </defs>
+        <!-- Dial background -->
+        <circle cx="130" cy="130" r="128" fill="url(#dialBg)" />
+        <!-- Tick marks -->
+        <g id="ticks"></g>
+        <!-- Track ring -->
+        <circle class="ring-bg" cx="130" cy="130" r="112" />
+        <!-- Glow layer -->
+        <circle class="ring-glow" id="ringGlow" cx="130" cy="130" r="112" filter="url(#glow)" />
+        <!-- Progress arc -->
+        <circle class="ring-progress" id="ringProgress" cx="130" cy="130" r="112" />
+        <!-- Tip dot -->
+        <circle class="ring-tip" id="ringTip" cx="242" cy="130" r="5.5" />
+      </svg>
+      <div class="ring-center">
+        <div class="timer-display" id="timerDisplay">00:00:00</div>
+        <div class="timer-state-label" id="timerStateLabel">idle</div>
+      </div>
+    </div>
+
+    <div class="label-wrap">
+      <input class="label-input" id="labelInput" type="text" placeholder="What are you working on? (optional)" maxlength="80" />
+    </div>
+
+    <div class="btn-row" id="btnRow">
+      <button class="btn btn-primary" id="btnStart">START</button>
+    </div>
+
+    <!-- TODAY'S SESSIONS -->
+    <div class="section-header">
+      <span class="section-title">TODAY</span>
+      <span class="section-total" id="todayTotal">—</span>
+    </div>
+    <div class="sessions-list" id="sessionsList">
+      <div class="empty-state">No sessions yet. Start your first one!</div>
+    </div>
+
+  </div>
+
+  <!-- STATS PANEL -->
+  <div class="panel" id="panel-stats">
+
+    <div id="streakBadge" class="streak-badge" style="display:none">
+      🔥 <span id="streakText">0-day streak</span>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-label">All-time</div>
+        <div class="stat-value" id="statAllTime">—</div>
+        <div class="stat-sub">total hours</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This week</div>
+        <div class="stat-value" id="statWeek">—</div>
+        <div class="stat-sub">Mon–Sun</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="chart-title">Last 7 days</div>
+      <div class="bar-chart" id="barChart">
+        <div class="empty-state">Loading…</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay" style="display:none">
+  <div class="login-box">
+    <div class="login-dot"></div>
+    <h2>deep work tracker</h2>
+    <p id="loginMsg">Sign in to sync across devices.</p>
+    <input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
+    <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+    <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
+    <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
+  </div>
+</div>
+
+<script type="module">
+// ─── Firebase CDN ────────────────────────────────────────────────────────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         onAuthStateChanged, browserLocalPersistence, setPersistence }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+         query, where, orderBy, onSnapshot, getDocs, Timestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ─── Firebase Config ─────────────────────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBbncSssOO5CYfjSw8h1EW9M_-etbB2ouY",
+  authDomain: "concise-slate-234717.firebaseapp.com",
+  databaseURL: "https://concise-slate-234717.firebaseio.com",
+  projectId: "concise-slate-234717",
+  storageBucket: "concise-slate-234717.firebasestorage.app",
+  messagingSenderId: "83776199556",
+  appId: "1:83776199556:web:e8924f4c648368ef"
+};
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+const HOUR_S = 3600;
+const RING_R = 112;
+const RING_CIRC = 2 * Math.PI * RING_R;
+const CX = 130, CY = 130;
+
+// ─── DOM refs ────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const statusDot    = $('statusDot');
+const authStatus   = $('authStatus');
+const errorBanner  = $('errorBanner');
+const timerDisplay = $('timerDisplay');
+const timerLabel   = $('timerStateLabel');
+const ringProgress = $('ringProgress');
+const ringGlow     = $('ringGlow');
+const ringTip      = $('ringTip');
+const labelInput   = $('labelInput');
+const btnRow       = $('btnRow');
+const sessionsList = $('sessionsList');
+const todayTotal   = $('todayTotal');
+const loginOverlay = $('loginOverlay');
+const streakBadge  = $('streakBadge');
+const streakText   = $('streakText');
+const statAllTime  = $('statAllTime');
+const statWeek     = $('statWeek');
+const barChart     = $('barChart');
+
+// ─── Ring setup ──────────────────────────────────────────────────────────────
+ringProgress.style.strokeDasharray = `${RING_CIRC}`;
+ringProgress.style.strokeDashoffset = `${RING_CIRC}`;
+ringGlow.style.strokeDasharray = `${RING_CIRC}`;
+ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
+
+// Generate tick marks — drawn INSIDE the ring arc
+(function buildTicks() {
+  const g = $('ticks');
+  for (let i = 0; i < 60; i++) {
+    const angle = (i / 60) * 2 * Math.PI - Math.PI / 2;
+    const isMajor = i % 5 === 0;
+    // outerR sits just inside the arc, innerR points toward center
+    const outerR = RING_R - 3;                    // just under the arc stroke
+    const innerR = isMajor ? RING_R - 14 : RING_R - 8;
+    const x1 = CX + outerR * Math.cos(angle);
+    const y1 = CY + outerR * Math.sin(angle);
+    const x2 = CX + innerR * Math.cos(angle);
+    const y2 = CY + innerR * Math.sin(angle);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    const style = getComputedStyle(document.documentElement);
+    line.setAttribute('stroke', isMajor
+      ? style.getPropertyValue('--tick-major').trim() || '#3a3d55'
+      : style.getPropertyValue('--tick-minor').trim() || '#252736');
+    line.setAttribute('stroke-width', isMajor ? '2' : '1');
+    line.setAttribute('stroke-linecap', 'round');
+    g.appendChild(line);
+  }
+})();
+
+// ─── Timer state ─────────────────────────────────────────────────────────────
+let timerState = 'idle'; // idle | running | paused
+let timerMode = 'stopwatch';     // 'stopwatch' | 'pomodoro'
+let pomodoroDuration = 25 * 60;  // seconds
+let pomodoroComplete = false;
+let elapsed = 0;         // total seconds elapsed
+let intervalId = null;
+let startTs = null;      // performance.now() snapshot when last started/resumed
+let timerStartedAt = null; // Date for Firestore
+
+// ─── Firebase state ──────────────────────────────────────────────────────────
+let db = null;
+let auth = null;
+let uid = null;
+let todayUnsubscribe = null;
+let todaySessions = [];
+
+// ─── Email/Password Auth ─────────────────────────────────────────────────────
+const loginEmail    = $('loginEmail');
+const loginPassword = $('loginPassword');
+const loginMsg      = $('loginMsg');
+const btnLogin      = $('btnLogin');
+const btnRegister   = $('btnRegister');
+
+btnLogin.addEventListener('click', async () => {
+  const email = loginEmail.value.trim();
+  const pass  = loginPassword.value;
+  if (!email || !pass) return;
+  btnLogin.textContent = 'Signing in…';
+  btnLogin.disabled = true;
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (err) {
+    loginMsg.textContent = friendlyAuthError(err.code);
+    loginMsg.style.color = 'var(--red)';
+    btnLogin.textContent = 'SIGN IN';
+    btnLogin.disabled = false;
+  }
+});
+
+btnRegister.addEventListener('click', async () => {
+  const email = loginEmail.value.trim();
+  const pass  = loginPassword.value;
+  if (!email || !pass) return;
+  btnRegister.textContent = 'Creating…';
+  btnRegister.disabled = true;
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+  } catch (err) {
+    loginMsg.textContent = friendlyAuthError(err.code);
+    loginMsg.style.color = 'var(--red)';
+    btnRegister.textContent = 'Create account';
+    btnRegister.disabled = false;
+  }
+});
+
+loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') btnLogin.click(); });
+
+function friendlyAuthError(code) {
+  const map = {
+    'auth/invalid-credential': 'Wrong email or password.',
+    'auth/user-not-found': 'No account with that email.',
+    'auth/wrong-password': 'Wrong password.',
+    'auth/email-already-in-use': 'Account already exists. Sign in instead.',
+    'auth/weak-password': 'Password must be at least 6 characters.',
+    'auth/invalid-email': 'Invalid email address.',
+  };
+  return map[code] || 'Auth error: ' + code;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+initFirebase(FIREBASE_CONFIG);
+
+async function initFirebase(cfg) {
+  try {
+    const app = initializeApp(cfg);
+    auth = getAuth(app);
+    db   = getFirestore(app);
+
+    await setPersistence(auth, browserLocalPersistence);
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        uid = user.uid;
+        authStatus.textContent = user.email;
+        statusDot.style.background = 'var(--green)';
+        loginOverlay.style.display = 'none';
+        subscribeToday();
+        renderStats();
+      } else {
+        uid = null;
+        statusDot.style.background = 'var(--muted)';
+        authStatus.textContent = 'signed out';
+        loginOverlay.style.display = 'flex';
+      }
+    });
+  } catch (err) {
+    showError('Firebase error: ' + err.message);
+    statusDot.style.background = 'var(--red)';
+    authStatus.textContent = 'offline';
+  }
+}
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function dateStr(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+function fmtHMS(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function fmtHM(secs) {
+  if (secs < 60) return secs + 's';
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  if (h === 0) return m + 'm';
+  return h + 'h ' + (m > 0 ? m + 'm' : '');
+}
+
+function fmtHMfull(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  return h + 'h ' + m + 'm';
+}
+
+function dayLabel(dateString) {
+  const d = new Date(dateString + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday: 'short' });
+}
+
+// ─── Firestore subscriptions ───────────────────────────────────────────────
+function subscribeToday() {
+  if (!uid || !db) return;
+  if (todayUnsubscribe) todayUnsubscribe();
+
+  const col = collection(db, 'users', uid, 'sessions');
+  const q = query(col,
+    where('date', '==', todayStr())
+  );
+
+  todayUnsubscribe = onSnapshot(q, snap => {
+    todaySessions = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.startedAt?.seconds || 0) - (a.startedAt?.seconds || 0));
+    renderSessions();
+  }, err => {
+    showError('Firestore: ' + err.message);
+  });
+}
+
+// ─── Session save / delete ────────────────────────────────────────────────
+async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch') {
+  if (!uid || !db) return;
+  try {
+    await addDoc(collection(db, 'users', uid, 'sessions'), {
+      date:      todayStr(),
+      label:     label || '',
+      duration:  durationSecs,
+      startedAt: Timestamp.fromDate(startedAt),
+      endedAt:   Timestamp.fromDate(endedAt),
+      type,
+    });
+  } catch (err) {
+    showError('Save failed: ' + err.message);
+  }
+}
+
+async function deleteSession(sessionId) {
+  if (!uid || !db) return;
+  try {
+    await deleteDoc(doc(db, 'users', uid, 'sessions', sessionId));
+  } catch (err) {
+    showError('Delete failed: ' + err.message);
+  }
+}
+
+async function updateLabel(sessionId, label) {
+  if (!uid || !db) return;
+  try {
+    await updateDoc(doc(db, 'users', uid, 'sessions', sessionId), { label });
+  } catch (err) {
+    showError('Update failed: ' + err.message);
+  }
+}
+
+// ─── Render sessions ────────────────────────────────────────────────────────
+function renderSessions() {
+  updateTodayTotal(currentElapsed());
+  const pomoEl = $('pomoCount');
+  if (pomoEl) pomoEl.textContent = todaySessions.filter(s => s.type === 'pomodoro').length;
+
+  if (todaySessions.length === 0) {
+    sessionsList.innerHTML = '<div class="empty-state">No sessions yet. Start your first one!</div>';
+    return;
+  }
+
+  sessionsList.innerHTML = '';
+  todaySessions.forEach(session => {
+    const card = document.createElement('div');
+    card.className = 'session-card';
+    const timeRange = fmtTimeRange(session.startedAt, session.endedAt);
+    card.innerHTML = `
+      <div class="session-dot"></div>
+      <div class="session-info">
+        <input class="session-label-input" value="${escHtml(session.label || '')}" placeholder="Untitled session" />
+        <span class="session-time-range">${timeRange}</span>
+      </div>
+      <span class="session-duration">${fmtHM(session.duration || 0)}</span>
+      <button class="session-delete" title="Delete">×</button>
+    `;
+
+    const inp = card.querySelector('.session-label-input');
+    inp.addEventListener('blur', () => updateLabel(session.id, inp.value));
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+
+    card.querySelector('.session-delete').addEventListener('click', () => {
+      if (confirm('Delete this session?')) deleteSession(session.id);
+    });
+
+    sessionsList.appendChild(card);
+  });
+}
+
+function fmtTimeRange(startTs, endTs) {
+  const fmt = ts => {
+    if (!ts) return '?';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+  return `${fmt(startTs)} – ${fmt(endTs)}`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Timer logic ─────────────────────────────────────────────────────────────
+function tickTimer() {
+  if (timerState !== 'running') return;
+  const delta = (performance.now() - startTs) / 1000;
+  const current = elapsed + delta;
+  updateDisplay(current);
+  if (timerMode === 'pomodoro' && current >= pomodoroDuration && !pomodoroComplete) {
+    pomodoroComplete = true;
+    autoCompletePomodoro();
+  }
+}
+
+function updateDisplay(secs) {
+  const s = Math.floor(secs);
+  if (timerMode === 'pomodoro') {
+    const remaining = Math.max(0, pomodoroDuration - s);
+    const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const ss = String(remaining % 60).padStart(2, '0');
+    timerDisplay.textContent = `${mm}:${ss}`;
+    updateRing(remaining);
+  } else {
+    const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    timerDisplay.textContent = `${hh}:${mm}:${ss}`;
+    updateRing(s);
+  }
+  updateTodayTotal(currentElapsed());
+}
+
+function currentElapsed() {
+  if (timerState === 'running') return elapsed + (performance.now() - startTs) / 1000;
+  if (timerState === 'paused') return elapsed;
+  return 0;
+}
+
+function updateTodayTotal(currentSecs) {
+  const completedSecs = todaySessions.reduce((s, x) => s + (x.duration || 0), 0);
+  const total = completedSecs + Math.floor(currentSecs);
+  todayTotal.textContent = total > 0 ? fmtHMS(total) : '—';
+}
+
+function updateRing(secs) {
+  const fraction = timerMode === 'pomodoro'
+    ? secs / pomodoroDuration
+    : (secs % HOUR_S) / HOUR_S;
+  const offset = RING_CIRC * (1 - fraction);
+  ringProgress.style.strokeDashoffset = offset;
+  ringGlow.style.strokeDashoffset = offset;
+
+  // Move tip dot to arc endpoint (no -π/2 offset — SVG rotation handles it)
+  const angle = fraction * 2 * Math.PI;
+  const tx = CX + RING_R * Math.cos(angle);
+  const ty = CY + RING_R * Math.sin(angle);
+  ringTip.setAttribute('cx', tx);
+  ringTip.setAttribute('cy', ty);
+  ringTip.style.opacity = fraction > 0.005 ? '1' : '0';
+}
+
+function setRingColor(state) {
+  const colors = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05' };
+  const c = colors[state] || colors.idle;
+  ringProgress.style.stroke = c;
+  ringGlow.style.stroke = c;
+  ringTip.style.fill = c;
+  ringTip.style.filter = `drop-shadow(0 0 5px ${c})`;
+  timerDisplay.style.textShadow = `0 0 40px ${c}22`;
+}
+
+function renderButtons() {
+  btnRow.innerHTML = '';
+  if (timerState === 'idle') {
+    btnRow.appendChild(makeBtn('START', 'primary', startTimer));
+  } else if (timerState === 'running') {
+    btnRow.appendChild(makeBtn('PAUSE', 'secondary', pauseTimer));
+    btnRow.appendChild(makeBtn('STOP', 'danger', stopTimer));
+  } else if (timerState === 'paused') {
+    btnRow.appendChild(makeBtn('RESUME', 'primary', resumeTimer));
+    btnRow.appendChild(makeBtn('STOP', 'danger', stopTimer));
+  }
+}
+
+function makeBtn(text, variant, handler) {
+  const b = document.createElement('button');
+  b.className = `btn btn-${variant}`;
+  b.textContent = text;
+  b.addEventListener('click', handler);
+  return b;
+}
+
+function startTimer() {
+  timerState = 'running';
+  elapsed = 0;
+  pomodoroComplete = false;
+  startTs = performance.now();
+  timerStartedAt = new Date();
+  intervalId = setInterval(tickTimer, 500);
+  timerLabel.textContent = timerMode === 'pomodoro' ? 'focus' : 'running';
+  setRingColor('running');
+  renderButtons();
+  labelInput.disabled = true;
+}
+
+function pauseTimer() {
+  timerState = 'paused';
+  elapsed += (performance.now() - startTs) / 1000;
+  clearInterval(intervalId);
+  timerLabel.textContent = 'paused';
+  setRingColor('paused');
+  renderButtons();
+}
+
+function resumeTimer() {
+  timerState = 'running';
+  startTs = performance.now();
+  intervalId = setInterval(tickTimer, 500);
+  timerLabel.textContent = 'running';
+  setRingColor('running');
+  renderButtons();
+}
+
+async function stopTimer() {
+  const finalElapsed = timerState === 'running'
+    ? elapsed + (performance.now() - startTs) / 1000
+    : elapsed;
+
+  clearInterval(intervalId);
+  timerState = 'idle';
+  elapsed = 0;
+
+  // Reset ring to idle state for current mode
+  if (timerMode === 'pomodoro') {
+    updateDisplay(pomodoroDuration); // show full ring
+  } else {
+    updateDisplay(0);
+    ringProgress.style.strokeDashoffset = `${RING_CIRC}`;
+    ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
+    ringTip.style.opacity = '0';
+  }
+  timerLabel.textContent = 'idle';
+  setRingColor('idle');
+  labelInput.disabled = false;
+  renderButtons();
+
+  const durationSecs = Math.floor(finalElapsed);
+  if (durationSecs >= 5) {
+    await saveSession(durationSecs, labelInput.value.trim(), timerStartedAt, new Date(), timerMode);
+    labelInput.value = '';
+    renderStats();
+  }
+}
+
+// init buttons
+renderButtons();
+setRingColor('idle');
+
+// ─── Mode toggle ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (timerState !== 'idle') return;
+    timerMode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const isPomo = timerMode === 'pomodoro';
+    $('pomodoroControls').style.display = isPomo ? 'flex' : 'none';
+    if (isPomo) {
+      updateDisplay(pomodoroDuration);
+      timerLabel.textContent = 'ready';
+    } else {
+      updateDisplay(0);
+      ringProgress.style.strokeDashoffset = `${RING_CIRC}`;
+      ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
+      ringTip.style.opacity = '0';
+      timerLabel.textContent = 'idle';
+    }
+    setRingColor('idle');
+  });
+});
+
+document.querySelectorAll('.pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    if (timerState !== 'idle') return;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+    pill.classList.add('selected');
+    pomodoroDuration = parseInt(pill.dataset.mins) * 60;
+    updateDisplay(pomodoroDuration);
+  });
+});
+
+// ─── Pomodoro auto-complete ───────────────────────────────────────────────────
+async function autoCompletePomodoro() {
+  clearInterval(intervalId);
+  timerState = 'idle';
+  elapsed = 0;
+
+  await saveSession(pomodoroDuration, labelInput.value.trim(), timerStartedAt, new Date(), 'pomodoro');
+  labelInput.value = '';
+
+  updateDisplay(pomodoroDuration);
+  timerLabel.textContent = 'done ✓';
+  setRingColor('idle');
+  labelInput.disabled = false;
+  renderButtons();
+  renderStats();
+  playCompletionBeep();
+  showPomodoroFlash();
+}
+
+function playCompletionBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[880, 0, 0.12], [1100, 0.18, 0.14]].forEach(([freq, offset, dur]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + offset);
+      gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + offset + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + offset + dur);
+      osc.start(ctx.currentTime + offset);
+      osc.stop(ctx.currentTime + offset + dur + 0.05);
+    });
+  } catch {}
+}
+
+function showPomodoroFlash() {
+  const el = document.createElement('div');
+  el.className = 'pomo-flash';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+async function renderStats() {
+  if (!uid || !db) return;
+
+  try {
+    const col = collection(db, 'users', uid, 'sessions');
+
+    // All-time
+    const allSnap = await getDocs(query(col));
+    const allSessions = allSnap.docs.map(d => d.data());
+    const allTimeSecs = allSessions.reduce((s, x) => s + (x.duration || 0), 0);
+    const allTimeHours = (allTimeSecs / 3600).toFixed(1);
+    statAllTime.textContent = allTimeHours + 'h';
+
+    // Last 7 days
+    const days = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      days.push(dateStr(d));
+    }
+
+    const sevenDaysAgo = days[0];
+    const recentSnap = await getDocs(query(col,
+      where('date', '>=', sevenDaysAgo)
+    ));
+    const recent = recentSnap.docs.map(d => d.data());
+
+    // Bucket by date
+    const byDay = {};
+    days.forEach(d => { byDay[d] = 0; });
+    recent.forEach(s => {
+      if (byDay[s.date] !== undefined) byDay[s.date] += (s.duration || 0);
+    });
+
+    // This week total (Mon–Sun)
+    const dayOfWeek = today.getDay(); // 0=Sun
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    const weekStart = dateStr(monday);
+    const weekSecs = days.filter(d => d >= weekStart).reduce((s, d) => s + (byDay[d] || 0), 0);
+    statWeek.textContent = fmtHMfull(weekSecs);
+
+    // Streak
+    const allDates = [...new Set(allSessions.map(s => s.date))].sort();
+    let streak = 0;
+    if (allDates.length > 0) {
+      const checkDate = new Date(today);
+      // if today has no session, start checking from yesterday
+      if (!byDay[todayStr()]) checkDate.setDate(checkDate.getDate() - 1);
+      while (true) {
+        const ds = dateStr(checkDate);
+        if (allDates.includes(ds)) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else break;
+      }
+    }
+
+    if (streak > 0) {
+      streakBadge.style.display = 'inline-flex';
+      streakText.textContent = streak + '-day streak';
+    } else {
+      streakBadge.style.display = 'none';
+    }
+
+    // Bar chart
+    const maxSecs = Math.max(...Object.values(byDay), 1);
+    const todayD = todayStr();
+    barChart.innerHTML = '';
+    days.forEach(d => {
+      const secs = byDay[d] || 0;
+      const pct = (secs / maxSecs) * 100;
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <span class="bar-day">${dayLabel(d)}</span>
+        <div class="bar-track">
+          <div class="bar-fill${d === todayD ? ' today' : ''}" style="width:${pct}%"></div>
+        </div>
+        <span class="bar-time">${secs > 0 ? fmtHM(secs) : '—'}</span>
+      `;
+      barChart.appendChild(row);
+    });
+
+  } catch (err) {
+    showError('Stats error: ' + err.message);
+  }
+}
+
+// ─── Theme toggle ────────────────────────────────────────────────────────────
+const themeToggle = $('themeToggle');
+const savedTheme = localStorage.getItem('dwt_theme') || 'dark';
+if (savedTheme === 'light') {
+  document.documentElement.setAttribute('data-theme', 'light');
+  themeToggle.textContent = '☀️';
+}
+themeToggle.addEventListener('click', () => {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    themeToggle.textContent = '🌙';
+    localStorage.setItem('dwt_theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    themeToggle.textContent = '☀️';
+    localStorage.setItem('dwt_theme', 'light');
+  }
+});
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    $('panel-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'stats') renderStats();
+  });
+});
+
+// ─── Error helper ────────────────────────────────────────────────────────────
+function showError(msg) {
+  errorBanner.textContent = msg;
+  errorBanner.classList.add('show');
+  setTimeout(() => errorBanner.classList.remove('show'), 6000);
+}
+
+// ─── Prevent accidental close while timer running ─────────────────────────
+window.addEventListener('beforeunload', e => {
+  if (timerState !== 'idle') {
+    e.preventDefault();
+    e.returnValue = 'Timer is running. Leave anyway?';
+  }
+});
+</script>
+</body>
+</html>
