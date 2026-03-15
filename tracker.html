@@ -762,6 +762,41 @@
 
     .login-input:focus { border-color: var(--blue); }
 
+    .btn-google {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 11px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 14px;
+    }
+    .btn-google:hover { border-color: var(--muted); background: var(--bg); }
+
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .login-divider::before, .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
     @media (max-width: 620px) {
       .login-split { flex-direction: column; gap: 36px; }
       .login-box { width: 100%; }
@@ -886,6 +921,79 @@
       animation: pomoFlash 1.4s ease-out forwards;
       z-index: 50;
     }
+
+    /* Streak dots */
+    .streak-dots {
+      display: none;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .streak-dots.visible { display: flex; }
+    .streak-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s, transform 0.3s;
+    }
+    .streak-dot.filled {
+      background: #34A853;
+      transform: scale(1.2);
+      box-shadow: 0 0 6px rgba(52,168,83,0.5);
+    }
+
+    /* Break prompt overlay */
+    .break-prompt {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .break-prompt-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 32px;
+      text-align: center;
+      max-width: 320px;
+      width: 90%;
+    }
+    .break-prompt-emoji { font-size: 32px; margin-bottom: 10px; }
+    .break-prompt-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .break-prompt-sub {
+      font-size: 12px; color: var(--muted);
+      margin-bottom: 20px; line-height: 1.5;
+    }
+    .break-prompt-btns { display: flex; flex-direction: column; gap: 8px; }
+    .break-btn-short {
+      padding: 11px; border-radius: 10px;
+      background: #00BFA5; border: none;
+      color: #fff; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .break-btn-short:hover { opacity: 0.85; }
+    .break-btn-long {
+      padding: 11px; border-radius: 10px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 13px; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .break-btn-long:hover { border-color: var(--muted); }
+    .break-btn-skip {
+      padding: 8px; border-radius: 10px;
+      background: none; border: none;
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: 12px; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .break-btn-skip:hover { color: var(--text); }
 
     /* Burst particles */
     @keyframes burstParticle {
@@ -1223,6 +1331,12 @@
     <div class="btn-row" id="btnRow">
       <button class="btn btn-primary" id="btnStart">START</button>
     </div>
+    <div class="streak-dots" id="streakDots">
+      <div class="streak-dot" id="sd0"></div>
+      <div class="streak-dot" id="sd1"></div>
+      <div class="streak-dot" id="sd2"></div>
+      <div class="streak-dot" id="sd3"></div>
+    </div>
 
     <!-- TODAY'S SESSIONS -->
     <div class="section-header">
@@ -1459,6 +1573,20 @@
   </div>
 </div>
 
+<!-- BREAK PROMPT -->
+<div class="break-prompt" id="breakPrompt" style="display:none">
+  <div class="break-prompt-card">
+    <div class="break-prompt-emoji">☕</div>
+    <div class="break-prompt-title">Nice work!</div>
+    <div class="break-prompt-sub" id="breakPromptSub">Take a breather before the next session.</div>
+    <div class="break-prompt-btns">
+      <button class="break-btn-short" id="breakBtnShort">Short break — 5 min</button>
+      <button class="break-btn-long" id="breakBtnLong">Long break — 15 min</button>
+      <button class="break-btn-skip" id="breakBtnSkip">Skip break</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay" style="display:none">
   <div class="login-split">
@@ -1629,7 +1757,12 @@
     <div class="login-box">
       <h2>Sign in</h2>
       <p id="loginMsg">Sync your sessions across devices.</p>
-      <input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
+      <button class="btn-google" id="btnGoogle" style="display:none">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="login-divider" style="display:none"><span>or</span></div>
+<input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
       <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
       <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
       <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
@@ -1642,6 +1775,7 @@
 // ─── Firebase CDN ────────────────────────────────────────────────────────────
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+         signInWithPopup, GoogleAuthProvider,
          onAuthStateChanged, browserLocalPersistence, setPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
@@ -1716,7 +1850,7 @@ ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
 })();
 
 // ─── Timer state ─────────────────────────────────────────────────────────────
-let timerState = 'idle'; // idle | running | paused
+let timerState = 'idle'; // idle | running | paused | break
 let pendingSession = null; // held while reflection modal is open
 let pipTimeEl = null, pipStateEl = null, pipDotEl = null, pipModeEl = null, pipBarEl = null, pipBarWrapEl = null;
 let timerMode = 'pomodoro';      // 'stopwatch' | 'pomodoro'
@@ -1724,6 +1858,13 @@ let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
 let elapsed = 0;         // total seconds elapsed
 let intervalId = null;
+let pomodoroStreak = 0;  // completed pomodoros toward long break
+let breakDuration = 0;   // seconds for current break
+let breakElapsed = 0;    // seconds elapsed in break
+let breakStartTs = null;
+let breakIntervalId = null;
+const BREAK_LONG_AFTER = 4; // offer long break after this many pomodoros
+const MIN_SESSION_SECS = 15 * 60; // 15 minutes
 let startTs = null;      // performance.now() snapshot when last started/resumed
 let timerStartedAt = null; // Date for Firestore
 
@@ -1775,6 +1916,20 @@ btnRegister.addEventListener('click', async () => {
 
 loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') btnLogin.click(); });
 
+$('btnGoogle').addEventListener('click', async () => {
+  const btn = $('btnGoogle');
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (err) {
+    loginMsg.textContent = friendlyAuthError(err.code);
+    loginMsg.style.color = 'var(--red)';
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google`;
+  }
+});
+
 function friendlyAuthError(code) {
   const map = {
     'auth/invalid-credential': 'Wrong email or password.',
@@ -1783,8 +1938,12 @@ function friendlyAuthError(code) {
     'auth/email-already-in-use': 'Account already exists. Sign in instead.',
     'auth/weak-password': 'Password must be at least 6 characters.',
     'auth/invalid-email': 'Invalid email address.',
+    'auth/operation-not-allowed': 'Google sign-in not enabled. Enable it in Firebase Console.',
+    'auth/unauthorized-domain': 'This domain is not authorised in Firebase Console.',
+    'auth/popup-closed-by-user': '',
+    'auth/cancelled-popup-request': '',
   };
-  return map[code] || 'Auth error: ' + code;
+  return map[code] ?? 'Auth error: ' + code;
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -2032,6 +2191,7 @@ function escHtml(s) {
 }
 
 // ─── Timer logic ─────────────────────────────────────────────────────────────
+let _lastStopLabel = '';
 function tickTimer() {
   if (timerState !== 'running') return;
   const delta = (performance.now() - startTs) / 1000;
@@ -2040,6 +2200,11 @@ function tickTimer() {
   if (timerMode === 'pomodoro' && current >= pomodoroDuration && !pomodoroComplete) {
     pomodoroComplete = true;
     autoCompletePomodoro();
+  }
+  // Re-render buttons when stopwatch crosses 15 min threshold
+  if (timerMode === 'stopwatch') {
+    const lbl = stopLabel();
+    if (lbl !== _lastStopLabel) { _lastStopLabel = lbl; renderButtons(); }
   }
 }
 
@@ -2096,7 +2261,7 @@ function updateRing(secs) {
 }
 
 function setRingColor(state) {
-  const colors = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05' };
+  const colors = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05', break: '#00BFA5' };
   const c = colors[state] || colors.idle;
   ringProgress.style.stroke = c;
   ringGlow.style.stroke = c;
@@ -2106,16 +2271,23 @@ function setRingColor(state) {
   timerDisplay.style.textShadow = `0 0 40px ${c}22`;
 }
 
+function stopLabel() {
+  if (timerMode === 'pomodoro') return 'GIVE UP';
+  return currentElapsed() >= MIN_SESSION_SECS ? 'FINISH' : 'GIVE UP';
+}
+
 function renderButtons() {
   btnRow.innerHTML = '';
   if (timerState === 'idle') {
     btnRow.appendChild(makeBtn('START', 'primary', startTimer));
   } else if (timerState === 'running') {
     btnRow.appendChild(makeBtn('PAUSE', 'secondary', pauseTimer));
-    btnRow.appendChild(makeBtn(timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH', 'danger', stopTimer));
+    btnRow.appendChild(makeBtn(stopLabel(), stopLabel() === 'GIVE UP' ? 'danger' : 'primary', stopTimer));
   } else if (timerState === 'paused') {
     btnRow.appendChild(makeBtn('RESUME', 'primary', resumeTimer));
-    btnRow.appendChild(makeBtn(timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH', 'danger', stopTimer));
+    btnRow.appendChild(makeBtn(stopLabel(), stopLabel() === 'GIVE UP' ? 'danger' : 'primary', stopTimer));
+  } else if (timerState === 'break') {
+    btnRow.appendChild(makeBtn('SKIP BREAK', 'secondary', skipBreak));
   }
 }
 
@@ -2131,6 +2303,7 @@ function startTimer() {
   timerState = 'running';
   elapsed = 0;
   pomodoroComplete = false;
+  _lastStopLabel = 'GIVE UP';
   startTs = performance.now();
   timerStartedAt = new Date();
   intervalId = setInterval(tickTimer, 500);
@@ -2161,45 +2334,55 @@ function resumeTimer() {
 }
 
 function stopTimer() {
-  if (timerMode === 'pomodoro') {
-    const giveUpBtn = [...btnRow.querySelectorAll('button')].find(b => b.textContent === 'GIVE UP');
-    burstHeartbreak(giveUpBtn || btnRow);
-  }
-
   const finalElapsed = timerState === 'running'
     ? elapsed + (performance.now() - startTs) / 1000
     : elapsed;
+
+  const isGiveUp = finalElapsed < MIN_SESSION_SECS;
+
+  // Heartbreak effect on any give up
+  if (isGiveUp) {
+    const giveUpBtn = [...btnRow.querySelectorAll('button')].find(b => b.textContent === 'GIVE UP');
+    burstHeartbreak(giveUpBtn || btnRow);
+  }
 
   clearInterval(intervalId);
   timerState = 'idle';
   elapsed = 0;
 
-  // Reset ring to idle state for current mode
-  if (timerMode === 'pomodoro') {
-    updateDisplay(pomodoroDuration); // show full ring
-  } else {
-    updateDisplay(0);
-    ringProgress.style.strokeDashoffset = `${RING_CIRC}`;
-    ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
-    ringTip.style.opacity = '0';
-  }
+  resetRingToIdle();
   timerLabel.textContent = 'idle';
   document.title = 'Deep Work Tracker';
   setRingColor('idle');
   labelInput.disabled = false;
   renderButtons();
 
-  const durationSecs = Math.floor(finalElapsed);
-  if (durationSecs >= 5) {
-    pendingSession = {
-      durationSecs,
-      label: labelInput.value.trim(),
-      startedAt: timerStartedAt,
-      endedAt: new Date(),
-      type: timerMode,
-    };
+  // Discard silently if under 15 min
+  if (isGiveUp) {
     labelInput.value = '';
-    showReflection();
+    return;
+  }
+
+  // ≥ 15 min — save and show break prompt then reflection
+  pendingSession = {
+    durationSecs: Math.floor(finalElapsed),
+    label: labelInput.value.trim(),
+    startedAt: timerStartedAt,
+    endedAt: new Date(),
+    type: timerMode,
+  };
+  labelInput.value = '';
+  showBreakPrompt();
+}
+
+function resetRingToIdle() {
+  if (timerMode === 'pomodoro') {
+    updateDisplay(pomodoroDuration);
+  } else {
+    updateDisplay(0);
+    ringProgress.style.strokeDashoffset = `${RING_CIRC}`;
+    ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
+    ringTip.style.opacity = '0';
   }
 }
 
@@ -2207,6 +2390,7 @@ function stopTimer() {
 updateDisplay(0); // triggers pomodoro countdown display
 renderButtons();
 setRingColor('idle');
+renderStreakDots(0);
 
 // ─── Mode toggle ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -2217,6 +2401,7 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.classList.add('active');
     const isPomo = timerMode === 'pomodoro';
     $('pomodoroControls').style.display = isPomo ? 'flex' : 'none';
+    renderStreakDots(isPomo ? pomodoroStreak : 0);
     if (isPomo) {
       updateDisplay(pomodoroDuration);
       timerLabel.textContent = 'ready';
@@ -2256,6 +2441,9 @@ function autoCompletePomodoro() {
   };
   labelInput.value = '';
 
+  pomodoroStreak = (pomodoroStreak + 1) % BREAK_LONG_AFTER;
+  renderStreakDots(pomodoroStreak);
+
   updateDisplay(pomodoroDuration);
   timerLabel.textContent = 'done ✓';
   setRingColor('idle');
@@ -2264,7 +2452,7 @@ function autoCompletePomodoro() {
   playCompletionBeep();
   showPomodoroFlash();
   burstConfetti(document.querySelector('.ring-wrap') || document.body);
-  showReflection();
+  showBreakPrompt(pomodoroStreak === 0); // offer long break after 4th
 }
 
 function playCompletionBeep() {
@@ -2304,6 +2492,97 @@ function showPomodoroFlash() {
   el.className = 'pomo-flash';
   document.body.appendChild(el);
   el.addEventListener('animationend', () => el.remove());
+}
+
+// ─── Break prompt ─────────────────────────────────────────────────────────────
+function showBreakPrompt(offerLong = false) {
+  const sub = offerLong
+    ? 'You completed 4 sessions! You\'ve earned a longer break.'
+    : 'Take a breather before the next session.';
+  $('breakPromptSub').textContent = sub;
+  $('breakBtnLong').textContent = offerLong ? 'Long break — 15 min ⭐' : 'Long break — 15 min';
+  $('breakPrompt').style.display = 'flex';
+}
+
+$('breakBtnShort').addEventListener('click', () => {
+  $('breakPrompt').style.display = 'none';
+  startBreak(5 * 60);
+});
+$('breakBtnLong').addEventListener('click', () => {
+  $('breakPrompt').style.display = 'none';
+  startBreak(15 * 60);
+});
+$('breakBtnSkip').addEventListener('click', () => {
+  $('breakPrompt').style.display = 'none';
+  showReflection();
+});
+
+function startBreak(secs) {
+  breakDuration = secs;
+  breakElapsed = 0;
+  breakStartTs = performance.now();
+  timerState = 'break';
+  timerLabel.textContent = 'break';
+  setRingColor('break');
+  renderButtons();
+
+  // Show break countdown on ring
+  const updateBreakDisplay = () => {
+    const remaining = Math.max(0, breakDuration - breakElapsed);
+    const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const ss = String(remaining % 60).padStart(2, '0');
+    timerDisplay.textContent = `${mm}:${ss}`;
+    const fraction = remaining / breakDuration;
+    const offset = RING_CIRC * (1 - fraction);
+    ringProgress.style.strokeDashoffset = offset;
+    ringGlow.style.strokeDashoffset = offset;
+    const angle = fraction * 2 * Math.PI;
+    ringTip.setAttribute('cx', CX + RING_R * Math.cos(angle));
+    ringTip.setAttribute('cy', CY + RING_R * Math.sin(angle));
+    ringTip.style.opacity = fraction > 0.005 ? '1' : '0';
+    document.title = `☕ ${mm}:${ss} — Break`;
+  };
+
+  updateBreakDisplay();
+  breakIntervalId = setInterval(() => {
+    breakElapsed = (performance.now() - breakStartTs) / 1000;
+    updateBreakDisplay();
+    if (breakElapsed >= breakDuration) endBreak();
+  }, 500);
+}
+
+function endBreak() {
+  clearInterval(breakIntervalId);
+  timerState = 'idle';
+  timerLabel.textContent = 'idle';
+  document.title = 'Deep Work Tracker';
+  setRingColor('idle');
+  if (timerMode === 'pomodoro') updateDisplay(pomodoroDuration);
+  else { timerDisplay.textContent = '00:00:00'; ringProgress.style.strokeDashoffset = `${RING_CIRC}`; ringGlow.style.strokeDashoffset = `${RING_CIRC}`; ringTip.style.opacity = '0'; }
+  renderButtons();
+  showReflection();
+}
+
+function skipBreak() {
+  clearInterval(breakIntervalId);
+  timerState = 'idle';
+  timerLabel.textContent = 'idle';
+  document.title = 'Deep Work Tracker';
+  setRingColor('idle');
+  if (timerMode === 'pomodoro') updateDisplay(pomodoroDuration);
+  else { timerDisplay.textContent = '00:00:00'; ringProgress.style.strokeDashoffset = `${RING_CIRC}`; ringGlow.style.strokeDashoffset = `${RING_CIRC}`; ringTip.style.opacity = '0'; }
+  renderButtons();
+  showReflection();
+}
+
+// ─── Streak dots ──────────────────────────────────────────────────────────────
+function renderStreakDots(filledCount) {
+  const dotsWrap = $('streakDots');
+  const isPomo = timerMode === 'pomodoro';
+  dotsWrap.classList.toggle('visible', isPomo);
+  for (let i = 0; i < 4; i++) {
+    $(`sd${i}`).classList.toggle('filled', i < filledCount);
+  }
 }
 
 function burstConfetti(originEl) {
