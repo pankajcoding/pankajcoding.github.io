@@ -1018,6 +1018,33 @@
     .reflection-note::placeholder { color: var(--muted); }
     .reflection-note:focus { border-color: var(--blue); }
     .refl-actions { display: flex; gap: 10px; }
+
+    /* Patterns section */
+    .patterns-section { margin-top: 32px; }
+    .heatmap-wrap { margin-bottom: 24px; overflow-x: auto; }
+    .heatmap-grid { display: inline-flex; flex-direction: column; gap: 3px; min-width: 100%; }
+    .heatmap-header-row { display: flex; gap: 3px; padding-left: 32px; }
+    .heatmap-hour-lbl { width: 18px; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--muted); text-align: center; flex-shrink: 0; }
+    .heatmap-grid-row { display: flex; align-items: center; gap: 3px; }
+    .heatmap-day-lbl { width: 28px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-align: right; padding-right: 4px; flex-shrink: 0; }
+    .heatmap-cell { width: 18px; height: 18px; border-radius: 3px; cursor: default; transition: transform 0.15s; flex-shrink: 0; }
+    .heatmap-cell:hover { transform: scale(1.4); position: relative; z-index: 1; }
+    .heatmap-legend { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); flex-wrap: wrap; }
+    .heatmap-legend-swatch { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+    .insight-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .insight-card { background: var(--card); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 10px; padding: 12px 14px; }
+    .insight-card.accent-green { border-left-color: var(--green); }
+    .insight-card.accent-yellow { border-left-color: var(--yellow); }
+    .insight-card.accent-red { border-left-color: var(--red); }
+    .insight-card-label { font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .insight-card-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+    .dist-impact-list { display: flex; flex-direction: column; gap: 8px; }
+    .dist-impact-row { display: grid; grid-template-columns: 88px 1fr 46px; align-items: center; gap: 8px; }
+    .dist-impact-name { font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; }
+    .dist-impact-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .dist-impact-fill { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
+    .dist-impact-delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; }
+    .patterns-unlock { text-align: center; padding: 24px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -1173,6 +1200,14 @@
     <div class="stats-section" id="distrSection" style="display:none">
       <div class="chart-title">Top distractions</div>
       <div class="dist-list" id="distrList"></div>
+    </div>
+
+    <!-- Patterns section -->
+    <div class="patterns-section" id="patternsSection" style="display:none">
+      <div class="chart-title">Patterns</div>
+      <div id="heatmapWrap"></div>
+      <div id="insightList"></div>
+      <div id="distImpactList"></div>
     </div>
 
   </div>
@@ -2325,6 +2360,224 @@ async function renderStats() {
       });
     } else {
       distrSection.style.display = 'none';
+    }
+
+    // ── Patterns section ─────────────────────────────────────────────────────
+    const patternsSection = $('patternsSection');
+    patternsSection.style.display = 'block';
+
+    if (totalCount < 10) {
+      const need = 10 - totalCount;
+      $('heatmapWrap').innerHTML = `<div class="patterns-unlock">Complete <strong>${need} more session${need !== 1 ? 's' : ''}</strong> to unlock Focus Patterns</div>`;
+      $('insightList').innerHTML = '';
+      $('distImpactList').innerHTML = '';
+    } else {
+      const H_START = 6, H_END = 23;
+      const H_COUNT = H_END - H_START + 1; // 18 slots: 6am–11pm
+      const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+      // Build grid[day0-6][hSlot0-17]
+      const grid = Array.from({length: 7}, () =>
+        Array.from({length: H_COUNT}, () => ({count:0, focusSum:0, focusCount:0})));
+
+      allSessions.forEach(s => {
+        if (!s.startedAt?.seconds) return;
+        const dt = new Date(s.startedAt.seconds * 1000);
+        const mon0 = (dt.getDay() + 6) % 7; // Mon=0…Sun=6
+        const hSlot = dt.getHours() - H_START;
+        if (hSlot < 0 || hSlot >= H_COUNT) return;
+        grid[mon0][hSlot].count++;
+        if (s.focusRating != null) {
+          grid[mon0][hSlot].focusSum += s.focusRating;
+          grid[mon0][hSlot].focusCount++;
+        }
+      });
+
+      function cellColor(cell) {
+        if (cell.count === 0) return 'var(--border)';
+        if (cell.focusCount === 0) return '#4285F4';
+        const avg = cell.focusSum / cell.focusCount;
+        if (avg >= 4.0) return '#34A853';
+        if (avg >= 3.0) return '#00BFA5';
+        if (avg >= 2.0) return '#FBBC05';
+        return '#EA4335';
+      }
+
+      function fmtHour(h) {
+        if (h === 0) return '12a';
+        if (h < 12) return h + 'a';
+        if (h === 12) return '12p';
+        return (h - 12) + 'p';
+      }
+
+      // Build heatmap DOM
+      const heatmapWrap = $('heatmapWrap');
+      heatmapWrap.innerHTML = '';
+      const gridEl = document.createElement('div');
+      gridEl.className = 'heatmap-grid';
+
+      // Hour label header
+      const headerRow = document.createElement('div');
+      headerRow.className = 'heatmap-header-row';
+      for (let h = 0; h < H_COUNT; h++) {
+        const lbl = document.createElement('div');
+        lbl.className = 'heatmap-hour-lbl';
+        if (h % 3 === 0) lbl.textContent = fmtHour(h + H_START);
+        headerRow.appendChild(lbl);
+      }
+      gridEl.appendChild(headerRow);
+
+      DAY_NAMES.forEach((day, di) => {
+        const row = document.createElement('div');
+        row.className = 'heatmap-grid-row';
+        const dayLbl = document.createElement('div');
+        dayLbl.className = 'heatmap-day-lbl';
+        dayLbl.textContent = day;
+        row.appendChild(dayLbl);
+        for (let h = 0; h < H_COUNT; h++) {
+          const cell = grid[di][h];
+          const el = document.createElement('div');
+          el.className = 'heatmap-cell';
+          el.style.background = cellColor(cell);
+          el.style.opacity = cell.count === 0 ? '0.2' : '1';
+          if (cell.count > 0) {
+            const avg = cell.focusCount > 0 ? (cell.focusSum / cell.focusCount).toFixed(1) : null;
+            const hour = h + H_START;
+            el.title = `${day} ${fmtHour(hour)}–${fmtHour(hour+1)} · ${cell.count} session${cell.count>1?'s':''}${avg ? ' · focus '+avg+'/5' : ''}`;
+          }
+          row.appendChild(el);
+        }
+        gridEl.appendChild(row);
+      });
+
+      const legend = document.createElement('div');
+      legend.className = 'heatmap-legend';
+      legend.innerHTML = `<span>low</span>
+        <div class="heatmap-legend-swatch" style="background:#EA4335"></div>
+        <div class="heatmap-legend-swatch" style="background:#FBBC05"></div>
+        <div class="heatmap-legend-swatch" style="background:#34A853"></div>
+        <span>high focus</span>
+        <div class="heatmap-legend-swatch" style="background:#4285F4;margin-left:8px"></div>
+        <span>unrated</span>
+        <div class="heatmap-legend-swatch" style="background:var(--border);opacity:0.2;margin-left:8px"></div>
+        <span>empty</span>`;
+      heatmapWrap.appendChild(gridEl);
+      heatmapWrap.appendChild(legend);
+
+      // ── Smart Insights ──────────────────────────────────────────────────────
+      const patRated = allSessions.filter(s => s.focusRating != null && s.startedAt?.seconds);
+      const insightListEl = $('insightList');
+      insightListEl.innerHTML = '';
+      const insightWrap = document.createElement('div');
+      insightWrap.className = 'insight-list';
+
+      if (patRated.length >= 5) {
+        const overallAvg = patRated.reduce((s,x) => s + x.focusRating, 0) / patRated.length;
+
+        // Insight 1: Peak focus window
+        const slotMap = {};
+        patRated.forEach(s => {
+          const dt = new Date(s.startedAt.seconds * 1000);
+          const mon0 = (dt.getDay() + 6) % 7;
+          const hSlot = dt.getHours() - H_START;
+          if (hSlot < 0 || hSlot >= H_COUNT) return;
+          const key = mon0 + ':' + hSlot;
+          if (!slotMap[key]) slotMap[key] = {day: mon0, h: hSlot, ratings: []};
+          slotMap[key].ratings.push(s.focusRating);
+        });
+        let bestSlot = null, bestSlotAvg = -1;
+        Object.values(slotMap).forEach(slot => {
+          if (slot.ratings.length < 2) return;
+          const avg = slot.ratings.reduce((a,b) => a+b, 0) / slot.ratings.length;
+          if (avg > bestSlotAvg) { bestSlotAvg = avg; bestSlot = slot; }
+        });
+        if (bestSlot) {
+          const hour = bestSlot.h + H_START;
+          const card = document.createElement('div');
+          card.className = 'insight-card accent-green';
+          card.innerHTML = `<div class="insight-card-label">Peak Focus Window</div><div class="insight-card-text">Your sharpest sessions tend to fall on <strong>${DAY_NAMES[bestSlot.day]}</strong> around ${fmtHour(hour)}–${fmtHour(hour+1)} (avg ${bestSlotAvg.toFixed(1)}/5)</div>`;
+          insightWrap.appendChild(card);
+        }
+
+        // Insight 2: Sweet-spot session length
+        const BUCKETS = [
+          {min:0,  max:20,       label:'under 20 min'},
+          {min:20, max:45,       label:'20–45 min'},
+          {min:45, max:60,       label:'45–60 min'},
+          {min:60, max:90,       label:'60–90 min'},
+          {min:90, max:Infinity, label:'over 90 min'},
+        ];
+        const bucketData = BUCKETS.map(b => ({...b, ratings:[]}));
+        patRated.forEach(s => {
+          const mins = (s.duration || 0) / 60;
+          const b = bucketData.find(bk => mins >= bk.min && mins < bk.max);
+          if (b) b.ratings.push(s.focusRating);
+        });
+        let bestBucket = null, bestBucketAvg = -1;
+        bucketData.forEach(b => {
+          if (b.ratings.length < 2) return;
+          const avg = b.ratings.reduce((a,x) => a+x, 0) / b.ratings.length;
+          if (avg > bestBucketAvg) { bestBucketAvg = avg; bestBucket = b; }
+        });
+        if (bestBucket && bestBucketAvg > overallAvg) {
+          const card = document.createElement('div');
+          card.className = 'insight-card accent-yellow';
+          card.innerHTML = `<div class="insight-card-label">Sweet-Spot Session Length</div><div class="insight-card-text">Sessions of <strong>${bestBucket.label}</strong> produce your highest focus (avg ${bestBucketAvg.toFixed(1)}/5)</div>`;
+          insightWrap.appendChild(card);
+        }
+      } else if (patRated.length > 0) {
+        const need2 = 5 - patRated.length;
+        const card = document.createElement('div');
+        card.className = 'insight-card';
+        card.innerHTML = `<div class="insight-card-label">Insights</div><div class="insight-card-text">Rate ${need2} more session${need2 !== 1 ? 's' : ''} to unlock focus pattern insights</div>`;
+        insightWrap.appendChild(card);
+      }
+
+      if (insightWrap.children.length > 0) insightListEl.appendChild(insightWrap);
+
+      // ── Distraction Impact ──────────────────────────────────────────────────
+      const distImpactEl = $('distImpactList');
+      distImpactEl.innerHTML = '';
+      const patRated2 = allSessions.filter(s => s.focusRating != null);
+      if (patRated2.length >= 2) {
+        const overallAvg2 = patRated2.reduce((s,x) => s + x.focusRating, 0) / patRated2.length;
+        const distMap = {};
+        patRated2.forEach(s => {
+          (s.distractions || []).forEach(d => {
+            const key = typeof d === 'string' && d.startsWith('other:') ? 'other' : d;
+            if (!distMap[key]) distMap[key] = {ratings: [], name: DLABELS[key] || key};
+            distMap[key].ratings.push(s.focusRating);
+          });
+        });
+        const impacts = Object.values(distMap)
+          .filter(v => v.ratings.length >= 2)
+          .map(v => {
+            const avg = v.ratings.reduce((a,b) => a+b, 0) / v.ratings.length;
+            return {name: v.name, avg, delta: avg - overallAvg2};
+          })
+          .sort((a, b) => a.delta - b.delta); // worst first
+
+        if (impacts.length > 0) {
+          const titleEl = document.createElement('div');
+          titleEl.className = 'chart-title';
+          titleEl.style.marginTop = '20px';
+          titleEl.textContent = 'Distraction Impact';
+          distImpactEl.appendChild(titleEl);
+          const impactList = document.createElement('div');
+          impactList.className = 'dist-impact-list';
+          const maxAbs = Math.max(...impacts.map(x => Math.abs(x.delta)), 0.1);
+          impacts.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'dist-impact-row';
+            const barPct = (Math.abs(item.delta) / maxAbs) * 100;
+            const color = item.delta < 0 ? 'var(--red)' : 'var(--green)';
+            const sign = item.delta >= 0 ? '+' : '';
+            row.innerHTML = `<span class="dist-impact-name">${item.name}</span><div class="dist-impact-track"><div class="dist-impact-fill" style="width:${barPct}%;background:${color}"></div></div><span class="dist-impact-delta" style="color:${color}">${sign}${item.delta.toFixed(1)}</span>`;
+            impactList.appendChild(row);
+          });
+          distImpactEl.appendChild(impactList);
+        }
+      }
     }
 
   } catch (err) {
