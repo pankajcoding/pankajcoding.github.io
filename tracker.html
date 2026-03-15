@@ -302,6 +302,71 @@
     }
 
     .session-card:hover { border-color: var(--muted); }
+    .session-card.selected {
+      border-color: var(--blue);
+      background: rgba(66,133,244,0.08);
+    }
+
+    .session-checkbox {
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: pointer;
+    }
+    .select-mode .session-checkbox { display: flex; }
+    .select-mode .session-dot { display: none; }
+    .session-card.selected .session-checkbox {
+      border-color: var(--blue);
+      background: var(--blue);
+    }
+    .session-card.selected .session-checkbox::after {
+      content: '';
+      width: 5px; height: 3px;
+      border-left: 1.5px solid #fff;
+      border-bottom: 1.5px solid #fff;
+      transform: rotate(-45deg) translateY(-1px);
+    }
+    .select-mode .session-delete { display: none; }
+    .select-mode .session-card { cursor: pointer; }
+
+    /* Bulk action bar */
+    .bulk-bar {
+      position: sticky; bottom: 12px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--blue);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-top: 10px;
+      gap: 10px;
+      box-shadow: 0 4px 20px rgba(66,133,244,0.2);
+    }
+    .bulk-bar.visible { display: flex; }
+    .bulk-bar-info {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--blue);
+    }
+    .bulk-bar-actions { display: flex; gap: 8px; }
+    .bulk-cancel {
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-family: 'DM Sans', sans-serif;
+      font-size: 12px; border-radius: 8px; padding: 5px 12px; cursor: pointer;
+    }
+    .bulk-delete {
+      background: var(--red); border: none;
+      color: #fff; font-family: 'DM Sans', sans-serif; font-weight: 600;
+      font-size: 12px; border-radius: 8px; padding: 5px 12px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .bulk-delete:hover { opacity: 0.85; }
 
     .session-dot {
       width: 7px;
@@ -822,6 +887,40 @@
       z-index: 50;
     }
 
+    /* Burst particles */
+    @keyframes burstParticle {
+      0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0) rotate(var(--tr)); opacity: 0; }
+    }
+    .burst-particle {
+      position: fixed;
+      width: var(--size, 8px); height: var(--size, 8px);
+      border-radius: var(--radius, 50%);
+      background: var(--color, #34A853);
+      pointer-events: none;
+      z-index: 9999;
+      animation: burstParticle var(--dur, 0.8s) cubic-bezier(0.22,1,0.36,1) forwards;
+    }
+
+    /* Heartbreak pieces */
+    @keyframes heartPieceLeft {
+      0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translate(-40px, 60px) rotate(-35deg) scale(0.4); opacity: 0; }
+    }
+    @keyframes heartPieceRight {
+      0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translate(40px, 60px) rotate(35deg) scale(0.4); opacity: 0; }
+    }
+    .heartbreak-wrap {
+      position: fixed;
+      font-size: 28px;
+      pointer-events: none;
+      z-index: 9999;
+      display: flex;
+    }
+    .hb-left  { display: inline-block; animation: heartPieceLeft  0.7s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .hb-right { display: inline-block; animation: heartPieceRight 0.7s cubic-bezier(0.22,1,0.36,1) forwards; }
+
     /* Vertical bar chart */
     .v-chart {
       display: flex;
@@ -1068,11 +1167,11 @@
   <div class="panel active" id="panel-timer">
 
     <div class="mode-toggle">
-      <button class="mode-btn active" data-mode="stopwatch">STOPWATCH</button>
-      <button class="mode-btn" data-mode="pomodoro">POMODORO</button>
+      <button class="mode-btn active" data-mode="pomodoro">POMODORO</button>
+      <button class="mode-btn" data-mode="stopwatch">STOPWATCH</button>
     </div>
 
-    <div class="pomodoro-controls" id="pomodoroControls" style="display:none">
+    <div class="pomodoro-controls" id="pomodoroControls" style="display:flex">
       <div class="duration-pills" id="durationPills">
         <button class="pill" data-mins="15">15m</button>
         <button class="pill" data-mins="20">20m</button>
@@ -1132,6 +1231,13 @@
     </div>
     <div class="sessions-list" id="sessionsList">
       <div class="empty-state">No sessions yet. Start your first one!</div>
+    </div>
+    <div class="bulk-bar" id="bulkBar">
+      <span class="bulk-bar-info" id="bulkInfo">0 selected</span>
+      <div class="bulk-bar-actions">
+        <button class="bulk-cancel" id="bulkCancel">Cancel</button>
+        <button class="bulk-delete" id="bulkDelete">Delete</button>
+      </div>
     </div>
 
   </div>
@@ -1558,6 +1664,8 @@ const labelInput   = $('labelInput');
 const btnRow       = $('btnRow');
 const sessionsList = $('sessionsList');
 const todayTotal   = $('todayTotal');
+const bulkBar      = $('bulkBar');
+const bulkInfo     = $('bulkInfo');
 const loginOverlay = $('loginOverlay');
 
 // ─── Ring setup ──────────────────────────────────────────────────────────────
@@ -1596,7 +1704,7 @@ ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
 let timerState = 'idle'; // idle | running | paused
 let pendingSession = null; // held while reflection modal is open
 let pipTimeEl = null, pipStateEl = null, pipDotEl = null, pipModeEl = null, pipBarEl = null, pipBarWrapEl = null;
-let timerMode = 'stopwatch';     // 'stopwatch' | 'pomodoro'
+let timerMode = 'pomodoro';      // 'stopwatch' | 'pomodoro'
 let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
 let elapsed = 0;         // total seconds elapsed
@@ -1791,6 +1899,39 @@ async function updateLabel(sessionId, label) {
   }
 }
 
+// ─── Multi-select ────────────────────────────────────────────────────────────
+let selectMode = false;
+const selectedIds = new Set();
+
+function enterSelectMode() {
+  selectMode = true;
+  sessionsList.classList.add('select-mode');
+  bulkBar.classList.add('visible');
+}
+
+function exitSelectMode() {
+  selectMode = false;
+  selectedIds.clear();
+  sessionsList.classList.remove('select-mode');
+  bulkBar.classList.remove('visible');
+  sessionsList.querySelectorAll('.session-card.selected').forEach(c => c.classList.remove('selected'));
+}
+
+function updateBulkBar() {
+  bulkInfo.textContent = `${selectedIds.size} selected`;
+}
+
+$('bulkCancel').addEventListener('click', exitSelectMode);
+
+$('bulkDelete').addEventListener('click', async () => {
+  if (!selectedIds.size) return;
+  const count = selectedIds.size;
+  if (!confirm(`Delete ${count} session${count > 1 ? 's' : ''}?`)) return;
+  const ids = [...selectedIds];
+  exitSelectMode();
+  await Promise.all(ids.map(id => deleteSession(id)));
+});
+
 // ─── Render sessions ────────────────────────────────────────────────────────
 function renderSessions() {
   updateTodayTotal(currentElapsed());
@@ -1803,11 +1944,13 @@ function renderSessions() {
   }
 
   sessionsList.innerHTML = '';
+  if (selectMode) sessionsList.classList.add('select-mode');
   todaySessions.forEach(session => {
     const card = document.createElement('div');
-    card.className = 'session-card';
+    card.className = 'session-card' + (selectedIds.has(session.id) ? ' selected' : '');
     const timeRange = fmtTimeRange(session.startedAt, session.endedAt);
     card.innerHTML = `
+      <div class="session-checkbox"></div>
       <div class="session-dot"></div>
       <div class="session-info">
         <input class="session-label-input" value="${escHtml(session.label || '')}" placeholder="Untitled session" />
@@ -1825,8 +1968,39 @@ function renderSessions() {
       if (confirm('Delete this session?')) deleteSession(session.id);
     });
 
+    // Long-press to enter select mode
+    let pressTimer = null;
+    card.addEventListener('pointerdown', () => {
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        if (!selectMode) enterSelectMode();
+        toggleSelect(session.id, card);
+      }, 500);
+    });
+    card.addEventListener('pointerup', () => clearTimeout(pressTimer));
+    card.addEventListener('pointerleave', () => clearTimeout(pressTimer));
+
+    // Tap to toggle when already in select mode
+    card.addEventListener('click', e => {
+      if (!selectMode) return;
+      if (e.target.classList.contains('session-label-input')) return;
+      toggleSelect(session.id, card);
+    });
+
     sessionsList.appendChild(card);
   });
+
+  function toggleSelect(id, card) {
+    if (selectedIds.has(id)) {
+      selectedIds.delete(id);
+      card.classList.remove('selected');
+    } else {
+      selectedIds.add(id);
+      card.classList.add('selected');
+    }
+    updateBulkBar();
+    if (selectedIds.size === 0) exitSelectMode();
+  }
 }
 
 function fmtTimeRange(startTs, endTs) {
@@ -1919,10 +2093,10 @@ function renderButtons() {
     btnRow.appendChild(makeBtn('START', 'primary', startTimer));
   } else if (timerState === 'running') {
     btnRow.appendChild(makeBtn('PAUSE', 'secondary', pauseTimer));
-    btnRow.appendChild(makeBtn('STOP', 'danger', stopTimer));
+    btnRow.appendChild(makeBtn(timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH', 'danger', stopTimer));
   } else if (timerState === 'paused') {
     btnRow.appendChild(makeBtn('RESUME', 'primary', resumeTimer));
-    btnRow.appendChild(makeBtn('STOP', 'danger', stopTimer));
+    btnRow.appendChild(makeBtn(timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH', 'danger', stopTimer));
   }
 }
 
@@ -1968,6 +2142,11 @@ function resumeTimer() {
 }
 
 function stopTimer() {
+  if (timerMode === 'pomodoro') {
+    const giveUpBtn = [...btnRow.querySelectorAll('button')].find(b => b.textContent === 'GIVE UP');
+    burstHeartbreak(giveUpBtn || btnRow);
+  }
+
   const finalElapsed = timerState === 'running'
     ? elapsed + (performance.now() - startTs) / 1000
     : elapsed;
@@ -2004,7 +2183,8 @@ function stopTimer() {
   }
 }
 
-// init buttons
+// init buttons — default to pomodoro
+updateDisplay(0); // triggers pomodoro countdown display
 renderButtons();
 setRingColor('idle');
 
@@ -2063,6 +2243,7 @@ function autoCompletePomodoro() {
   renderButtons();
   playCompletionBeep();
   showPomodoroFlash();
+  burstConfetti(document.querySelector('.ring-wrap') || document.body);
   showReflection();
 }
 
@@ -2103,6 +2284,63 @@ function showPomodoroFlash() {
   el.className = 'pomo-flash';
   document.body.appendChild(el);
   el.addEventListener('animationend', () => el.remove());
+}
+
+function burstConfetti(originEl) {
+  const rect = originEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const colors = ['#34A853','#4285F4','#FBBC05','#EA4335','#00BFA5','#ffffff'];
+  const shapes = ['50%', '2px', '0']; // circle, bar, square
+  for (let i = 0; i < 36; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    const angle = (i / 36) * Math.PI * 2;
+    const dist = 60 + Math.random() * 80;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 30;
+    const size = (5 + Math.random() * 7) + 'px';
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      --tx:${tx}px; --ty:${ty}px;
+      --tr:${Math.random()*360}deg;
+      --color:${colors[i % colors.length]};
+      --size:${size}; --radius:${shapes[i % shapes.length]};
+      --dur:${0.6 + Math.random() * 0.5}s;
+      margin-left:-4px; margin-top:-4px;
+    `;
+    document.body.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+function burstHeartbreak(originEl) {
+  const rect = originEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const wrap = document.createElement('div');
+  wrap.className = 'heartbreak-wrap';
+  wrap.style.cssText = `left:${cx - 18}px; top:${cy - 20}px;`;
+  wrap.innerHTML = '<span class="hb-left">💔</span>';
+  document.body.appendChild(wrap);
+  // also scatter small red particles
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    const angle = (i / 14) * Math.PI * 2;
+    const dist = 30 + Math.random() * 50;
+    p.style.cssText = `
+      left:${cx}px; top:${cy}px;
+      --tx:${Math.cos(angle)*dist}px; --ty:${Math.sin(angle)*dist+10}px;
+      --tr:${Math.random()*360}deg;
+      --color:#EA4335; --size:5px; --radius:50%;
+      --dur:${0.5 + Math.random() * 0.3}s;
+      margin-left:-2px; margin-top:-2px;
+    `;
+    document.body.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+  wrap.addEventListener('animationend', () => wrap.remove(), { once: true });
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -2699,7 +2937,7 @@ pipBtn.addEventListener('click', async () => {
     <div class="pip-state" id="pipState">${timerLabel.textContent}</div>
     <div class="pip-btns" id="pipBtns" style="display:none">
       <button class="pip-action pip-pause" id="pipPauseBtn">PAUSE</button>
-      <button class="pip-action pip-stop" id="pipStopBtn">STOP</button>
+      <button class="pip-action pip-stop" id="pipStopBtn">${timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH'}</button>
     </div>
     <div class="pip-bar-wrap${timerMode === 'pomodoro' ? ' visible' : ''}" id="pipBarWrap">
       <div class="pip-bar" id="pipBar"></div>
@@ -2726,6 +2964,7 @@ pipBtn.addEventListener('click', async () => {
   // keep pipBtns ref for syncPip to show/hide
   pipWin._btns     = pipBtns;
   pipWin._pauseBtn = pipPauseBtn;
+  pipWin._stopBtn  = pipStopBtn;
 
   pipBtn.classList.add('active');
 
@@ -2747,6 +2986,9 @@ function syncPip() {
     pipWin._btns.style.display = active ? 'flex' : 'none';
     if (pipWin._pauseBtn) {
       pipWin._pauseBtn.textContent = timerState === 'paused' ? 'RESUME' : 'PAUSE';
+    }
+    if (pipWin._stopBtn) {
+      pipWin._stopBtn.textContent = timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH';
     }
   }
 
