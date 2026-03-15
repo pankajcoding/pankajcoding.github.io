@@ -2059,6 +2059,10 @@ function updateDisplay(secs) {
     updateRing(s);
   }
   updateTodayTotal(currentElapsed());
+  if (timerState === 'running' || timerState === 'paused') {
+    const icon = timerMode === 'pomodoro' ? '🍅' : '⏱';
+    document.title = `${icon} ${timerDisplay.textContent} — Deep Work`;
+  }
   syncPip();
 }
 
@@ -2180,6 +2184,7 @@ function stopTimer() {
     ringTip.style.opacity = '0';
   }
   timerLabel.textContent = 'idle';
+  document.title = 'Deep Work Tracker';
   setRingColor('idle');
   labelInput.disabled = false;
   renderButtons();
