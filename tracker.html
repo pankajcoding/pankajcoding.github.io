@@ -383,32 +383,46 @@
     .stat-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 18px;
+      padding: 20px 18px 16px;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 3px 8px rgba(0,0,0,0.1);
     }
 
     .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
       font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      letter-spacing: 1px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .stat-value {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 22px;
-      font-weight: 500;
+      font-size: 28px;
+      font-weight: 600;
       color: var(--text);
+      line-height: 1;
+      letter-spacing: -0.5px;
     }
 
     .stat-sub {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
-      margin-top: 4px;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
     }
+
+    .stat-card--accent {
+      background: linear-gradient(135deg, #1a2340 0%, #0f1830 100%);
+      border-color: rgba(66,133,244,0.3);
+      box-shadow: 0 2px 16px rgba(66,133,244,0.15);
+    }
+    .stat-card--accent .stat-value { color: var(--blue); }
+    .stat-card--accent .stat-label,
+    .stat-card--accent .stat-sub { color: rgba(100,116,139,0.9); }
 
     /* Bar chart */
     .chart-title {
@@ -429,9 +443,15 @@
 
     .bar-row {
       display: grid;
-      grid-template-columns: 36px 1fr 60px;
+      grid-template-columns: 36px 1fr 46px 10px;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+    }
+
+    .bar-rating-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .bar-day {
@@ -502,41 +522,168 @@
       align-items: center;
       justify-content: center;
       z-index: 100;
-      padding: 24px;
+      padding: 32px 24px;
+      overflow-y: auto;
     }
 
-    .login-box {
-      text-align: center;
-      max-width: 320px;
+    .login-split {
+      display: flex;
+      gap: 64px;
+      align-items: center;
+      max-width: 840px;
       width: 100%;
     }
 
-    .login-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--blue);
-      margin: 0 auto 20px;
-      box-shadow: 0 0 16px var(--blue);
+    /* ── Hero (left) ── */
+    .login-hero { flex: 1; min-width: 0; }
+
+    .login-mini-ring {
+      margin-bottom: 28px;
+      animation: lringPulse 3s ease-in-out infinite;
+    }
+    @keyframes lringPulse { 0%,100%{opacity:.7} 50%{opacity:1} }
+
+    .login-hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(30px, 4.5vw, 46px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -1px;
+      margin-bottom: 14px;
+    }
+
+    .login-hero-tagline {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 340px;
+    }
+
+    /* Sample stats preview card */
+    .login-preview {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      margin-bottom: 28px;
+    }
+    .login-preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .login-preview-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .login-preview-badge {
+      font-size: 9px; color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 2px 8px;
+      letter-spacing: 0.3px;
+    }
+    .login-preview-kpi {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 8px; margin-top: 14px;
+      border-top: 1px solid var(--border); padding-top: 12px;
+    }
+    .login-preview-kpi-item { text-align: center; }
+    .login-preview-kpi-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px; font-weight: 600; color: var(--text);
+    }
+    .login-preview-kpi-lbl {
+      font-size: 9px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-top: 3px;
+    }
+
+    .login-insight-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+
+    .login-insight-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .login-insight-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+
+    /* focus insight */
+    .lp-focus-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px; font-weight: 600;
+      color: var(--text); line-height: 1; margin-bottom: 8px;
+    }
+    .lp-stars { display: flex; gap: 3px; margin-bottom: 10px; }
+    .lp-star { width: 10px; height: 10px; border-radius: 2px; background: var(--border); }
+    .lp-star.on { background: var(--yellow); }
+    .lp-dots { display: flex; gap: 4px; flex-wrap: wrap; }
+    .lp-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    /* distraction insight */
+    .lp-dist-row { margin-bottom: 8px; }
+    .lp-dist-row:last-child { margin-bottom: 0; }
+    .lp-dist-top { display: flex; justify-content: space-between; font-size: 10px; color: var(--text); margin-bottom: 4px; }
+    .lp-dist-count { color: var(--muted); }
+    .lp-dist-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .lp-dist-fill { height: 100%; border-radius: 2px; background: var(--blue); }
+
+    .login-features { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .login-feature { display: flex; align-items: flex-start; gap: 14px; }
+
+    .login-feat-icon {
+      width: 34px; height: 34px; flex-shrink: 0;
+      background: rgba(66,133,244,0.08);
+      border: 1px solid rgba(66,133,244,0.2);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--blue);
+    }
+    .login-feat-icon svg { width: 15px; height: 15px; }
+
+    .login-feat-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--text); margin-bottom: 2px;
+    }
+    .login-feat-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Form card (right) ── */
+    .login-box {
+      flex-shrink: 0;
+      width: 300px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 30px 26px;
     }
 
     .login-box h2 {
       font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 10px;
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 6px;
     }
 
     .login-box p {
       font-size: 13px;
       color: var(--muted);
-      margin-bottom: 28px;
-      line-height: 1.6;
+      margin-bottom: 22px;
+      line-height: 1.5;
     }
 
     .login-input {
       width: 100%;
-      background: var(--card);
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px 16px;
@@ -549,6 +696,11 @@
     }
 
     .login-input:focus { border-color: var(--blue); }
+
+    @media (max-width: 620px) {
+      .login-split { flex-direction: column; gap: 36px; }
+      .login-box { width: 100%; }
+    }
 
     .loading-spinner {
       width: 16px;
@@ -576,6 +728,22 @@
       transition: transform 0.3s;
     }
     .theme-toggle:hover { transform: rotate(20deg); }
+
+    .pip-btn {
+      background: none;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 6px;
+      color: var(--muted);
+      line-height: 1;
+      transition: color 0.2s;
+      margin-top: 4px;
+      border-radius: 4px;
+    }
+    .pip-btn:hover { color: var(--text); }
+    .pip-btn.active { color: var(--blue); }
+
     .auth-status { margin-left: 8px; }
 
     /* Mode toggle */
@@ -653,6 +821,203 @@
       animation: pomoFlash 1.4s ease-out forwards;
       z-index: 50;
     }
+
+    /* Vertical bar chart */
+    .v-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 140px; /* 120px bar area + 20px top label clearance */
+      position: relative;
+    }
+    .v-col {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .v-time {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      color: var(--muted);
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .v-bar {
+      width: 100%;
+      border-radius: 6px 6px 3px 3px;
+      background: var(--blue);
+      transition: height 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .v-bar.today { background: var(--green); }
+    .v-bar.zero { background: var(--border); opacity: 0.35; border-radius: 3px; }
+    .v-axis {
+      display: flex;
+      gap: 8px;
+      margin-top: 7px;
+    }
+    .v-day {
+      flex: 1;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .v-day.today-lbl { color: var(--green); }
+    .v-rdots { display: flex; gap: 8px; margin-top: 5px; }
+    .v-rdot { flex: 1; display: flex; justify-content: center; }
+    .v-rdot-inner { width: 5px; height: 5px; border-radius: 50%; cursor: default; }
+
+    /* Enhanced stats */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .kpi-row .stat-card { padding: 18px 16px 14px; }
+    .kpi-row .stat-value { font-size: 26px; }
+
+    .focus-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px 18px 16px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 3px 8px rgba(0,0,0,0.1);
+    }
+    .focus-card-score { flex-shrink: 0; min-width: 80px; }
+    .focus-big-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px; font-weight: 500;
+      color: var(--text); line-height: 1;
+    }
+    .focus-star-strip { display: flex; gap: 3px; margin-top: 6px; }
+    .fstar {
+      width: 11px; height: 11px;
+      background: var(--border);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+    .fstar.on { background: var(--yellow); }
+    .focus-card-trend { flex: 1; min-width: 0; }
+    .focus-dots-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .fdot {
+      width: 13px; height: 13px;
+      border-radius: 50%; cursor: default;
+      transition: transform 0.2s;
+    }
+    .fdot:hover { transform: scale(1.4); }
+
+    /* Distraction breakdown */
+    .dist-list { display: flex; flex-direction: column; gap: 9px; }
+    .dist-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 26px;
+      align-items: center; gap: 10px;
+    }
+    .dist-name { font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; }
+    .dist-track {
+      height: 7px; background: var(--border);
+      border-radius: 4px; overflow: hidden;
+    }
+    .dist-fill {
+      height: 100%; background: rgba(234,67,53,0.65);
+      border-radius: 4px; transition: width 0.7s ease;
+    }
+    .dist-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--muted); text-align: right;
+    }
+
+    /* Reflection bottom sheet */
+    .reflection-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      display: flex; align-items: flex-end;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .reflection-overlay.show { opacity: 1; pointer-events: all; }
+    .reflection-sheet {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0;
+      padding: 14px 20px 40px;
+      width: 100%; max-height: 88vh; overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reflection-overlay.show .reflection-sheet { transform: translateY(0); }
+    .refl-handle {
+      width: 40px; height: 4px;
+      background: var(--border); border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .refl-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; margin-bottom: 3px;
+    }
+    .refl-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+    .refl-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px;
+    }
+    .distraction-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+    .distraction-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 11px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .distraction-chip svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .distraction-chip:hover { border-color: var(--muted); color: var(--text); }
+    .distraction-chip.selected {
+      background: rgba(66,133,244,0.12);
+      border-color: var(--blue); color: var(--blue);
+    }
+    .other-input {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 8px 12px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 12px;
+      outline: none; transition: border-color 0.2s;
+      margin-bottom: 18px; display: none;
+    }
+    .other-input.show { display: block; }
+    .other-input:focus { border-color: var(--blue); }
+    .star-row { display: flex; gap: 4px; margin-bottom: 20px; }
+    .star-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 2px; transition: transform 0.15s;
+    }
+    .star-btn:hover { transform: scale(1.2); }
+    .star-btn svg { width: 27px; height: 27px; fill: var(--border); transition: fill 0.15s; }
+    .star-btn.filled svg { fill: var(--yellow); }
+    .reflection-note {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      outline: none; transition: border-color 0.2s; margin-bottom: 20px;
+    }
+    .reflection-note::placeholder { color: var(--muted); }
+    .reflection-note:focus { border-color: var(--blue); }
+    .refl-actions { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
@@ -721,6 +1086,7 @@
       <div class="ring-center">
         <div class="timer-display" id="timerDisplay">00:00:00</div>
         <div class="timer-state-label" id="timerStateLabel">idle</div>
+        <button class="pip-btn" id="pipBtn" title="Float timer">⧉</button>
       </div>
     </div>
 
@@ -746,44 +1112,373 @@
   <!-- STATS PANEL -->
   <div class="panel" id="panel-stats">
 
-    <div id="streakBadge" class="streak-badge" style="display:none">
-      🔥 <span id="streakText">0-day streak</span>
-    </div>
-
-    <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-label">All-time</div>
-        <div class="stat-value" id="statAllTime">—</div>
-        <div class="stat-sub">total hours</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">This week</div>
-        <div class="stat-value" id="statWeek">—</div>
-        <div class="stat-sub">Mon–Sun</div>
-      </div>
-    </div>
-
-    <div class="stats-section">
+    <!-- 7-day activity chart -->
+    <div class="stats-section" style="margin-bottom:40px">
       <div class="chart-title">Last 7 days</div>
       <div class="bar-chart" id="barChart">
         <div class="empty-state">Loading…</div>
       </div>
     </div>
 
+    <!-- Row 1: streak / week / all-time -->
+    <div class="kpi-row">
+      <div class="stat-card">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value" id="statStreak">—</div>
+        <div class="stat-sub" id="statStreakSub">days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">This week</div>
+        <div class="stat-value" id="statWeek">—</div>
+        <div class="stat-sub">Mon–today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">All time</div>
+        <div class="stat-value" id="statAllTime">—</div>
+        <div class="stat-sub">hours</div>
+      </div>
+    </div>
+
+    <!-- Focus card (shown only when focus data exists) -->
+    <div class="focus-card" id="focusCard" style="display:none">
+      <div class="focus-card-score">
+        <div class="stat-label">Avg focus</div>
+        <div class="focus-big-num" id="focusAvgNum">—</div>
+        <div class="focus-star-strip" id="focusStarStrip"></div>
+      </div>
+      <div class="focus-card-trend">
+        <div class="stat-label" style="margin-bottom:6px">Last 10 sessions</div>
+        <div class="focus-dots-row" id="focusDotsRow"></div>
+      </div>
+    </div>
+
+    <!-- Row 2: avg session / total sessions / best day -->
+    <div class="kpi-row" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-label">Avg session</div>
+        <div class="stat-value" id="statAvgLen">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sessions</div>
+        <div class="stat-value" id="statTotalCount">—</div>
+        <div class="stat-sub">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Best day</div>
+        <div class="stat-value" id="statBestDay">—</div>
+      </div>
+    </div>
+
+    <!-- Distraction breakdown (shown only when data exists) -->
+    <div class="stats-section" id="distrSection" style="display:none">
+      <div class="chart-title">Top distractions</div>
+      <div class="dist-list" id="distrList"></div>
+    </div>
+
   </div>
 
 </div>
 
+<!-- REFLECTION BOTTOM SHEET -->
+<div class="reflection-overlay" id="reflectionOverlay">
+  <div class="reflection-sheet">
+    <div class="refl-handle"></div>
+    <div class="refl-title">How did that go?</div>
+    <div class="refl-sub">Optional — takes 10 seconds</div>
+
+    <div class="refl-label">What distracted you?</div>
+    <div class="distraction-chips" id="distractionChips">
+
+      <button class="distraction-chip" data-d="phone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/>
+        </svg>Phone
+      </button>
+
+      <button class="distraction-chip" data-d="messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>Messages
+      </button>
+
+      <button class="distraction-chip" data-d="noise">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>Noise
+      </button>
+
+      <button class="distraction-chip" data-d="fatigue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>Fatigue
+      </button>
+
+      <button class="distraction-chip" data-d="mind_drift">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+        </svg>Mind drift
+      </button>
+
+      <button class="distraction-chip" data-d="interruption">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <line x1="23" y1="11" x2="17" y2="11"/>
+          <line x1="20" y1="8" x2="20" y2="14"/>
+        </svg>Interruption
+      </button>
+
+      <button class="distraction-chip" data-d="hunger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="18" y1="6" x2="18" y2="10"/>
+          <line x1="16" y1="8" x2="20" y2="8"/>
+          <line x1="6" y1="2" x2="6" y2="10"/>
+          <path d="M6 10c-1.5 0-3 1.3-3 3v9h6v-9c0-1.7-1.5-3-3-3z"/>
+        </svg>Hunger
+      </button>
+
+      <button class="distraction-chip" data-d="x_com">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.261 5.633 5.903-5.633zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>X.com
+      </button>
+
+      <button class="distraction-chip" data-d="instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="2" width="20" height="20" rx="5"/>
+          <circle cx="12" cy="12" r="4.5"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>Instagram
+      </button>
+
+      <button class="distraction-chip" data-d="youtube">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
+          <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/>
+        </svg>YouTube
+      </button>
+
+      <button class="distraction-chip" data-d="reddit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <ellipse cx="12" cy="13" rx="7.5" ry="6.5"/>
+          <circle cx="9.5" cy="13" r="1.1" fill="currentColor" stroke="none"/>
+          <circle cx="14.5" cy="13" r="1.1" fill="currentColor" stroke="none"/>
+          <path d="M9.5 16.5c.7.7 1.5 1 2.5 1s1.8-.3 2.5-1" stroke-linecap="round"/>
+          <path d="M8 9.5c1-1.2 2.4-2 4-2s3 .8 4 2"/>
+          <line x1="12" y1="6.5" x2="12" y2="4"/>
+          <circle cx="12" cy="3.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>Reddit
+      </button>
+
+      <button class="distraction-chip" data-d="other">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>Other
+      </button>
+
+    </div>
+    <input type="text" class="other-input" id="otherDistractionInput" placeholder="Describe… (e.g. notifications, loud neighbor)" maxlength="100" />
+
+    <div class="refl-label">Focus rating</div>
+    <div class="star-row" id="starRow">
+      <button class="star-btn" data-r="1"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      <button class="star-btn" data-r="2"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      <button class="star-btn" data-r="3"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      <button class="star-btn" data-r="4"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      <button class="star-btn" data-r="5"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+    </div>
+
+    <div class="refl-label">Any thoughts?</div>
+    <input type="text" class="reflection-note" id="reflectionNote" placeholder="Quick note about this session…" maxlength="200" />
+
+    <div class="refl-actions">
+      <button class="btn btn-primary" id="reflSave" style="flex:1">SAVE</button>
+      <button class="btn btn-secondary" id="reflSkip">SKIP</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay" style="display:none">
-  <div class="login-box">
-    <div class="login-dot"></div>
-    <h2>deep work tracker</h2>
-    <p id="loginMsg">Sign in to sync across devices.</p>
-    <input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
-    <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
-    <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
-    <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
+  <div class="login-split">
+
+    <!-- Left: landing hero -->
+    <div class="login-hero">
+
+      <h1 class="login-hero-title">Deep Work<br>Tracker</h1>
+      <p class="login-hero-tagline">Not just counting hours —<br>understanding them.</p>
+
+      <!-- Sample stats preview -->
+      <div class="login-preview">
+        <div class="login-preview-header">
+          <span class="login-preview-label">Last 7 days</span>
+          <span class="login-preview-badge">sample</span>
+        </div>
+        <svg viewBox="0 0 280 110" width="100%" style="display:block;overflow:visible">
+          <defs>
+            <linearGradient id="lpGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4285F4" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#4285F4" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- bars -->
+          <rect x="6"   y="80" width="28" height="20" rx="4" fill="#4285F4" opacity="0.45"/>
+          <rect x="46"  y="47" width="28" height="53" rx="4" fill="#4285F4" opacity="0.65"/>
+          <rect x="86"  y="60" width="28" height="40" rx="4" fill="#4285F4" opacity="0.65"/>
+          <rect x="126" y="20" width="28" height="80" rx="4" fill="#4285F4"/>
+          <rect x="166" y="80" width="28" height="20" rx="4" fill="#4285F4" opacity="0.45"/>
+          <rect x="206" y="33" width="28" height="67" rx="4" fill="#4285F4" opacity="0.65"/>
+          <rect x="246" y="67" width="28" height="33" rx="4" fill="#34A853"/>
+          <!-- spline area -->
+          <path d="M20 80 C26.67 74.5,46.67 50.33,60 47 C73.33 43.67,86.67 64.5,100 60 C113.33 55.5,126.67 16.67,140 20 C153.33 23.33,166.67 77.83,180 80 C193.33 82.17,206.67 35.17,220 33 C233.33 30.83,253.33 61.33,260 67 L260 100 L20 100 Z" fill="url(#lpGrad)"/>
+          <!-- spline line -->
+          <path d="M20 80 C26.67 74.5,46.67 50.33,60 47 C73.33 43.67,86.67 64.5,100 60 C113.33 55.5,126.67 16.67,140 20 C153.33 23.33,166.67 77.83,180 80 C193.33 82.17,206.67 35.17,220 33 C233.33 30.83,253.33 61.33,260 67" fill="none" stroke="#4285F4" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- dots -->
+          <circle cx="20"  cy="80" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="60"  cy="47" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="100" cy="60" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="140" cy="20" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="180" cy="80" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="220" cy="33" r="3" fill="#4285F4" stroke="var(--card)" stroke-width="1.5"/>
+          <circle cx="260" cy="67" r="3" fill="#34A853" stroke="var(--card)" stroke-width="1.5"/>
+          <!-- day labels -->
+          <text x="20"  y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Mon</text>
+          <text x="60"  y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Tue</text>
+          <text x="100" y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Wed</text>
+          <text x="140" y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Thu</text>
+          <text x="180" y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Fri</text>
+          <text x="220" y="110" text-anchor="middle" font-size="8" fill="#64748b" font-family="JetBrains Mono,monospace">Sat</text>
+          <text x="260" y="110" text-anchor="middle" font-size="8" fill="#34A853" font-family="JetBrains Mono,monospace">Sun</text>
+        </svg>
+        <div class="login-preview-kpi">
+          <div class="login-preview-kpi-item">
+            <div class="login-preview-kpi-val">5</div>
+            <div class="login-preview-kpi-lbl">day streak</div>
+          </div>
+          <div class="login-preview-kpi-item">
+            <div class="login-preview-kpi-val">14h</div>
+            <div class="login-preview-kpi-lbl">this week</div>
+          </div>
+          <div class="login-preview-kpi-item">
+            <div class="login-preview-kpi-val">38</div>
+            <div class="login-preview-kpi-lbl">sessions</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insight cards row -->
+      <div class="login-insight-row">
+
+        <!-- Focus card -->
+        <div class="login-insight-card">
+          <div class="login-insight-title">Avg focus</div>
+          <div class="lp-focus-num">4.2</div>
+          <div class="lp-stars">
+            <div class="lp-star on"></div>
+            <div class="lp-star on"></div>
+            <div class="lp-star on"></div>
+            <div class="lp-star on"></div>
+            <div class="lp-star"></div>
+          </div>
+          <div class="lp-dots">
+            <div class="lp-dot" style="background:#34A853"></div>
+            <div class="lp-dot" style="background:#34A853"></div>
+            <div class="lp-dot" style="background:#FBBC05"></div>
+            <div class="lp-dot" style="background:#34A853"></div>
+            <div class="lp-dot" style="background:#a0c878"></div>
+            <div class="lp-dot" style="background:#34A853"></div>
+            <div class="lp-dot" style="background:#FBBC05"></div>
+            <div class="lp-dot" style="background:#EA4335"></div>
+          </div>
+        </div>
+
+        <!-- Distraction card -->
+        <div class="login-insight-card">
+          <div class="login-insight-title">Distractions</div>
+          <div class="lp-dist-row">
+            <div class="lp-dist-top"><span>Phone</span><span class="lp-dist-count">8×</span></div>
+            <div class="lp-dist-track"><div class="lp-dist-fill" style="width:80%"></div></div>
+          </div>
+          <div class="lp-dist-row">
+            <div class="lp-dist-top"><span>X.com</span><span class="lp-dist-count">5×</span></div>
+            <div class="lp-dist-track"><div class="lp-dist-fill" style="width:50%"></div></div>
+          </div>
+          <div class="lp-dist-row">
+            <div class="lp-dist-top"><span>Mind drift</span><span class="lp-dist-count">3×</span></div>
+            <div class="lp-dist-track"><div class="lp-dist-fill" style="width:30%"></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="login-features">
+
+        <div class="login-feature">
+          <div class="login-feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="login-feat-name">Ring timer</div>
+            <div class="login-feat-desc">60-min cycle · Pomodoro mode</div>
+          </div>
+        </div>
+
+        <div class="login-feature">
+          <div class="login-feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div>
+            <div class="login-feat-name">Streaks</div>
+            <div class="login-feat-desc">Track daily momentum</div>
+          </div>
+        </div>
+
+        <div class="login-feature">
+          <div class="login-feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="login-feat-name">Reflection</div>
+            <div class="login-feat-desc">Focus rating + distractions</div>
+          </div>
+        </div>
+
+        <div class="login-feature">
+          <div class="login-feat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="login-feat-name">Insights</div>
+            <div class="login-feat-desc">Chart · distractions · trends</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right: auth form -->
+    <div class="login-box">
+      <h2>Sign in</h2>
+      <p id="loginMsg">Sync your sessions across devices.</p>
+      <input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
+      <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+      <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
+      <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
+    </div>
+
   </div>
 </div>
 
@@ -829,11 +1524,6 @@ const btnRow       = $('btnRow');
 const sessionsList = $('sessionsList');
 const todayTotal   = $('todayTotal');
 const loginOverlay = $('loginOverlay');
-const streakBadge  = $('streakBadge');
-const streakText   = $('streakText');
-const statAllTime  = $('statAllTime');
-const statWeek     = $('statWeek');
-const barChart     = $('barChart');
 
 // ─── Ring setup ──────────────────────────────────────────────────────────────
 ringProgress.style.strokeDasharray = `${RING_CIRC}`;
@@ -869,6 +1559,8 @@ ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
 
 // ─── Timer state ─────────────────────────────────────────────────────────────
 let timerState = 'idle'; // idle | running | paused
+let pendingSession = null; // held while reflection modal is open
+let pipTimeEl = null, pipStateEl = null, pipDotEl = null, pipModeEl = null, pipBarEl = null, pipBarWrapEl = null;
 let timerMode = 'stopwatch';     // 'stopwatch' | 'pomodoro'
 let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
@@ -1028,17 +1720,19 @@ function subscribeToday() {
 }
 
 // ─── Session save / delete ────────────────────────────────────────────────
-async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch') {
+async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch', reflection = null) {
   if (!uid || !db) return;
+  const data = {
+    date:      todayStr(),
+    label:     label || '',
+    duration:  durationSecs,
+    startedAt: Timestamp.fromDate(startedAt),
+    endedAt:   Timestamp.fromDate(endedAt),
+    type,
+  };
+  if (reflection) Object.assign(data, reflection);
   try {
-    await addDoc(collection(db, 'users', uid, 'sessions'), {
-      date:      todayStr(),
-      label:     label || '',
-      duration:  durationSecs,
-      startedAt: Timestamp.fromDate(startedAt),
-      endedAt:   Timestamp.fromDate(endedAt),
-      type,
-    });
+    await addDoc(collection(db, 'users', uid, 'sessions'), data);
   } catch (err) {
     showError('Save failed: ' + err.message);
   }
@@ -1141,6 +1835,7 @@ function updateDisplay(secs) {
     updateRing(s);
   }
   updateTodayTotal(currentElapsed());
+  syncPip();
 }
 
 function currentElapsed() {
@@ -1179,6 +1874,7 @@ function setRingColor(state) {
   ringGlow.style.stroke = c;
   ringTip.style.fill = c;
   ringTip.style.filter = `drop-shadow(0 0 5px ${c})`;
+  if (pipDotEl) { pipDotEl.style.background = c; pipDotEl.style.boxShadow = `0 0 6px ${c}`; }
   timerDisplay.style.textShadow = `0 0 40px ${c}22`;
 }
 
@@ -1223,18 +1919,20 @@ function pauseTimer() {
   timerLabel.textContent = 'paused';
   setRingColor('paused');
   renderButtons();
+  syncPip();
 }
 
 function resumeTimer() {
   timerState = 'running';
   startTs = performance.now();
   intervalId = setInterval(tickTimer, 500);
-  timerLabel.textContent = 'running';
+  timerLabel.textContent = timerMode === 'pomodoro' ? 'focus' : 'running';
   setRingColor('running');
   renderButtons();
+  syncPip();
 }
 
-async function stopTimer() {
+function stopTimer() {
   const finalElapsed = timerState === 'running'
     ? elapsed + (performance.now() - startTs) / 1000
     : elapsed;
@@ -1259,9 +1957,15 @@ async function stopTimer() {
 
   const durationSecs = Math.floor(finalElapsed);
   if (durationSecs >= 5) {
-    await saveSession(durationSecs, labelInput.value.trim(), timerStartedAt, new Date(), timerMode);
+    pendingSession = {
+      durationSecs,
+      label: labelInput.value.trim(),
+      startedAt: timerStartedAt,
+      endedAt: new Date(),
+      type: timerMode,
+    };
     labelInput.value = '';
-    renderStats();
+    showReflection();
   }
 }
 
@@ -1303,12 +2007,18 @@ document.querySelectorAll('.pill').forEach(pill => {
 });
 
 // ─── Pomodoro auto-complete ───────────────────────────────────────────────────
-async function autoCompletePomodoro() {
+function autoCompletePomodoro() {
   clearInterval(intervalId);
   timerState = 'idle';
   elapsed = 0;
 
-  await saveSession(pomodoroDuration, labelInput.value.trim(), timerStartedAt, new Date(), 'pomodoro');
+  pendingSession = {
+    durationSecs: pomodoroDuration,
+    label: labelInput.value.trim(),
+    startedAt: timerStartedAt,
+    endedAt: new Date(),
+    type: 'pomodoro',
+  };
   labelInput.value = '';
 
   updateDisplay(pomodoroDuration);
@@ -1316,24 +2026,39 @@ async function autoCompletePomodoro() {
   setRingColor('idle');
   labelInput.disabled = false;
   renderButtons();
-  renderStats();
   playCompletionBeep();
   showPomodoroFlash();
+  showReflection();
 }
 
 function playCompletionBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    [[880, 0, 0.12], [1100, 0.18, 0.14]].forEach(([freq, offset, dur]) => {
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // 3-note ascending chime: C5 → E5 → G5 (major triad)
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const t = ctx.currentTime + i * 0.22;
+
+      // Fundamental — long sustain
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
       osc.type = 'sine'; osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0, ctx.currentTime + offset);
-      gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + offset + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + offset + dur);
-      osc.start(ctx.currentTime + offset);
-      osc.stop(ctx.currentTime + offset + dur + 0.05);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.22, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      osc.start(t); osc.stop(t + 0.75);
+
+      // Bell harmonic — quick decay, adds chime quality
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.type = 'sine'; osc2.frequency.value = freq * 2.756;
+      gain2.gain.setValueAtTime(0, t);
+      gain2.gain.linearRampToValueAtTime(0.07, t + 0.01);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      osc2.start(t); osc2.stop(t + 0.25);
     });
   } catch {}
 }
@@ -1351,86 +2076,256 @@ async function renderStats() {
 
   try {
     const col = collection(db, 'users', uid, 'sessions');
+    const FOCUS_C = { 5:'#34A853', 4:'#00BFA5', 3:'#4285F4', 2:'#FBBC05', 1:'#EA4335' };
 
-    // All-time
+    // All sessions
     const allSnap = await getDocs(query(col));
     const allSessions = allSnap.docs.map(d => d.data());
+    const totalCount = allSessions.length;
     const allTimeSecs = allSessions.reduce((s, x) => s + (x.duration || 0), 0);
-    const allTimeHours = (allTimeSecs / 3600).toFixed(1);
-    statAllTime.textContent = allTimeHours + 'h';
+
+    $('statAllTime').textContent = (allTimeSecs / 3600).toFixed(1) + 'h';
+    $('statTotalCount').textContent = totalCount;
+    $('statAvgLen').textContent = totalCount > 0 ? fmtHM(Math.floor(allTimeSecs / totalCount)) : '—';
+
+    // Best day of week
+    const byDow = [0,0,0,0,0,0,0];
+    allSessions.forEach(s => {
+      if (s.startedAt?.seconds) {
+        byDow[new Date(s.startedAt.seconds * 1000).getDay()] += (s.duration || 0);
+      }
+    });
+    const maxDow = Math.max(...byDow);
+    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    $('statBestDay').textContent = maxDow > 0 ? DOW[byDow.indexOf(maxDow)] : '—';
 
     // Last 7 days
-    const days = [];
     const today = new Date();
+    const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       days.push(dateStr(d));
     }
 
-    const sevenDaysAgo = days[0];
-    const recentSnap = await getDocs(query(col,
-      where('date', '>=', sevenDaysAgo)
-    ));
+    const recentSnap = await getDocs(query(col, where('date', '>=', days[0])));
     const recent = recentSnap.docs.map(d => d.data());
 
-    // Bucket by date
-    const byDay = {};
-    days.forEach(d => { byDay[d] = 0; });
+    // Bucket duration + focus ratings by day
+    const byDay = {}, focusByDay = {};
+    days.forEach(d => { byDay[d] = 0; focusByDay[d] = []; });
     recent.forEach(s => {
       if (byDay[s.date] !== undefined) byDay[s.date] += (s.duration || 0);
+      if (s.focusRating != null && focusByDay[s.date] !== undefined) focusByDay[s.date].push(s.focusRating);
     });
 
-    // This week total (Mon–Sun)
-    const dayOfWeek = today.getDay(); // 0=Sun
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    // This week total
+    const dow = today.getDay();
     const monday = new Date(today);
-    monday.setDate(today.getDate() + mondayOffset);
-    const weekStart = dateStr(monday);
-    const weekSecs = days.filter(d => d >= weekStart).reduce((s, d) => s + (byDay[d] || 0), 0);
-    statWeek.textContent = fmtHMfull(weekSecs);
+    monday.setDate(today.getDate() + (dow === 0 ? -6 : 1 - dow));
+    const weekSecs = days.filter(d => d >= dateStr(monday)).reduce((s, d) => s + byDay[d], 0);
+    $('statWeek').textContent = fmtHMfull(weekSecs);
 
     // Streak
-    const allDates = [...new Set(allSessions.map(s => s.date))].sort();
+    const allDates = new Set(allSessions.map(s => s.date));
     let streak = 0;
-    if (allDates.length > 0) {
-      const checkDate = new Date(today);
-      // if today has no session, start checking from yesterday
-      if (!byDay[todayStr()]) checkDate.setDate(checkDate.getDate() - 1);
-      while (true) {
-        const ds = dateStr(checkDate);
-        if (allDates.includes(ds)) {
-          streak++;
-          checkDate.setDate(checkDate.getDate() - 1);
-        } else break;
-      }
-    }
+    const chk = new Date(today);
+    if (!byDay[todayStr()]) chk.setDate(chk.getDate() - 1);
+    while (allDates.has(dateStr(chk))) { streak++; chk.setDate(chk.getDate() - 1); }
+    $('statStreak').textContent = streak;
+    $('statStreakSub').textContent = streak === 1 ? 'day streak' : 'day streak';
 
-    if (streak > 0) {
-      streakBadge.style.display = 'inline-flex';
-      streakText.textContent = streak + '-day streak';
-    } else {
-      streakBadge.style.display = 'none';
-    }
-
-    // Bar chart
+    // Vertical bar chart
+    const CHART_H = 120; // px for tallest bar
+    const SVG_H = 140;   // matches .v-chart height
     const maxSecs = Math.max(...Object.values(byDay), 1);
     const todayD = todayStr();
-    barChart.innerHTML = '';
-    days.forEach(d => {
+    const barChartEl = $('barChart');
+    barChartEl.innerHTML = '';
+
+    const vBars = document.createElement('div');
+    vBars.className = 'v-chart';
+    const vAxis = document.createElement('div');
+    vAxis.className = 'v-axis';
+    const vRdotsRow = document.createElement('div');
+    vRdotsRow.className = 'v-rdots';
+    let hasFocusDots = false;
+    const splinePts = []; // {x, y, hasData}
+
+    days.forEach((d, i) => {
       const secs = byDay[d] || 0;
-      const pct = (secs / maxSecs) * 100;
-      const row = document.createElement('div');
-      row.className = 'bar-row';
-      row.innerHTML = `
-        <span class="bar-day">${dayLabel(d)}</span>
-        <div class="bar-track">
-          <div class="bar-fill${d === todayD ? ' today' : ''}" style="width:${pct}%"></div>
-        </div>
-        <span class="bar-time">${secs > 0 ? fmtHM(secs) : '—'}</span>
-      `;
-      barChart.appendChild(row);
+      const barH = secs > 0 ? Math.max(6, Math.round((secs / maxSecs) * CHART_H)) : 3;
+      const frs = focusByDay[d];
+      const avgF = frs.length ? frs.reduce((a,b)=>a+b,0) / frs.length : null;
+      const isToday = d === todayD;
+
+      // Spline point: center-x of column in a 700-unit viewBox, y from top
+      const colW = 700 / days.length;
+      splinePts.push({ x: i * colW + colW / 2, y: SVG_H - barH, hasData: secs > 0 });
+
+      // Bar column
+      const col = document.createElement('div');
+      col.className = 'v-col';
+      if (secs > 0) {
+        const lbl = document.createElement('span');
+        lbl.className = 'v-time';
+        lbl.textContent = fmtHM(secs);
+        col.appendChild(lbl);
+      }
+      const bar = document.createElement('div');
+      bar.className = 'v-bar' + (isToday ? ' today' : secs === 0 ? ' zero' : '');
+      bar.style.height = barH + 'px';
+      col.appendChild(bar);
+      vBars.appendChild(col);
+
+      // Day label
+      const dayCell = document.createElement('div');
+      dayCell.className = 'v-day' + (isToday ? ' today-lbl' : '');
+      dayCell.textContent = dayLabel(d);
+      vAxis.appendChild(dayCell);
+
+      // Focus dot
+      const dotWrap = document.createElement('div');
+      dotWrap.className = 'v-rdot';
+      if (avgF) {
+        hasFocusDots = true;
+        const inner = document.createElement('div');
+        inner.className = 'v-rdot-inner';
+        inner.style.background = FOCUS_C[Math.round(avgF)];
+        inner.title = `Focus ${avgF.toFixed(1)}/5`;
+        dotWrap.appendChild(inner);
+      }
+      vRdotsRow.appendChild(dotWrap);
     });
+
+    // Spline SVG overlay (Catmull-Rom → cubic Bezier)
+    (function buildSpline(pts) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const W = 700, H = SVG_H;
+
+      // Catmull-Rom to Bezier path
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(pts.length - 1, i + 2)];
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x} ${p2.y}`;
+      }
+
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible';
+
+      // Gradient fill
+      const defs = document.createElementNS(ns, 'defs');
+      const grad = document.createElementNS(ns, 'linearGradient');
+      grad.id = 'splineGrad'; grad.setAttribute('x1','0'); grad.setAttribute('y1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y2','1');
+      const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#4285F4'); s1.setAttribute('stop-opacity','0.22');
+      const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#4285F4'); s2.setAttribute('stop-opacity','0');
+      grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
+
+      // Area fill
+      const area = document.createElementNS(ns, 'path');
+      area.setAttribute('d', d + ` L ${pts[pts.length-1].x} ${H} L ${pts[0].x} ${H} Z`);
+      area.setAttribute('fill', 'url(#splineGrad)');
+      svg.appendChild(area);
+
+      // Line
+      const line = document.createElementNS(ns, 'path');
+      line.setAttribute('d', d);
+      line.setAttribute('fill', 'none');
+      line.setAttribute('stroke', '#4285F4');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-linecap', 'round');
+      line.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(line);
+
+      // Dots on data points
+      pts.forEach(p => {
+        if (!p.hasData) return;
+        const c = document.createElementNS(ns, 'circle');
+        c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', '4');
+        c.setAttribute('fill', '#4285F4'); c.setAttribute('stroke', 'var(--bg)'); c.setAttribute('stroke-width', '2');
+        svg.appendChild(c);
+      });
+
+      vBars.appendChild(svg);
+    })(splinePts);
+
+    barChartEl.appendChild(vBars);
+    barChartEl.appendChild(vAxis);
+    if (hasFocusDots) barChartEl.appendChild(vRdotsRow);
+
+    // Focus card
+    const ratedAll = allSessions.filter(s => s.focusRating != null);
+    if (ratedAll.length > 0) {
+      const avgFocus = ratedAll.reduce((s,x) => s + x.focusRating, 0) / ratedAll.length;
+      $('focusCard').style.display = 'flex';
+      $('focusAvgNum').textContent = avgFocus.toFixed(1);
+      const starsEl = $('focusStarStrip');
+      starsEl.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const s = document.createElement('div');
+        s.className = 'fstar' + (i <= Math.round(avgFocus) ? ' on' : '');
+        starsEl.appendChild(s);
+      }
+      // Last 10 rated sessions chronologically
+      const last10 = ratedAll
+        .filter(s => s.startedAt?.seconds)
+        .sort((a,b) => a.startedAt.seconds - b.startedAt.seconds)
+        .slice(-10);
+      const dotsEl = $('focusDotsRow');
+      dotsEl.innerHTML = '';
+      last10.forEach(s => {
+        const dot = document.createElement('div');
+        dot.className = 'fdot';
+        dot.style.background = FOCUS_C[s.focusRating] || 'var(--border)';
+        dot.title = `${s.focusRating}/5 · ${fmtHM(s.duration || 0)}`;
+        dotsEl.appendChild(dot);
+      });
+    } else {
+      $('focusCard').style.display = 'none';
+    }
+
+    // Distraction breakdown
+    const distrCounts = {};
+    allSessions.forEach(s => {
+      (s.distractions || []).forEach(d => {
+        const key = typeof d === 'string' && d.startsWith('other:') ? 'other' : d;
+        distrCounts[key] = (distrCounts[key] || 0) + 1;
+      });
+    });
+    const topDistrs = Object.entries(distrCounts).sort((a,b) => b[1]-a[1]).slice(0, 7);
+    const DLABELS = {
+      phone:'Phone', messages:'Messages', noise:'Noise', fatigue:'Fatigue',
+      mind_drift:'Mind drift', interruption:'Interruption', hunger:'Hunger',
+      x_com:'X.com', instagram:'Instagram', youtube:'YouTube', reddit:'Reddit', other:'Other',
+    };
+    const distrSection = $('distrSection');
+    if (topDistrs.length > 0) {
+      distrSection.style.display = 'block';
+      const maxC = topDistrs[0][1];
+      const listEl = $('distrList');
+      listEl.innerHTML = '';
+      topDistrs.forEach(([key, count]) => {
+        const row = document.createElement('div');
+        row.className = 'dist-row';
+        row.innerHTML = `
+          <span class="dist-name">${DLABELS[key] || key}</span>
+          <div class="dist-track"><div class="dist-fill" style="width:${(count/maxC)*100}%"></div></div>
+          <span class="dist-count">${count}</span>
+        `;
+        listEl.appendChild(row);
+      });
+    } else {
+      distrSection.style.display = 'none';
+    }
 
   } catch (err) {
     showError('Stats error: ' + err.message);
@@ -1455,6 +2350,253 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = '☀️';
     localStorage.setItem('dwt_theme', 'light');
   }
+});
+
+// ─── Picture-in-Picture ───────────────────────────────────────────────────────
+const pipBtn = $('pipBtn');
+
+pipBtn.addEventListener('click', async () => {
+  if (!('documentPictureInPicture' in window)) {
+    showError('Floating timer requires Chrome 116+');
+    return;
+  }
+
+  // Close if already open
+  if (documentPictureInPicture.window) {
+    documentPictureInPicture.window.close();
+    return;
+  }
+
+  const pipWin = await documentPictureInPicture.requestWindow({ width: 220, height: 190 });
+
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+
+  pipWin.document.head.innerHTML = `
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body {
+        background: ${isDark ? '#0f1117' : '#f0f2f8'};
+        color: ${isDark ? '#e2e8f0' : '#1a1b2e'};
+        font-family: 'JetBrains Mono', monospace;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        height: 100vh; gap: 5px; position: relative;
+      }
+      .pip-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 9px; font-weight: 700;
+        letter-spacing: 1.5px; text-transform: uppercase;
+        color: ${isDark ? '#64748b' : '#8892a4'};
+      }
+      .pip-time { font-size: 38px; font-weight: 500; letter-spacing: -1.5px; line-height: 1; }
+      .pip-state {
+        font-size: 9px; letter-spacing: 2px;
+        text-transform: uppercase;
+        color: ${isDark ? '#64748b' : '#8892a4'};
+      }
+      .pip-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: #4285F4;
+        position: absolute; top: 12px; right: 12px;
+        box-shadow: 0 0 6px #4285F4;
+      }
+      .pip-btns {
+        display: flex; gap: 8px; margin-top: 4px;
+      }
+      .pip-action {
+        padding: 6px 14px;
+        border: none; border-radius: 7px;
+        font-family: 'Syne', sans-serif;
+        font-size: 10px; font-weight: 700;
+        letter-spacing: 0.8px; cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      .pip-action:hover { opacity: 0.8; }
+      .pip-pause {
+        background: ${isDark ? '#2a2b35' : '#e8eaf5'};
+        color: ${isDark ? '#e2e8f0' : '#1a1b2e'};
+        border: 1px solid ${isDark ? '#3a3d55' : '#dde1ee'};
+      }
+      .pip-stop {
+        background: rgba(234,67,53,0.12);
+        color: #EA4335;
+        border: 1px solid rgba(234,67,53,0.25);
+      }
+      .pip-bar-wrap {
+        width: 80%; height: 4px;
+        background: ${isDark ? '#2a2b35' : '#dde1ee'};
+        border-radius: 2px;
+        overflow: hidden;
+        display: none;
+      }
+      .pip-bar-wrap.visible { display: block; }
+      .pip-bar {
+        height: 100%; width: 100%;
+        background: #34A853;
+        border-radius: 2px;
+        transition: width 0.5s linear, background 0.4s;
+      }
+    </style>`;
+
+  pipWin.document.body.innerHTML = `
+    <div class="pip-dot" id="pipDot"></div>
+    <div class="pip-label" id="pipMode">${timerMode.toUpperCase()}</div>
+    <div class="pip-time" id="pipTime">${timerDisplay.textContent}</div>
+    <div class="pip-state" id="pipState">${timerLabel.textContent}</div>
+    <div class="pip-btns" id="pipBtns" style="display:none">
+      <button class="pip-action pip-pause" id="pipPauseBtn">PAUSE</button>
+      <button class="pip-action pip-stop" id="pipStopBtn">STOP</button>
+    </div>
+    <div class="pip-bar-wrap${timerMode === 'pomodoro' ? ' visible' : ''}" id="pipBarWrap">
+      <div class="pip-bar" id="pipBar"></div>
+    </div>`;
+
+  pipTimeEl    = pipWin.document.getElementById('pipTime');
+  pipStateEl   = pipWin.document.getElementById('pipState');
+  pipDotEl     = pipWin.document.getElementById('pipDot');
+  pipModeEl    = pipWin.document.getElementById('pipMode');
+  pipBarEl     = pipWin.document.getElementById('pipBar');
+  pipBarWrapEl = pipWin.document.getElementById('pipBarWrap');
+
+  const pipBtns     = pipWin.document.getElementById('pipBtns');
+  const pipPauseBtn = pipWin.document.getElementById('pipPauseBtn');
+  const pipStopBtn  = pipWin.document.getElementById('pipStopBtn');
+
+  pipPauseBtn.addEventListener('click', () => {
+    if (timerState === 'running') pauseTimer();
+    else if (timerState === 'paused') resumeTimer();
+  });
+
+  pipStopBtn.addEventListener('click', () => stopTimer());
+
+  // keep pipBtns ref for syncPip to show/hide
+  pipWin._btns     = pipBtns;
+  pipWin._pauseBtn = pipPauseBtn;
+
+  pipBtn.classList.add('active');
+
+  pipWin.addEventListener('pagehide', () => {
+    pipTimeEl = pipStateEl = pipDotEl = pipModeEl = pipBarEl = pipBarWrapEl = null;
+    pipBtn.classList.remove('active');
+  });
+});
+
+function syncPip() {
+  if (!pipTimeEl) return;
+  pipTimeEl.textContent  = timerDisplay.textContent;
+  pipStateEl.textContent = timerLabel.textContent;
+  pipModeEl.textContent  = timerMode.toUpperCase();
+
+  const pipWin = documentPictureInPicture.window;
+  if (pipWin?._btns) {
+    const active = timerState === 'running' || timerState === 'paused';
+    pipWin._btns.style.display = active ? 'flex' : 'none';
+    if (pipWin._pauseBtn) {
+      pipWin._pauseBtn.textContent = timerState === 'paused' ? 'RESUME' : 'PAUSE';
+    }
+  }
+
+  if (pipBarEl && pipBarWrapEl) {
+    const isPomo = timerMode === 'pomodoro';
+    pipBarWrapEl.classList.toggle('visible', isPomo);
+    if (isPomo) {
+      const elapsed = currentElapsed();
+      const pct = Math.min(100, (currentElapsed() / pomodoroDuration) * 100);
+      pipBarEl.style.width = pct + '%';
+      // colour matches ring state
+      const c = timerState === 'paused' ? '#FBBC05' : timerState === 'running' ? '#34A853' : '#4285F4';
+      pipBarEl.style.background = c;
+    }
+  }
+}
+
+// ─── Reflection modal ────────────────────────────────────────────────────────
+const reflectionOverlay = document.getElementById('reflectionOverlay');
+let selectedDistractions = new Set();
+let selectedRating = 0;
+
+function showReflection() {
+  selectedDistractions = new Set();
+  selectedRating = 0;
+  document.getElementById('reflectionNote').value = '';
+  const otherInp = document.getElementById('otherDistractionInput');
+  otherInp.value = '';
+  otherInp.classList.remove('show');
+  document.querySelectorAll('.distraction-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.star-btn').forEach(s => s.classList.remove('filled'));
+  reflectionOverlay.classList.add('show');
+}
+
+function hideReflection() {
+  reflectionOverlay.classList.remove('show');
+}
+
+document.querySelectorAll('.distraction-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const key = chip.dataset.d;
+    if (selectedDistractions.has(key)) {
+      selectedDistractions.delete(key);
+      chip.classList.remove('selected');
+    } else {
+      selectedDistractions.add(key);
+      chip.classList.add('selected');
+    }
+    if (key === 'other') {
+      document.getElementById('otherDistractionInput').classList.toggle('show', selectedDistractions.has('other'));
+    }
+  });
+});
+
+document.querySelectorAll('.star-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedRating = parseInt(btn.dataset.r);
+    document.querySelectorAll('.star-btn').forEach(s =>
+      s.classList.toggle('filled', parseInt(s.dataset.r) <= selectedRating));
+  });
+  btn.addEventListener('mouseenter', () => {
+    const h = parseInt(btn.dataset.r);
+    document.querySelectorAll('.star-btn').forEach(s =>
+      s.classList.toggle('filled', parseInt(s.dataset.r) <= h));
+  });
+  btn.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.star-btn').forEach(s =>
+      s.classList.toggle('filled', parseInt(s.dataset.r) <= selectedRating));
+  });
+});
+
+async function commitPendingSession(reflection = null) {
+  if (!pendingSession) { hideReflection(); return; }
+  const ps = pendingSession;
+  pendingSession = null;
+  hideReflection();
+  await saveSession(ps.durationSecs, ps.label, ps.startedAt, ps.endedAt, ps.type, reflection);
+  renderStats();
+}
+
+document.getElementById('reflSave').addEventListener('click', async () => {
+  const distractions = [...selectedDistractions];
+  const otherText = document.getElementById('otherDistractionInput').value.trim();
+  if (distractions.includes('other') && otherText) {
+    distractions[distractions.indexOf('other')] = 'other: ' + otherText;
+  } else if (distractions.includes('other') && !otherText) {
+    // keep 'other' as-is
+  }
+  const reflection = {
+    distractions,
+    focusRating: selectedRating || null,
+    note: document.getElementById('reflectionNote').value.trim() || null,
+  };
+  await commitPendingSession(reflection);
+});
+
+document.getElementById('reflSkip').addEventListener('click', async () => {
+  await commitPendingSession(null);
+});
+
+// Tap backdrop to skip
+reflectionOverlay.addEventListener('click', e => {
+  if (e.target === reflectionOverlay) document.getElementById('reflSkip').click();
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
