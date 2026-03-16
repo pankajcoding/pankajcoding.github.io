@@ -922,79 +922,6 @@
       z-index: 50;
     }
 
-    /* Streak dots */
-    .streak-dots {
-      display: none;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .streak-dots.visible { display: flex; }
-    .streak-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--border);
-      transition: background 0.3s, transform 0.3s;
-    }
-    .streak-dot.filled {
-      background: #34A853;
-      transform: scale(1.2);
-      box-shadow: 0 0 6px rgba(52,168,83,0.5);
-    }
-
-    /* Break prompt overlay */
-    .break-prompt {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .break-prompt-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px 32px;
-      text-align: center;
-      max-width: 320px;
-      width: 90%;
-    }
-    .break-prompt-emoji { font-size: 32px; margin-bottom: 10px; }
-    .break-prompt-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px; font-weight: 700;
-      color: var(--text); margin-bottom: 6px;
-    }
-    .break-prompt-sub {
-      font-size: 12px; color: var(--muted);
-      margin-bottom: 20px; line-height: 1.5;
-    }
-    .break-prompt-btns { display: flex; flex-direction: column; gap: 8px; }
-    .break-btn-short {
-      padding: 11px; border-radius: 10px;
-      background: #00BFA5; border: none;
-      color: #fff; font-family: 'Syne', sans-serif;
-      font-weight: 700; font-size: 13px; cursor: pointer;
-      transition: opacity 0.2s;
-    }
-    .break-btn-short:hover { opacity: 0.85; }
-    .break-btn-long {
-      padding: 11px; border-radius: 10px;
-      background: var(--bg); border: 1px solid var(--border);
-      color: var(--text); font-family: 'Syne', sans-serif;
-      font-weight: 600; font-size: 13px; cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .break-btn-long:hover { border-color: var(--muted); }
-    .break-btn-skip {
-      padding: 8px; border-radius: 10px;
-      background: none; border: none;
-      color: var(--muted); font-family: 'DM Sans', sans-serif;
-      font-size: 12px; cursor: pointer;
-      transition: color 0.2s;
-    }
-    .break-btn-skip:hover { color: var(--text); }
-
     /* Burst particles */
     @keyframes burstParticle {
       0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
@@ -1331,12 +1258,6 @@
     <div class="btn-row" id="btnRow">
       <button class="btn btn-primary" id="btnStart">START</button>
     </div>
-    <div class="streak-dots" id="streakDots">
-      <div class="streak-dot" id="sd0"></div>
-      <div class="streak-dot" id="sd1"></div>
-      <div class="streak-dot" id="sd2"></div>
-      <div class="streak-dot" id="sd3"></div>
-    </div>
 
     <!-- TODAY'S SESSIONS -->
     <div class="section-header">
@@ -1569,20 +1490,6 @@
     <div class="refl-actions">
       <button class="btn btn-primary" id="reflSave" style="flex:1">SAVE</button>
       <button class="btn btn-secondary" id="reflSkip">SKIP</button>
-    </div>
-  </div>
-</div>
-
-<!-- BREAK PROMPT -->
-<div class="break-prompt" id="breakPrompt" style="display:none">
-  <div class="break-prompt-card">
-    <div class="break-prompt-emoji">☕</div>
-    <div class="break-prompt-title">Nice work!</div>
-    <div class="break-prompt-sub" id="breakPromptSub">Take a breather before the next session.</div>
-    <div class="break-prompt-btns">
-      <button class="break-btn-short" id="breakBtnShort">Short break — 5 min</button>
-      <button class="break-btn-long" id="breakBtnLong">Long break — 15 min</button>
-      <button class="break-btn-skip" id="breakBtnSkip">Skip break</button>
     </div>
   </div>
 </div>
@@ -1850,7 +1757,7 @@ ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
 })();
 
 // ─── Timer state ─────────────────────────────────────────────────────────────
-let timerState = 'idle'; // idle | running | paused | break
+let timerState = 'idle'; // idle | running | paused
 let pendingSession = null; // held while reflection modal is open
 let pipTimeEl = null, pipStateEl = null, pipDotEl = null, pipModeEl = null, pipBarEl = null, pipBarWrapEl = null;
 let timerMode = 'pomodoro';      // 'stopwatch' | 'pomodoro'
@@ -1858,12 +1765,6 @@ let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
 let elapsed = 0;         // total seconds elapsed
 let intervalId = null;
-let pomodoroStreak = 0;  // completed pomodoros toward long break
-let breakDuration = 0;   // seconds for current break
-let breakElapsed = 0;    // seconds elapsed in break
-let breakStartTs = null;
-let breakIntervalId = null;
-const BREAK_LONG_AFTER = 4; // offer long break after this many pomodoros
 const MIN_SESSION_SECS = 15 * 60; // 15 minutes
 let startTs = null;      // performance.now() snapshot when last started/resumed
 let timerStartedAt = null; // Date for Firestore
@@ -2262,7 +2163,7 @@ function updateRing(secs) {
 }
 
 function setRingColor(state) {
-  const colors = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05', break: '#00BFA5' };
+  const colors = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05' };
   const c = colors[state] || colors.idle;
   ringProgress.style.stroke = c;
   ringGlow.style.stroke = c;
@@ -2287,8 +2188,6 @@ function renderButtons() {
   } else if (timerState === 'paused') {
     btnRow.appendChild(makeBtn('RESUME', 'primary', resumeTimer));
     btnRow.appendChild(makeBtn(stopLabel(), stopLabel() === 'GIVE UP' ? 'danger' : 'primary', stopTimer));
-  } else if (timerState === 'break') {
-    btnRow.appendChild(makeBtn('SKIP BREAK', 'secondary', skipBreak));
   }
 }
 
@@ -2373,7 +2272,7 @@ function stopTimer() {
     type: timerMode,
   };
   labelInput.value = '';
-  showBreakPrompt();
+  showReflection();
 }
 
 function resetRingToIdle() {
@@ -2391,7 +2290,6 @@ function resetRingToIdle() {
 updateDisplay(0); // triggers pomodoro countdown display
 renderButtons();
 setRingColor('idle');
-renderStreakDots(0);
 
 // ─── Mode toggle ─────────────────────────────────────────────────────────────
 document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -2402,7 +2300,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.classList.add('active');
     const isPomo = timerMode === 'pomodoro';
     $('pomodoroControls').style.display = isPomo ? 'flex' : 'none';
-    renderStreakDots(isPomo ? pomodoroStreak : 0);
     if (isPomo) {
       updateDisplay(pomodoroDuration);
       timerLabel.textContent = 'ready';
@@ -2442,9 +2339,6 @@ function autoCompletePomodoro() {
   };
   labelInput.value = '';
 
-  pomodoroStreak = (pomodoroStreak + 1) % BREAK_LONG_AFTER;
-  renderStreakDots(pomodoroStreak);
-
   updateDisplay(pomodoroDuration);
   timerLabel.textContent = 'done ✓';
   setRingColor('idle');
@@ -2453,7 +2347,7 @@ function autoCompletePomodoro() {
   playCompletionBeep();
   showPomodoroFlash();
   burstConfetti(document.querySelector('.ring-wrap') || document.body);
-  showBreakPrompt(pomodoroStreak === 0); // offer long break after 4th
+  showReflection();
 }
 
 function playCompletionBeep() {
@@ -2495,96 +2389,6 @@ function showPomodoroFlash() {
   el.addEventListener('animationend', () => el.remove());
 }
 
-// ─── Break prompt ─────────────────────────────────────────────────────────────
-function showBreakPrompt(offerLong = false) {
-  const sub = offerLong
-    ? 'You completed 4 sessions! You\'ve earned a longer break.'
-    : 'Take a breather before the next session.';
-  $('breakPromptSub').textContent = sub;
-  $('breakBtnLong').textContent = offerLong ? 'Long break — 15 min ⭐' : 'Long break — 15 min';
-  $('breakPrompt').style.display = 'flex';
-}
-
-$('breakBtnShort').addEventListener('click', () => {
-  $('breakPrompt').style.display = 'none';
-  startBreak(5 * 60);
-});
-$('breakBtnLong').addEventListener('click', () => {
-  $('breakPrompt').style.display = 'none';
-  startBreak(15 * 60);
-});
-$('breakBtnSkip').addEventListener('click', () => {
-  $('breakPrompt').style.display = 'none';
-  showReflection();
-});
-
-function startBreak(secs) {
-  breakDuration = secs;
-  breakElapsed = 0;
-  breakStartTs = performance.now();
-  timerState = 'break';
-  timerLabel.textContent = 'break';
-  setRingColor('break');
-  renderButtons();
-
-  // Show break countdown on ring
-  const updateBreakDisplay = () => {
-    const remaining = Math.max(0, breakDuration - breakElapsed);
-    const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
-    const ss = String(remaining % 60).padStart(2, '0');
-    timerDisplay.textContent = `${mm}:${ss}`;
-    const fraction = remaining / breakDuration;
-    const offset = RING_CIRC * (1 - fraction);
-    ringProgress.style.strokeDashoffset = offset;
-    ringGlow.style.strokeDashoffset = offset;
-    const angle = fraction * 2 * Math.PI;
-    ringTip.setAttribute('cx', CX + RING_R * Math.cos(angle));
-    ringTip.setAttribute('cy', CY + RING_R * Math.sin(angle));
-    ringTip.style.opacity = fraction > 0.005 ? '1' : '0';
-    document.title = `☕ ${mm}:${ss} — Break`;
-  };
-
-  updateBreakDisplay();
-  breakIntervalId = setInterval(() => {
-    breakElapsed = (performance.now() - breakStartTs) / 1000;
-    updateBreakDisplay();
-    if (breakElapsed >= breakDuration) endBreak();
-  }, 500);
-}
-
-function endBreak() {
-  clearInterval(breakIntervalId);
-  timerState = 'idle';
-  timerLabel.textContent = 'idle';
-  document.title = 'Deep Work Tracker';
-  setRingColor('idle');
-  if (timerMode === 'pomodoro') updateDisplay(pomodoroDuration);
-  else { timerDisplay.textContent = '00:00:00'; ringProgress.style.strokeDashoffset = `${RING_CIRC}`; ringGlow.style.strokeDashoffset = `${RING_CIRC}`; ringTip.style.opacity = '0'; }
-  renderButtons();
-  showReflection();
-}
-
-function skipBreak() {
-  clearInterval(breakIntervalId);
-  timerState = 'idle';
-  timerLabel.textContent = 'idle';
-  document.title = 'Deep Work Tracker';
-  setRingColor('idle');
-  if (timerMode === 'pomodoro') updateDisplay(pomodoroDuration);
-  else { timerDisplay.textContent = '00:00:00'; ringProgress.style.strokeDashoffset = `${RING_CIRC}`; ringGlow.style.strokeDashoffset = `${RING_CIRC}`; ringTip.style.opacity = '0'; }
-  renderButtons();
-  showReflection();
-}
-
-// ─── Streak dots ──────────────────────────────────────────────────────────────
-function renderStreakDots(filledCount) {
-  const dotsWrap = $('streakDots');
-  const isPomo = timerMode === 'pomodoro';
-  dotsWrap.classList.toggle('visible', isPomo);
-  for (let i = 0; i < 4; i++) {
-    $(`sd${i}`).classList.toggle('filled', i < filledCount);
-  }
-}
 
 function burstConfetti(originEl) {
   const rect = originEl.getBoundingClientRect();
