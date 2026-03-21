@@ -1186,6 +1186,31 @@
     .dist-impact-fill { height: 100%; border-radius: 4px; transition: width 0.7s ease; }
     .dist-impact-delta { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-align: right; }
     .patterns-unlock { text-align: center; padding: 24px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--muted); }
+
+    /* ─── Milestone toast ───────────────────────────────────────────────────── */
+    .milestone-toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+      z-index: 9000; box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+      opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none; white-space: nowrap;
+    }
+    .milestone-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .milestone-toast-emoji { font-size: 22px; line-height: 1; }
+    .milestone-toast-title { font-weight: 600; font-size: 14px; }
+    .milestone-toast-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    @keyframes ringGold {
+      0%   { stroke: var(--blue); }
+      25%  { stroke: #FBBC05; filter: drop-shadow(0 0 14px #FBBC05); }
+      65%  { stroke: #FBBC05; filter: drop-shadow(0 0 8px #FBBC05); }
+      100% { stroke: var(--blue); filter: none; }
+    }
+    .ring-celebrate { animation: ringGold 2.2s ease forwards; }
   </style>
 </head>
 <body>
@@ -2052,8 +2077,15 @@ function subscribeToday() {
 
 // ─── Session save / delete ────────────────────────────────────────────────
 async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch', reflection = null) {
+  const isFirstToday = todaySessions.length === 0;
   gaEvent('session_complete', { duration_secs: durationSecs, session_type: type });
-  if (isGuest) { guestSaveSession(durationSecs, label, startedAt, endedAt, type, reflection); todaySessions = guestGetToday(); renderSessions(); return; }
+  if (isGuest) {
+    guestSaveSession(durationSecs, label, startedAt, endedAt, type, reflection);
+    todaySessions = guestGetToday();
+    renderSessions();
+    if (isFirstToday) setTimeout(() => showToast('🎯', 'First session!', "Let's get into flow"), 600);
+    return;
+  }
   if (!uid || !db) return;
   const data = {
     date:      todayStr(),
@@ -2066,6 +2098,7 @@ async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stop
   if (reflection) Object.assign(data, reflection);
   try {
     await addDoc(collection(db, 'users', uid, 'sessions'), data);
+    if (isFirstToday) setTimeout(() => showToast('🎯', 'First session!', "Let's get into flow"), 600);
   } catch (err) {
     showError('Save failed: ' + err.message);
   }
@@ -2620,6 +2653,31 @@ function renderStatsFromSessions(allSessions) {
     while (allDates.has(dateStr(chk))) { streak++; chk.setDate(chk.getDate() - 1); }
     $('statStreak').textContent = streak;
     $('statStreakSub').textContent = streak === 1 ? 'day streak' : 'day streak';
+
+    // ── Milestone celebrations ──────────────────────────────────────────────
+    const STREAK_MILESTONES = [3, 7, 14, 30, 100];
+    const HOURS_MILESTONES  = [10, 25, 50, 100, 200, 500];
+    let celebrated;
+    try { celebrated = JSON.parse(localStorage.getItem('dwt_celebrated') || '{}'); } catch { celebrated = {}; }
+    const totalHours = Math.floor(allTimeSecs / 3600);
+    const streakHit  = [...STREAK_MILESTONES].reverse().find(m => streak >= m && !celebrated['s' + m]);
+    const hoursHit   = [...HOURS_MILESTONES].reverse().find(m => totalHours >= m && !celebrated['h' + m]);
+    if (streakHit) {
+      celebrated['s' + streakHit] = 1;
+      localStorage.setItem('dwt_celebrated', JSON.stringify(celebrated));
+      setTimeout(() => {
+        showToast('🔥', `${streakHit}-day streak!`, 'Consistency is your superpower');
+        ringProgress.classList.remove('ring-celebrate');
+        void ringProgress.offsetWidth;
+        ringProgress.classList.add('ring-celebrate');
+        ringProgress.addEventListener('animationend', () => ringProgress.classList.remove('ring-celebrate'), { once: true });
+      }, 400);
+    }
+    if (hoursHit) {
+      celebrated['h' + hoursHit] = 1;
+      localStorage.setItem('dwt_celebrated', JSON.stringify(celebrated));
+      setTimeout(() => showToast('💯', `${hoursHit} hours of deep work!`, "That's serious focus"), streakHit ? 2200 : 400);
+    }
 
     // Vertical bar chart
     const CHART_H = 120; // px for tallest bar
@@ -3329,6 +3387,17 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'stats') { gaEvent('stats_view'); renderStats(); }
   });
 });
+
+// ─── Milestone toast ─────────────────────────────────────────────────────────
+function showToast(emoji, title, sub) {
+  document.querySelector('.milestone-toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'milestone-toast';
+  t.innerHTML = `<div class="milestone-toast-emoji">${emoji}</div><div><div class="milestone-toast-title">${title}</div>${sub ? `<div class="milestone-toast-sub">${sub}</div>` : ''}</div>`;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 400); }, 4000);
+}
 
 // ─── Error helper ────────────────────────────────────────────────────────────
 function showError(msg) {
