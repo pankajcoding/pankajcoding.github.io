@@ -4,6 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Deep Work Tracker</title>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-B1J4GLC9QM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-B1J4GLC9QM');
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -1673,6 +1680,11 @@
       <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
       <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
       <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
+      <div style="margin-top:14px;text-align:center">
+        <button id="btnGuest" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:4px;opacity:0.75;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">
+          Continue as Guest →
+        </button>
+      </div>
     </div>
 
   </div>
@@ -1699,6 +1711,11 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "83776199556",
   appId: "1:83776199556:web:e8924f4c648368ef"
 };
+
+// ─── Analytics helper ────────────────────────────────────────────────────────
+function gaEvent(name, params) {
+  if (typeof gtag !== 'undefined') gtag('event', name, params || {});
+}
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const HOUR_S = 3600;
@@ -1775,6 +1792,8 @@ let auth = null;
 let uid = null;
 let todayUnsubscribe = null;
 let todaySessions = [];
+let isGuest = false;
+const GUEST_KEY = 'dwt_guest_sessions';
 
 // ─── Email/Password Auth ─────────────────────────────────────────────────────
 const loginEmail    = $('loginEmail');
@@ -1782,6 +1801,7 @@ const loginPassword = $('loginPassword');
 const loginMsg      = $('loginMsg');
 const btnLogin      = $('btnLogin');
 const btnRegister   = $('btnRegister');
+const btnGuest      = $('btnGuest');
 
 btnLogin.addEventListener('click', async () => {
   const email = loginEmail.value.trim();
@@ -1791,6 +1811,7 @@ btnLogin.addEventListener('click', async () => {
   btnLogin.disabled = true;
   try {
     await signInWithEmailAndPassword(auth, email, pass);
+    gaEvent('login', { method: 'email' });
   } catch (err) {
     loginMsg.textContent = friendlyAuthError(err.code);
     loginMsg.style.color = 'var(--red)';
@@ -1807,6 +1828,7 @@ btnRegister.addEventListener('click', async () => {
   btnRegister.disabled = true;
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
+    gaEvent('sign_up', { method: 'email' });
   } catch (err) {
     loginMsg.textContent = friendlyAuthError(err.code);
     loginMsg.style.color = 'var(--red)';
@@ -1816,6 +1838,30 @@ btnRegister.addEventListener('click', async () => {
 });
 
 loginPassword.addEventListener('keydown', e => { if (e.key === 'Enter') btnLogin.click(); });
+
+btnGuest.addEventListener('click', () => {
+  isGuest = true;
+  uid = null;
+  gaEvent('guest_mode_start');
+  authStatus.textContent = 'guest';
+  statusDot.style.background = 'var(--yellow)';
+  loginOverlay.style.display = 'none';
+  // "sign in" link next to auth badge
+  const link = document.createElement('button');
+  link.id = 'guestSignInLink';
+  link.textContent = 'sign in';
+  link.style.cssText = 'background:none;border:none;color:var(--blue);font-size:10px;font-family:JetBrains Mono,monospace;cursor:pointer;padding:0 0 0 8px;text-decoration:underline;';
+  link.addEventListener('click', () => {
+    isGuest = false;
+    loginOverlay.style.display = 'flex';
+    link.remove();
+    authStatus.textContent = 'signed out';
+    statusDot.style.background = 'var(--muted)';
+  });
+  authStatus.parentElement.insertBefore(link, authStatus.nextSibling);
+  subscribeToday();
+  renderStats();
+});
 
 $('btnGoogle').addEventListener('click', async () => {
   const btn = $('btnGoogle');
@@ -1858,16 +1904,23 @@ async function initFirebase(cfg) {
 
     await setPersistence(auth, browserLocalPersistence);
 
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, async user => {
       if (user) {
         uid = user.uid;
+        // Migrate any guest sessions (covers both: active guest and returning user with old localStorage data)
+        if (isGuest || guestGetAll().length > 0) {
+          try { await migrateGuestSessions(uid); }
+          catch (err) { showError('Migration failed — your sessions are still saved locally.'); }
+        }
+        isGuest = false;
+        document.getElementById('guestSignInLink')?.remove();
         authStatus.textContent = user.email;
         statusDot.style.background = 'var(--green)';
         loginOverlay.style.display = 'none';
         subscribeToday();
         renderStats();
       } else {
-        uid = null;
+        uid = null; isGuest = false;
         statusDot.style.background = 'var(--muted)';
         authStatus.textContent = 'signed out';
         loginOverlay.style.display = 'flex';
@@ -1918,8 +1971,67 @@ function dayLabel(dateString) {
   return d.toLocaleDateString('en-US', { weekday: 'short' });
 }
 
+// ─── Guest localStorage helpers ───────────────────────────────────────────
+function guestNewId() {
+  return 'g-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+}
+function guestGetAll() {
+  try { return JSON.parse(localStorage.getItem(GUEST_KEY) || '[]'); } catch { return []; }
+}
+function guestGetToday() {
+  return guestGetAll().filter(s => s.date === todayStr())
+    .sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
+}
+function guestSaveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch', reflection = null) {
+  const sessions = guestGetAll();
+  const entry = {
+    id: guestNewId(), date: todayStr(), label: label || '',
+    duration: durationSecs,
+    startedAt: startedAt instanceof Date ? startedAt.getTime() : startedAt,
+    endedAt:   endedAt instanceof Date   ? endedAt.getTime()   : endedAt,
+    type, ...(reflection || {}),
+  };
+  sessions.push(entry);
+  localStorage.setItem(GUEST_KEY, JSON.stringify(sessions));
+}
+function guestDeleteSession(id) {
+  localStorage.setItem(GUEST_KEY, JSON.stringify(guestGetAll().filter(s => s.id !== id)));
+}
+function guestUpdateLabel(id, label) {
+  localStorage.setItem(GUEST_KEY, JSON.stringify(guestGetAll().map(s => s.id === id ? {...s, label} : s)));
+}
+
+// Normalise timestamp → milliseconds (handles Firestore {seconds} or guest Unix-ms)
+function tsMs(ts) {
+  if (!ts) return 0;
+  if (typeof ts === 'object' && ts.seconds) return ts.seconds * 1000;
+  return Number(ts);
+}
+
+// ─── Guest migration ──────────────────────────────────────────────────────
+async function migrateGuestSessions(uid) {
+  const sessions = guestGetAll();
+  if (!sessions.length) return;
+  const col = collection(db, 'users', uid, 'sessions');
+  await Promise.all(sessions.map(s => {
+    const data = {
+      date: s.date, label: s.label || '', duration: s.duration,
+      startedAt: Timestamp.fromMillis(typeof s.startedAt === 'number' ? s.startedAt : s.startedAt * 1000),
+      endedAt:   Timestamp.fromMillis(typeof s.endedAt   === 'number' ? s.endedAt   : s.endedAt   * 1000),
+      type: s.type || 'stopwatch',
+      ...(s.focusRating  !== undefined && { focusRating:  s.focusRating  }),
+      ...(s.distractions !== undefined && { distractions: s.distractions }),
+      ...(s.note         !== undefined && { note:         s.note         }),
+    };
+    return addDoc(col, data);
+  }));
+  localStorage.removeItem(GUEST_KEY); // clear only after all writes succeed
+  gaEvent('guest_migration', { session_count: sessions.length });
+}
+
 // ─── Firestore subscriptions ───────────────────────────────────────────────
 function subscribeToday() {
+  if (isGuest) { todaySessions = guestGetToday(); renderSessions(); return; }
   if (!uid || !db) return;
   if (todayUnsubscribe) todayUnsubscribe();
 
@@ -1940,6 +2052,8 @@ function subscribeToday() {
 
 // ─── Session save / delete ────────────────────────────────────────────────
 async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch', reflection = null) {
+  gaEvent('session_complete', { duration_secs: durationSecs, session_type: type });
+  if (isGuest) { guestSaveSession(durationSecs, label, startedAt, endedAt, type, reflection); todaySessions = guestGetToday(); renderSessions(); return; }
   if (!uid || !db) return;
   const data = {
     date:      todayStr(),
@@ -1958,6 +2072,7 @@ async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stop
 }
 
 async function deleteSession(sessionId) {
+  if (isGuest) { guestDeleteSession(sessionId); todaySessions = guestGetToday(); renderSessions(); return; }
   if (!uid || !db) return;
   try {
     await deleteDoc(doc(db, 'users', uid, 'sessions', sessionId));
@@ -1967,6 +2082,7 @@ async function deleteSession(sessionId) {
 }
 
 async function updateLabel(sessionId, label) {
+  if (isGuest) { guestUpdateLabel(sessionId, label); return; }
   if (!uid || !db) return;
   try {
     await updateDoc(doc(db, 'users', uid, 'sessions', sessionId), { label });
@@ -2101,6 +2217,7 @@ function tickTimer() {
   updateDisplay(current);
   if (timerMode === 'pomodoro' && current >= pomodoroDuration && !pomodoroComplete) {
     pomodoroComplete = true;
+    gaEvent('pomodoro_complete', { duration_mins: Math.round(pomodoroDuration / 60) });
     autoCompletePomodoro();
   }
   // Re-render buttons when stopwatch crosses 15 min threshold
@@ -2448,16 +2565,9 @@ function burstHeartbreak(originEl) {
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
-async function renderStats() {
-  if (!uid || !db) return;
-
+function renderStatsFromSessions(allSessions) {
   try {
-    const col = collection(db, 'users', uid, 'sessions');
     const FOCUS_C = { 5:'#34A853', 4:'#00BFA5', 3:'#4285F4', 2:'#FBBC05', 1:'#EA4335' };
-
-    // All sessions
-    const allSnap = await getDocs(query(col));
-    const allSessions = allSnap.docs.map(d => d.data());
     const totalCount = allSessions.length;
     const allTimeSecs = allSessions.reduce((s, x) => s + (x.duration || 0), 0);
 
@@ -2468,8 +2578,8 @@ async function renderStats() {
     // Best day of week
     const byDow = [0,0,0,0,0,0,0];
     allSessions.forEach(s => {
-      if (s.startedAt?.seconds) {
-        byDow[new Date(s.startedAt.seconds * 1000).getDay()] += (s.duration || 0);
+      if (tsMs(s.startedAt)) {
+        byDow[new Date(tsMs(s.startedAt)).getDay()] += (s.duration || 0);
       }
     });
     const maxDow = Math.max(...byDow);
@@ -2485,8 +2595,7 @@ async function renderStats() {
       days.push(dateStr(d));
     }
 
-    const recentSnap = await getDocs(query(col, where('date', '>=', days[0])));
-    const recent = recentSnap.docs.map(d => d.data());
+    const recent = allSessions.filter(s => s.date >= days[0]);
 
     // Bucket duration + focus ratings by day
     const byDay = {}, focusByDay = {};
@@ -2654,8 +2763,8 @@ async function renderStats() {
       }
       // Last 10 rated sessions chronologically
       const last10 = ratedAll
-        .filter(s => s.startedAt?.seconds)
-        .sort((a,b) => a.startedAt.seconds - b.startedAt.seconds)
+        .filter(s => tsMs(s.startedAt))
+        .sort((a,b) => tsMs(a.startedAt) - tsMs(b.startedAt))
         .slice(-10);
       const dotsEl = $('focusDotsRow');
       dotsEl.innerHTML = '';
@@ -2724,8 +2833,8 @@ async function renderStats() {
         Array.from({length: H_COUNT}, () => ({count:0, focusSum:0, focusCount:0})));
 
       allSessions.forEach(s => {
-        if (!s.startedAt?.seconds) return;
-        const dt = new Date(s.startedAt.seconds * 1000);
+        if (!tsMs(s.startedAt)) return;
+        const dt = new Date(tsMs(s.startedAt));
         const mon0 = (dt.getDay() + 6) % 7; // Mon=0…Sun=6
         const hSlot = dt.getHours() - H_START;
         if (hSlot < 0 || hSlot >= H_COUNT) return;
@@ -2808,7 +2917,7 @@ async function renderStats() {
       heatmapWrap.appendChild(legend);
 
       // ── Smart Insights ──────────────────────────────────────────────────────
-      const patRated = allSessions.filter(s => s.focusRating != null && s.startedAt?.seconds);
+      const patRated = allSessions.filter(s => s.focusRating != null && tsMs(s.startedAt));
       const insightListEl = $('insightList');
       insightListEl.innerHTML = '';
       const insightWrap = document.createElement('div');
@@ -2820,7 +2929,7 @@ async function renderStats() {
         // Insight 1: Peak focus window
         const slotMap = {};
         patRated.forEach(s => {
-          const dt = new Date(s.startedAt.seconds * 1000);
+          const dt = new Date(tsMs(s.startedAt));
           const mon0 = (dt.getDay() + 6) % 7;
           const hSlot = dt.getHours() - H_START;
           if (hSlot < 0 || hSlot >= H_COUNT) return;
@@ -2928,6 +3037,15 @@ async function renderStats() {
   }
 }
 
+async function renderStats() {
+  if (isGuest) { renderStatsFromSessions(guestGetAll()); return; }
+  if (!uid || !db) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'users', uid, 'sessions')));
+    renderStatsFromSessions(snap.docs.map(d => d.data()));
+  } catch (err) { showError('Stats: ' + err.message); }
+}
+
 // ─── Theme toggle ────────────────────────────────────────────────────────────
 const themeToggle = $('themeToggle');
 const savedTheme = localStorage.getItem('dwt_theme') || 'dark';
@@ -2963,6 +3081,7 @@ pipBtn.addEventListener('click', async () => {
     return;
   }
 
+  gaEvent('pip_open');
   const pipWin = await documentPictureInPicture.requestWindow({ width: 220, height: 190 });
 
   const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
@@ -3187,6 +3306,7 @@ document.getElementById('reflSave').addEventListener('click', async () => {
     focusRating: selectedRating || null,
     note: document.getElementById('reflectionNote').value.trim() || null,
   };
+  gaEvent('reflection_submitted', { focus_rating: selectedRating || null, distraction_count: distractions.length });
   await commitPendingSession(reflection);
 });
 
@@ -3206,12 +3326,13 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     $('panel-' + tab.dataset.tab).classList.add('active');
-    if (tab.dataset.tab === 'stats') renderStats();
+    if (tab.dataset.tab === 'stats') { gaEvent('stats_view'); renderStats(); }
   });
 });
 
 // ─── Error helper ────────────────────────────────────────────────────────────
 function showError(msg) {
+  errorBanner.classList.remove('guest-nudge');
   errorBanner.textContent = msg;
   errorBanner.classList.add('show');
   setTimeout(() => errorBanner.classList.remove('show'), 6000);
