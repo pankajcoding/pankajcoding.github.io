@@ -8,32 +8,33 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 @page{size:A4;margin:0}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb{display:none!important}.pg{box-shadow:none!important;margin:0!important;padding:32px 40px 30px!important}.jb{page-break-inside:avoid}}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.tb{display:none!important}.pg{box-shadow:none!important;margin:0!important;padding:32px 40px 30px!important}.jb{page-break-inside:avoid}.p2{break-before:page;padding-top:32px;margin-top:0}}
 :root{--a:#1a56db;--h:#111;--b:#333;--m:#666;--l:#888;--ln:#e0e0e0;--hl:#1a56db;--bl:#1a56db;--cb:#f7f9ff;--cbd:#1a56db;--ct:#1a56db;--pb:#fff;--sp:#ccc}
 body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-height:1.5}
-.tb{position:fixed;top:0;left:0;right:0;background:#0e0e0e;padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:12px;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.5);flex-wrap:wrap}
+.tb{position:fixed;top:0;left:0;right:0;background:rgba(8,8,10,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:7px 20px;display:flex;align-items:center;justify-content:center;gap:14px;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,0.03),0 4px 24px rgba(0,0,0,.4);flex-wrap:wrap}
 .tg{display:flex;align-items:center;gap:8px}
-.tl{color:#555;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
-.mt{display:flex;border:1px solid #333;border-radius:5px;overflow:hidden}
-.mb{padding:4px 12px;background:0 0;color:#555;border:none;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer}
-.mb:hover{color:#aaa}
-.mb.on{background:#2a2a2a;color:#eee}
+.tl{color:#3d3d3d;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.mt{display:flex;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:2px;gap:2px}
+.mb{padding:4px 11px;background:0 0;color:#444;border:none;border-radius:6px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .18s ease;display:flex;align-items:center;gap:5px}
+.mb:hover{color:#888}
+.mb.on{background:rgba(255,255,255,0.1);color:#e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .cp{display:flex;align-items:center;gap:4px}
-.cb{display:flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border:1px solid #2a2a2a;border-radius:4px;background:0 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
-.cb:hover{border-color:#555;background:#1a1a1a}
-.cb.on{border-color:#888;background:#222}
-.cd{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.cl{font-size:10px;font-weight:600;color:#777;letter-spacing:.3px}
+.cb{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 6px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;background:0 0;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s ease}
+.cb:hover{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.05)}
+.cb.on{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.08)}
+.cd{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
+.cl{font-size:10px;font-weight:600;color:#555;letter-spacing:.3px;transition:color .15s}
+.cb:hover .cl{color:#999}
 .cb.on .cl{color:#ccc}
-.bs{width:1px;height:20px;background:#2a2a2a}
-.pb{padding:4px 12px;border:1px solid #444;border-radius:4px;background:0 0;color:#777;font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase}
-.pb:hover{background:#222;color:#ccc;border-color:#666}
+.bs{width:1px;height:20px;background:rgba(255,255,255,0.07)}
+.pb{padding:5px 12px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.04);color:#555;font-family:'IBM Plex Sans',sans-serif;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.8px;text-transform:uppercase;transition:all .18s ease;display:flex;align-items:center;gap:6px}
+.pb:hover{background:rgba(255,255,255,0.1);color:#ccc;border-color:rgba(255,255,255,0.2)}
 .pg{width:210mm;min-height:297mm;margin:52px auto 20px;background:var(--pb);padding:32px 40px 30px;box-shadow:0 6px 32px rgba(0,0,0,.22),0 1px 4px rgba(0,0,0,.10)}
 .hd{text-align:center;margin-bottom:2px}
 .nm{font-size:30px;font-weight:600;color:var(--h);letter-spacing:1.5px;text-transform:uppercase}
-.cr{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:6px;font-size:10.5px;color:var(--m);flex-wrap:wrap;letter-spacing:.3px}
+.cr{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--m);flex-wrap:wrap;letter-spacing:.3px}
 .cr .sp{color:var(--sp)}
-.cr a{color:var(--a);text-decoration:none;font-weight:500}
+.cr a{color:var(--a);text-decoration:none;font-weight:500}.pli{display:inline-block;vertical-align:middle;margin-right:3px;margin-bottom:1px}.pli path{stroke-dasharray:70}.pli polyline{stroke-dasharray:20}.pli line{stroke-dasharray:25}.cr a:hover .pli path{animation:drw-p .8s ease-in-out both}.cr a:hover .pli polyline{animation:drw-q .35s ease-in-out .8s both}.cr a:hover .pli line{animation:drw-l .4s ease-in-out 1.15s both}@keyframes drw-p{from{stroke-dashoffset:70}to{stroke-dashoffset:0}}@keyframes drw-q{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}@keyframes drw-l{from{stroke-dashoffset:25}to{stroke-dashoffset:0}}
 .hl{height:1px;background:var(--hl);margin-top:10px;margin-bottom:12px;opacity:.6}
 .sm{font-size:12px;font-weight:400;color:var(--b);line-height:1.7;margin-bottom:14px}
 .dl{height:1px;background:var(--ln);margin:6px 0;opacity:.5}
@@ -67,19 +68,19 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-
 <div class="tb">
 <div class="tg"><span class="tl">Mode</span>
 <div class="mt">
-<button class="mb on" data-mode="light" onclick="sM('light')">Light</button>
-<button class="mb" data-mode="dark" onclick="sM('dark')">Dark</button>
+<button class="mb on" data-mode="light" onclick="sM('light')"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light</button>
+<button class="mb" data-mode="dark" onclick="sM('dark')"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</button>
 </div></div>
 <div class="bs"></div>
 <div class="tg"><span class="tl">Color</span><div class="cp" id="cp"></div></div>
 <div class="bs"></div>
-<button class="pb" onclick="window.print()">Print PDF</button>
+<button class="pb" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button>
 </div>
 
 <div class="pg">
 <div class="hd">
 <div class="nm">Pankaj Kumar</div>
-<div class="cr"><span>+91 7823023431</span><span class="sp">&#183;</span><span>pankajgoogl@gmail.com</span><span class="sp">&#183;</span><a href="https://pankajcoding.github.io/" target="_blank">Portfolio</a></div>
+<div class="cr"><span>+91 7823023431</span><span class="sp">&#183;</span><a href="mailto:pankajgoogl@gmail.com">pankajgoogl@gmail.com</a><span class="sp">&#183;</span><a href="https://pankajcoding.github.io/" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="pli"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Portfolio</a></div>
 </div>
 <div class="hl"></div>
 <div class="sm">Senior Software Engineer with 5.5+ years owning end-to-end development of enterprise-scale web platforms in fintech. Drove 75% page load improvement for a $500M revenue product, architected microfrontend migration serving global bank and merchant users, and built internal tools that saved 600+ engineering hours annually. Passionate about performance, scalable frontend architecture, and shipping products that move business metrics.</div>
@@ -119,7 +120,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-
 <div class="sr"><strong>Data &amp; Tools:</strong> MySQL, MongoDB, Jest, Cypress, Git, CI/CD pipelines</div>
 <div class="sr"><strong>Expertise:</strong> Web performance (Core Web Vitals), microfrontend architecture, accessible UI (WCAG 2.2), AI-powered tools</div>
 
-<div class="dl"></div>
+<div class="p2">
 <div class="st">Education</div>
 <div class="er"><div class="es">Indian Institute of Technology (IIT) Kharagpur</div><div class="ey">2020</div></div>
 <div class="ed">M.Tech + B.Tech (Hons.) Dual Degree, Computer Science &amp; Engineering</div>
@@ -135,15 +136,33 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-
 <div class="st">Recognition</div>
 <div class="rc"><strong>KVPY National Research Fellow</strong> &#183; <strong>Mastercard Sandbox Challenge Winner</strong> &#183; <strong>Mastercard D&amp;S Hackathon Winner</strong> &#183; <strong>OI Innovation Award</strong></div>
 </div>
+</div>
 
 <script>
-var T={light:{blue:{l:'Blue',d:'#1a56db',a:'#1a56db',cb:'#f7f9ff',ct:'#1a56db',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},emerald:{l:'Emerald',d:'#059669',a:'#059669',cb:'#ecfdf5',ct:'#047857',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},wine:{l:'Wine',d:'#9f1239',a:'#9f1239',cb:'#fff1f2',ct:'#881337',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},violet:{l:'Violet',d:'#7c3aed',a:'#7c3aed',cb:'#f5f3ff',ct:'#6d28d9',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},amber:{l:'Amber',d:'#d97706',a:'#d97706',cb:'#fffbeb',ct:'#b45309',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},mono:{l:'Mono',d:'#333',a:'#222',cb:'#f5f5f5',ct:'#555',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},ice:{l:'Ice',d:'#4b6a8f',a:'#4b6a8f',cb:'#f0f4f8',ct:'#4b6a8f',pb:'#ffffff',h:'#111827',b:'#374151',m:'#6b7280',li:'#9ca3af',ln:'#e2e8f0',sp:'#d1d5db'}},dark:{carbon:{l:'Carbon',d:'#e0e0e0',a:'#cccccc',cb:'#1c1c1c',ct:'#b0b0b0',pb:'#141414',h:'#ffffff',b:'#e8e8e8',m:'#a8a8a8',li:'#787878',ln:'#2c2c2c',sp:'#383838'},ember:{l:'Ember',d:'#c0755a',a:'#7a4a35',cb:'#100c0a',ct:'#c07848',pb:'#080604',h:'#f5ede4',b:'#c8b8a8',m:'#907868',li:'#706050',ln:'#1c1610',sp:'#2a2018'},violet:{l:'Violet',d:'#9a85c4',a:'#604890',cb:'#0e0a14',ct:'#9a88c8',pb:'#080610',h:'#ede8f8',b:'#c0b8d8',m:'#8a88a8',li:'#6a6888',ln:'#121018',sp:'#1a1828'},rose:{l:'Rose',d:'#e05c8a',a:'#c04878',cb:'#180810',ct:'#cc6080',pb:'#0c0608',h:'#f8e8ee',b:'#d0b8c0',m:'#907080',li:'#705060',ln:'#1e0e16',sp:'#2a1820'},gold:{l:'Gold',d:'#c9952a',a:'#a07828',cb:'#120e04',ct:'#b88030',pb:'#080602',h:'#f5eedc',b:'#c8b890',m:'#907850',li:'#706040',ln:'#181408',sp:'#242010'}}};
+var T={
+light:{
+  blue:    {l:'Blue',   d:'#1a56db',a:'#1a56db',cb:'#f7f9ff',ct:'#1a56db',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},
+  emerald: {l:'Emerald',d:'#059669',a:'#059669',cb:'#ecfdf5',ct:'#047857',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},
+  rose:    {l:'Rose',   d:'#9f1239',a:'#9f1239',cb:'#fff1f2',ct:'#881337',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},
+  violet:  {l:'Violet', d:'#7c3aed',a:'#7c3aed',cb:'#f5f3ff',ct:'#6d28d9',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},
+  gold:    {l:'Gold',   d:'#b45309',a:'#92400e',cb:'#fff8f0',ct:'#c2410c',pb:'#fff',h:'#111',b:'#333',m:'#666',li:'#888',ln:'#e0e0e0',sp:'#ccc'},
+  carbon:  {l:'Carbon', d:'#444',   a:'#333',   cb:'#f0f0f0',ct:'#555',   pb:'#fff',h:'#111',b:'#444',m:'#777',li:'#999',ln:'#ddd',   sp:'#bbb'}
+},
+dark:{
+  blue:    {l:'Blue',   d:'#4d8af0',a:'#3b7de8',cb:'#080d1a', ct:'#6b9cf7',pb:'#040810',h:'#e8f0fe',b:'#b0c8e8',m:'#6878a8',li:'#485878',ln:'#0e1828',sp:'#1a2840'},
+  carbon:  {l:'Carbon', d:'#e0e0e0',a:'#cccccc',cb:'#1c1c1c',ct:'#b0b0b0',pb:'#141414',h:'#fff',b:'#e8e8e8',m:'#a8a8a8',li:'#787878',ln:'#2c2c2c',sp:'#383838'},
+  emerald: {l:'Emerald',d:'#34b87a',a:'#259960',cb:'#030f09', ct:'#40c885',pb:'#020805',h:'#e0f8ee',b:'#a0d0b8',m:'#508868',li:'#387050',ln:'#081810',sp:'#102818'},
+  violet:  {l:'Violet', d:'#9a85c4',a:'#604890',cb:'#0e0a14', ct:'#9a88c8',pb:'#080610',h:'#ede8f8',b:'#c0b8d8',m:'#8a88a8',li:'#6a6888',ln:'#121018',sp:'#1a1828'},
+  rose:    {l:'Rose',   d:'#e05c8a',a:'#c04878',cb:'#180810', ct:'#cc6080',pb:'#0c0608',h:'#f8e8ee',b:'#d0b8c0',m:'#907080',li:'#705060',ln:'#1e0e16',sp:'#2a1820'},
+  gold:    {l:'Gold',   d:'#c9952a',a:'#a07828',cb:'#120e04', ct:'#b88030',pb:'#080602',h:'#f5eedc',b:'#c8b890',m:'#907850',li:'#706040',ln:'#181408',sp:'#242010'}
+}};
+var XMAP={light:{carbon:'carbon',gold:'gold',blue:'blue',emerald:'emerald',rose:'rose',violet:'violet'},dark:{carbon:'carbon',rose:'rose',gold:'gold',blue:'blue',emerald:'emerald',violet:'violet'}};
 var cM='light',cC='blue';
 function rS(){var p=document.getElementById('cp'),c=T[cM];p.innerHTML='';for(var k in c){var v=c[k],btn=document.createElement('button');btn.className='cb'+(k===cC?' on':'');btn.onclick=(function(key){return function(){sC(key)}})(k);btn.innerHTML='<span class="cd" style="background:'+v.d+'"></span><span class="cl">'+v.l+'</span>';p.appendChild(btn)}}
-function sM(m){cM=m;document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===m)});cC=Object.keys(T[m])[0];document.body.style.background=m==='dark'?'#333':'#bbb';rS();aT()}
+function sM(m){cM=m;document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===m)});if(!T[m][cC])cC=Object.keys(T[m])[0];document.body.style.background=m==='dark'?'#333':'#bbb';rS();aT()}
 function sC(c){cC=c;rS();aT()}
 function aT(){var r=document.documentElement,c=T[cM][cC],am=c.a;r.style.setProperty('--a',c.d||c.a);r.style.setProperty('--h',c.h);r.style.setProperty('--b',c.b);r.style.setProperty('--m',c.m);r.style.setProperty('--l',c.li);r.style.setProperty('--ln',c.ln);r.style.setProperty('--hl',am);r.style.setProperty('--bl',am);r.style.setProperty('--cb',c.cb);r.style.setProperty('--cbd',am);r.style.setProperty('--ct',c.ct);r.style.setProperty('--pb',c.pb);r.style.setProperty('--sp',c.sp)}
-rS();aT();
+document.body.style.background='#bbb';rS();aT();
 </script>
 </body>
 </html>
