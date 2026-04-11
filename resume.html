@@ -4,13 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pankaj Kumar - Resume</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+<meta name="description" content="If your app can be dark theme, why can't your resume be? Interactive resume with dark, light, and terminal themes.">
+<meta property="og:title" content="Pankaj Kumar — Senior Software Engineer @ Mastercard">
+<meta property="og:description" content="Pankaj Kumar — Senior Software Engineer at Mastercard. Interactive resume with dark, light &amp; terminal themes. Switch modes, pick a palette.">
+<meta property="og:url" content="https://pankajcoding.github.io/resume.html">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://pankajcoding.github.io/images/avatar.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pankaj Kumar — Senior Software Engineer @ Mastercard">
+<meta name="twitter:description" content="Pankaj Kumar — Senior Software Engineer at Mastercard. Interactive resume with dark, light &amp; terminal themes.">
+<meta name="twitter:image" content="https://pankajcoding.github.io/images/avatar.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 @page{size:A4;margin:0}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:var(--pb)!important}.tb{display:none!important}.pg{box-shadow:none!important;margin:0!important;padding:32px 40px 30px!important}.jb{page-break-inside:avoid}.p2{break-before:page;padding-top:20mm;margin-top:0}.es{font-size:15px}}
 :root{--a:#1a56db;--h:#111;--b:#333;--m:#666;--l:#5e5e5e;--ln:#e0e0e0;--hl:#1a56db;--bl:#1a56db;--cb:#f7f9ff;--cbd:#1a56db;--ct:#1a56db;--pb:#fff;--sp:#ccc}
-body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-height:1.5}
+body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-height:1.5;transition:background 0.35s ease}
+.pg,.pg *{transition:background 0.35s ease,color 0.35s ease,border-color 0.35s ease,box-shadow 0.35s ease}
 .tb{position:fixed;top:0;left:0;right:0;background:rgba(8,8,10,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);padding:7px 20px;display:flex;align-items:center;justify-content:center;gap:14px;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,0.03),0 4px 24px rgba(0,0,0,.4);flex-wrap:wrap}
 .tg{display:flex;align-items:center;gap:8px}
 .tl{color:#777;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
@@ -62,20 +73,38 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#bbb;color:var(--b);line-
 .pd2{font-size:11.5px;font-weight:300;color:var(--l)}
 .pdc{font-size:12.5px;color:var(--b);line-height:1.6;padding-left:14px;position:relative;margin-top:2px}
 .pdc::before{content:'';position:absolute;left:2px;top:7px;width:3.5px;height:3.5px;border-radius:50%;background:var(--bl);opacity:.7}
+/* ── Terminal mode ── */
+body.tm-mode{font-family:'IBM Plex Mono',monospace}
+body.tm-mode::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px)}
+body.tm-mode::after{content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.72) 100%)}
+body.tm-mode .pg{box-shadow:0 0 0 1px var(--tm-glow,rgba(0,255,65,.28)),0 0 48px var(--tm-glow,rgba(0,255,65,.1))!important;border:1px solid var(--a)}
+body.tm-mode .nm{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;letter-spacing:.07em;text-shadow:0 0 20px var(--tm-glow,rgba(0,255,65,.5)),0 0 40px var(--tm-glow,rgba(0,255,65,.2))}
+body.tm-mode .st{letter-spacing:3px}
+body.tm-mode .st::before{content:'> ';opacity:.45;font-weight:400}
+body.tm-mode .jx{border-style:dashed;border-radius:4px}
+body.tm-mode .jl p::before,body.tm-mode .pdc::before{background:var(--bl)}
+body.tm-mode .cr a{color:var(--a)}
+body.tm-mode .hl{opacity:1}
+body.tm-mode ::selection{background:var(--a);color:var(--pb)}
+body.demo-mode .tb{display:none!important}body.tm-mode .nm::after{content:'█';margin-left:5px;font-size:.8em;color:var(--a);animation:tm-blink 1s step-end infinite;vertical-align:middle}
+@keyframes tm-blink{0%,100%{opacity:1}50%{opacity:0}}
+#boot-overlay{position:fixed;inset:0;z-index:99999;background:var(--pb,#020c02);font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.9;color:var(--a,#00ff41);padding:20px;display:none;flex-direction:column;justify-content:center;align-items:center}
+#boot-lines{width:100%;max-width:540px}
 </style>
 </head>
 <body>
+<div id="boot-overlay"><div id="boot-lines"></div></div>
 <div class="tb">
 <div class="tg"><span class="tl">Mode</span>
 <div class="mt">
 <button class="mb on" data-mode="light" onclick="sM('light')"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light</button>
 <button class="mb" data-mode="dark" onclick="sM('dark')"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</button>
+<button class="mb" data-mode="terminal" onclick="sM('terminal')"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Terminal</button>
 </div></div>
+<div class="bs" id="colorsep"></div>
+<div class="tg" id="colorgroup"><span class="tl">Color</span><div class="cp" id="cp"></div></div>
 <div class="bs"></div>
-<div class="tg"><span class="tl">Color</span><div class="cp" id="cp"></div></div>
-<div class="bs"></div>
-<button class="pb" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button>
-</div>
+<button class="pb" onclick="window.print()"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button></div>
 
 <div class="pg">
 <div class="hd">
@@ -160,14 +189,59 @@ dark:{
   gold:    {l:'Gold',   d:'#c9952a',a:'#a07828',cb:'#120e04', ct:'#b88030',pb:'#080602',h:'#f5eedc',b:'#c8b890',m:'#907850',li:'#706040',ln:'#181408',sp:'#242010'},
   emerald: {l:'Emerald',d:'#34b87a',a:'#259960',cb:'#030f09', ct:'#40c885',pb:'#020805',h:'#e0f8ee',b:'#a0d0b8',m:'#508868',li:'#387050',ln:'#081810',sp:'#102818'},
   carbon:  {l:'Carbon', d:'#fff',   a:'#fff',   cb:'#111111',ct:'#ccc',   pb:'#000',h:'#fff',b:'#eeeeee',m:'#aaaaaa',li:'#777777',ln:'#222222',sp:'#333333'}
+},
+terminal:{
+  green:   {l:'Green',  d:'#00ff41',a:'#00cc33',cb:'#041a06', ct:'#00ff41',pb:'#020c02',h:'#00ff41',b:'#00cc33',m:'#008a1e',li:'#005e16',ln:'rgba(0,255,65,0.2)',  sp:'rgba(0,255,65,0.25)',  gw:'rgba(0,255,65,0.45)'}
 }};
-var XMAP={light:{carbon:'carbon',gold:'gold',blue:'blue',emerald:'emerald',rose:'rose',violet:'violet'},dark:{carbon:'carbon',rose:'rose',gold:'gold',blue:'blue',emerald:'emerald',violet:'violet'}};
+var XMAP={light:{carbon:'carbon',gold:'gold',blue:'blue',emerald:'emerald',rose:'rose',violet:'violet'},dark:{carbon:'carbon',rose:'rose',gold:'gold',blue:'blue',emerald:'emerald',violet:'violet'},terminal:{green:'green'}};
 var cM='light',cC='blue';
 function rS(){var p=document.getElementById('cp'),c=T[cM];p.innerHTML='';for(var k in c){var v=c[k],btn=document.createElement('button');btn.className='cb'+(k===cC?' on':'');btn.onclick=(function(key){return function(){sC(key)}})(k);btn.innerHTML='<span class="cd" style="background:'+v.d+'"></span><span class="cl">'+v.l+'</span>';p.appendChild(btn)}}
-function sM(m){cM=m;document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===m)});if(!T[m][cC])cC=Object.keys(T[m])[0];document.body.style.background=m==='dark'?'#333':'#bbb';rS();aT()}
-function sC(c){cC=c;rS();aT()}
-function aT(){var r=document.documentElement,c=T[cM][cC],am=c.a;r.style.setProperty('--a',c.d||c.a);r.style.setProperty('--h',c.h);r.style.setProperty('--b',c.b);r.style.setProperty('--m',c.m);r.style.setProperty('--l',c.li);r.style.setProperty('--ln',c.ln);r.style.setProperty('--hl',am);r.style.setProperty('--bl',am);r.style.setProperty('--cb',c.cb);r.style.setProperty('--cbd',am);r.style.setProperty('--ct',c.ct);r.style.setProperty('--pb',c.pb);r.style.setProperty('--sp',c.sp)}
-document.body.style.background='#bbb';rS();aT();
+function sM(m){var prev=cM;cM=m;document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===m)});if(!T[m][cC])cC=Object.keys(T[m])[0];var bgMap={light:'#bbb',dark:'#333',terminal:'#000'};document.body.style.background=bgMap[m]||'#bbb';document.body.classList.toggle('tm-mode',m==='terminal');var cg=document.getElementById('colorgroup'),cs=document.getElementById('colorsep');if(cg)cg.style.display=m==='terminal'?'none':'';if(cs)cs.style.display=m==='terminal'?'none':'';rS();aT();updateHash();if(m==='terminal'&&prev!=='terminal')runBoot();}
+function sC(c){cC=c;rS();aT();updateHash();}
+function updateHash(){history.replaceState(null,'','#'+(cM==='terminal'?'terminal':cM+'_'+cC));}
+function aT(){var r=document.documentElement,c=T[cM][cC],am=c.a;r.style.setProperty('--a',c.d||c.a);r.style.setProperty('--h',c.h);r.style.setProperty('--b',c.b);r.style.setProperty('--m',c.m);r.style.setProperty('--l',c.li);r.style.setProperty('--ln',c.ln);r.style.setProperty('--hl',am);r.style.setProperty('--bl',am);r.style.setProperty('--cb',c.cb);r.style.setProperty('--cbd',am);r.style.setProperty('--ct',c.ct);r.style.setProperty('--pb',c.pb);r.style.setProperty('--sp',c.sp);if(c.gw)r.style.setProperty('--tm-glow',c.gw);}
+function runBoot(){
+  var ov=document.getElementById('boot-overlay'),bl=document.getElementById('boot-lines'),pg=document.querySelector('.pg');
+  var lines=['PANKAJ KUMAR RESUME  v1.0','──────────────────────────────────','','CPU  ·  Fullstack Engineer @ Mastercard','MEM  ·  5.5 yrs · IIT Kharagpur CS','','[  OK  ]  Loading profile','[  OK  ]  Mounting /experience','[  OK  ]  Indexing /skills','[  OK  ]  Rendering display','','> resume --interactive --color=auto'];
+  var delays=[0,50,30,100,80,35,110,85,75,90,50,130];
+  bl.innerHTML='';ov.style.cssText='display:flex;opacity:1;transition:none';
+  var t=0;
+  lines.forEach(function(txt,i){t+=delays[i]||80;setTimeout(function(){var d=document.createElement('div');d.textContent=txt||'\u00a0';bl.appendChild(d);},t);});
+  // fade out text then overlay, then show resume
+  setTimeout(function(){bl.style.transition='opacity 0.22s ease';bl.style.opacity='0';},t+280);
+  setTimeout(function(){ov.style.transition='opacity 0.3s ease';ov.style.opacity='0';},t+480);
+  setTimeout(function(){ov.style.display='none';ov.style.transition='';bl.style.opacity='';bl.style.transition='';},t+800);
+}
+(function(){var hash=location.hash.replace('#','').toLowerCase();if(hash){if(hash==='terminal'){cM='terminal';cC='green';}else{var p=hash.split('_');if(p.length===2&&T[p[0]]&&T[p[0]][p[1]]){cM=p[0];cC=p[1];}}}var bgMap={light:'#bbb',dark:'#333',terminal:'#000'};document.body.style.background=bgMap[cM]||'#bbb';document.body.classList.toggle('tm-mode',cM==='terminal');var cg=document.getElementById('colorgroup'),cs=document.getElementById('colorsep');if(cg)cg.style.display=cM==='terminal'?'none':'';if(cs)cs.style.display=cM==='terminal'?'none':'';document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===cM)});rS();aT();updateHash();})();
+function startDemo(){
+  document.body.classList.remove('demo-ready');
+  document.body.classList.add('demo-mode');
+  var el=document.documentElement;
+  if(el.requestFullscreen)el.requestFullscreen();
+  else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();
+  setTimeout(runDemo, 8000);
+}
+function runDemo(){
+  var seq=[
+    {m:'light', c:'blue',    wait:1800},
+    {m:'dark',  c:'blue',    wait:2000},
+    {m:'dark',  c:'emerald', wait:1600},
+    {m:'dark',  c:'violet',  wait:1600},
+    {m:'dark',  c:'rose',    wait:1600},
+    {m:'terminal',c:'green', wait:0}
+  ];
+  var i=0;
+  function next(){
+    if(i>=seq.length)return;
+    var s=seq[i++];
+    if(cM!==s.m){cM=s.m;document.querySelectorAll('.mb').forEach(function(b){b.classList.toggle('on',b.dataset.mode===cM)});var bgMap={light:'#bbb',dark:'#333',terminal:'#000'};document.body.style.background=bgMap[cM]||'#bbb';document.body.classList.toggle('tm-mode',cM==='terminal');var cg=document.getElementById('colorgroup'),cs=document.getElementById('colorsep');if(cg)cg.style.display=cM==='terminal'?'none':'';if(cs)cs.style.display=cM==='terminal'?'none':'';}
+    if(s.c&&cC!==s.c){cC=s.c;rS();}
+    aT();updateHash();
+    if(cM==='terminal'){runBoot();}
+    if(s.wait)setTimeout(next,s.wait);
+  }
+  setTimeout(next,1000);
+}
 </script>
 </body>
 </html>
