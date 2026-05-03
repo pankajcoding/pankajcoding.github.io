@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Deep Work Tracker</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-B1J4GLC9QM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -25,8 +26,8 @@
       --green: #34A853;
       --yellow: #FBBC05;
       --red: #EA4335;
-      --text: #e2e8f0;
-      --muted: #64748b;
+      --text: #ffffff;
+      --muted: #7a8499;
       --ring-size: 270px;
       --ring-stroke: 10;
       --dial-inner: #1e2030;
@@ -121,7 +122,9 @@
       cursor: pointer;
       border-radius: 9px;
       transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
+    .tab svg, .mode-btn svg { flex-shrink: 0; }
 
     .tab.active {
       background: var(--bg);
@@ -138,7 +141,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 4px 0 28px;
+      margin: 16px 0 24px;
       position: relative;
     }
 
@@ -294,7 +297,7 @@
     .sessions-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .session-card {
@@ -505,7 +508,17 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
     }
+
+    .chart-range-btn {
+      background: none; border: none; border-radius: 6px;
+      font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.5px; color: var(--muted); cursor: pointer;
+      padding: 3px 7px; transition: color 0.15s, background 0.15s;
+    }
+    .chart-range-btn:hover { color: var(--text); background: var(--border); }
+    .chart-range-btn.active { color: var(--blue); background: rgba(66,133,244,0.12); }
 
     .bar-chart {
       display: flex;
@@ -809,6 +822,38 @@
       .login-box { width: 100%; }
     }
 
+    @media (min-width: 800px) {
+      .app { max-width: 960px; }
+
+      #panel-timer.active {
+        display: grid;
+        grid-template-columns: 440px 1fr;
+        gap: 0 32px;
+        align-items: start;
+      }
+
+      .journal-section {
+        margin-top: 0;
+        position: sticky;
+        top: 24px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .journal-section-header {
+        cursor: default;
+        margin-bottom: 8px;
+      }
+      .journal-section-chevron { display: none; }
+      .journal-log {
+        max-height: none !important;
+        overflow: visible !important;
+        transition: none !important;
+      }
+    }
+
     .loading-spinner {
       width: 16px;
       height: 16px;
@@ -839,7 +884,7 @@
     .pip-btn {
       background: none;
       border: none;
-      font-size: 13px;
+      font-size: 18px;
       cursor: pointer;
       padding: 2px 6px;
       color: var(--muted);
@@ -877,6 +922,7 @@
       cursor: pointer;
       border-radius: 7px;
       transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
     }
 
     .mode-btn.active {
@@ -1049,15 +1095,14 @@
       background: var(--border);
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
     }
-    .fstar.on { background: var(--yellow); }
+    .fstar.on { background: rgba(66,133,244,1); }
     .focus-card-trend { flex: 1; min-width: 0; }
-    .focus-dots-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .focus-dots-row { display: flex; gap: 4px; align-items: flex-end; margin-top: 8px; height: 32px; }
     .fdot {
-      width: 13px; height: 13px;
-      border-radius: 50%; cursor: default;
-      transition: transform 0.2s;
+      flex: 1; border-radius: 3px 3px 0 0; cursor: default;
+      transition: opacity 0.2s;
     }
-    .fdot:hover { transform: scale(1.4); }
+    .fdot:hover { opacity: 0.75; }
 
     /* Distraction breakdown */
     .dist-list { display: flex; flex-direction: column; gap: 9px; }
@@ -1148,7 +1193,11 @@
     }
     .star-btn:hover { transform: scale(1.2); }
     .star-btn svg { width: 27px; height: 27px; fill: var(--border); transition: fill 0.15s; }
-    .star-btn.filled svg { fill: var(--yellow); }
+    .star-btn[data-r="1"].filled svg { fill: rgba(66,133,244,0.28); }
+    .star-btn[data-r="2"].filled svg { fill: rgba(66,133,244,0.46); }
+    .star-btn[data-r="3"].filled svg { fill: rgba(66,133,244,0.64); }
+    .star-btn[data-r="4"].filled svg { fill: rgba(66,133,244,0.82); }
+    .star-btn[data-r="5"].filled svg { fill: rgba(66,133,244,1);    }
     .reflection-note {
       width: 100%; background: var(--bg);
       border: 1px solid var(--border); border-radius: 10px;
@@ -1160,7 +1209,293 @@
     .reflection-note:focus { border-color: var(--blue); }
     .refl-actions { display: flex; gap: 10px; }
 
+    /* ─── Quick Journal FAB ──────────────────────────────────────────────── */
+    .journal-add-btn {
+      background: rgba(66,133,244,0.1); border: 1px solid rgba(66,133,244,0.3); border-radius: 8px;
+      color: var(--blue); font-size: 20px; line-height: 1; cursor: pointer;
+      width: 32px; height: 32px; display: flex; align-items: center;
+      justify-content: center; transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0; padding: 0; pointer-events: auto;
+    }
+    .journal-add-btn:hover { background: rgba(66,133,244,0.2); border-color: var(--blue); }
+
+    .journal-panel {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      max-width: 480px; margin: 0 auto;
+      background: var(--card); border-top: 1px solid var(--border);
+      border-radius: 20px 20px 0 0; padding: 16px 20px 32px;
+      transform: translateY(100%); transition: transform 150ms ease-out;
+      z-index: 150;
+    }
+    .journal-panel.open { transform: translateY(0); }
+    .journal-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .journal-panel-ts {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--muted); letter-spacing: 0.5px;
+    }
+    .journal-panel-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 20px; line-height: 1;
+      width: 44px; height: 44px; display: flex; align-items: center;
+      justify-content: center; border-radius: 8px;
+      transition: color 0.15s, background 0.15s; margin: -8px -8px 0 0;
+    }
+    .journal-panel-close:hover { color: var(--text); background: var(--border); }
+    .journal-panel-textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.5;
+      outline: none; transition: border-color 0.2s; resize: none;
+      box-sizing: border-box;
+    }
+    .journal-panel-textarea::placeholder { color: var(--muted); }
+    .journal-panel-textarea:focus { border-color: var(--blue); }
+    .journal-panel-options {
+      display: none; gap: 8px; align-items: center; margin-bottom: 10px;
+    }
+    .journal-panel-options.visible { display: flex; }
+    .journal-panel-time-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 10px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      outline: none; transition: border-color 0.2s;
+      color-scheme: dark;
+    }
+    .journal-panel-time-input:focus { border-color: var(--blue); }
+    .journal-time-sep { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .journal-range-btn, .journal-todo-btn {
+      background: none; border: none; border-radius: 10px;
+      color: var(--muted); font-size: 13px; font-weight: 700;
+      font-family: 'Syne', sans-serif; letter-spacing: 0.8px;
+      cursor: pointer; padding: 10px 16px;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .journal-range-btn:hover, .journal-todo-btn:hover { color: var(--text); background: var(--border); }
+    .journal-range-btn.active { color: var(--blue); background: rgba(66,133,244,0.12); }
+    .journal-todo-btn.active  { color: var(--green); background: rgba(52,168,83,0.12); }
+    .journal-panel-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .journal-panel-footer-left { display: flex; align-items: center; gap: 6px; }
+    .journal-panel-hint {
+      font-size: 10px; color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .journal-save-btn { min-height: 44px; min-width: 88px; }
+    .journal-saved-toast {
+      position: fixed; bottom: 96px; left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 8px 18px;
+      font-size: 13px; color: var(--text); z-index: 9100;
+      opacity: 0; transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none; white-space: nowrap;
+    }
+    .journal-saved-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── Pre-session Intention Banner ───────────────────────────────────── */
+    /* ─── Journal Log ─────────────────────────────────────────────────────── */
+    .journal-section { margin-top: 24px; }
+    .journal-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; padding: 4px 0; user-select: none;
+    }
+    .journal-section-header:hover .journal-section-title { color: var(--text); }
+    .journal-section-title {
+      font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted);
+      transition: color 0.15s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .journal-section-chevron {
+      width: 16px; height: 16px; fill: none; stroke: var(--muted);
+      stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+      transition: transform 0.2s;
+    }
+    .journal-log { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+    .journal-log.open { max-height: 600px; }
+    .journal-entry {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .journal-entry:last-child { border-bottom: none; }
+    .journal-entry-badge {
+      flex-shrink: 0; font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+      margin-top: 2px;
+    }
+    .journal-entry-badge.quick     { background: rgba(66,133,244,0.15); color: var(--blue); }
+    .journal-entry-badge.pre       { background: rgba(52,168,83,0.15);  color: var(--green); }
+    .journal-entry-badge.post      { background: rgba(251,188,5,0.15);  color: var(--yellow); }
+    .journal-entry-badge.pomodoro  { background: rgba(234,67,53,0.12);  color: var(--red); }
+    .journal-entry-badge.stopwatch { background: rgba(52,168,83,0.12);  color: var(--green); }
+    .journal-entry-text {
+      flex: 1; font-size: 13px; line-height: 1.4; color: var(--text);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .journal-entry-ts {
+      flex-shrink: 0; font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--muted); margin-top: 2px;
+    }
+    .journal-entry-del {
+      flex-shrink: 0; background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 14px; padding: 0 2px; line-height: 1;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .journal-entry:hover .journal-entry-del { opacity: 1; }
+    .journal-entry-del:hover { color: var(--red); }
+    .journal-entry-check {
+      flex-shrink: 0; width: 15px; height: 15px; border-radius: 4px;
+      border: 1.5px solid var(--border); background: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none; margin-top: 3px;
+      transition: background 0.15s, border-color 0.15s;
+      position: relative;
+    }
+    .journal-entry-check:checked {
+      background: var(--green); border-color: var(--green);
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 4l3 3 5-6' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: center; background-size: 9px;
+    }
+    .journal-entry-text.done { text-decoration: line-through; color: var(--muted); }
+    .journal-entry-dot {
+      width: 15px; height: 15px; flex-shrink: 0;
+    }
+    .journal-tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--blue); background: rgba(66,133,244,0.1);
+      border-radius: 4px; padding: 1px 6px;
+    }
+    .journal-empty {
+      padding: 16px 0; text-align: center;
+      font-size: 12px; color: var(--muted);
+    }
+    .journal-controls { padding: 10px 0 4px; }
+    .journal-nav {
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    }
+    .journal-nav-btn {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-size: 16px; line-height: 1; cursor: pointer;
+      width: 28px; height: 28px; display: flex; align-items: center;
+      justify-content: center; transition: background 0.15s;
+    }
+    .journal-nav-btn:hover:not(:disabled) { background: var(--border); }
+    .journal-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .journal-nav-label {
+      flex: 1; text-align: center; font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; color: var(--text);
+    }
+    .journal-nav-all {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      color: var(--muted); font-family: 'Syne', sans-serif; font-size: 9px;
+      font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+      cursor: pointer; padding: 4px 8px; transition: background 0.15s, color 0.15s;
+    }
+    .journal-nav-all:hover, .journal-nav-all.active { background: var(--border); color: var(--text); }
+    .journal-search {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 12px; outline: none;
+      transition: border-color 0.2s; margin-bottom: 4px; box-sizing: border-box;
+    }
+    .journal-search::placeholder { color: var(--muted); }
+    .journal-search:focus { border-color: var(--blue); }
+    mark {
+      background: rgba(251,188,5,0.35); color: inherit;
+      border-radius: 2px; padding: 0 1px;
+    }
+
+    /* ─── Revisit trigger card ──────────────────────────────────────────── */
+    /* Focus mode */
+    .focus-mode .app-header,
+    .focus-mode .tab-bar,
+    .focus-mode .revisit-card,
+    .focus-mode .daily-target-bar,
+    .focus-mode .mode-toggle,
+    .focus-mode .pomodoro-controls,
+    .focus-mode .label-wrap,
+    .focus-mode .section-header,
+    .focus-mode .sessions-list,
+    .focus-mode .bulk-bar,
+    .focus-mode .journal-section { display: none !important; }
+    .focus-mode .app { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    .focus-mode #panel-timer { display: flex; align-items: center; justify-content: center; }
+    .focus-mode .timer-main { display: flex; flex-direction: column; align-items: center; }
+    .focus-exit-btn {
+      position: fixed; top: 20px; right: 20px;
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-family: 'Syne', sans-serif; font-size: 11px;
+      font-weight: 700; letter-spacing: 0.8px; padding: 6px 12px;
+      cursor: pointer; transition: color 0.15s, border-color 0.15s;
+      display: none; z-index: 200;
+    }
+    .focus-exit-btn:hover { color: var(--text); border-color: var(--text); }
+    .focus-mode .focus-exit-btn { display: block; }
+    .focus-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 15px; padding: 2px 6px;
+      border-radius: 4px; transition: color 0.2s; line-height: 1;
+    }
+    .focus-btn:hover { color: var(--text); }
+
+    .daily-target-bar { margin-bottom: 14px; }
+    .daily-target-track {
+      height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+    }
+    .daily-target-fill {
+      height: 100%; border-radius: 2px; background: var(--blue);
+      transition: width 0.4s ease;
+    }
+    .daily-target-labels {
+      display: flex; justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px;
+      color: var(--muted); margin-top: 4px;
+    }
+
+    .revisit-card {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(66,133,244,0.08); border: 1px solid rgba(66,133,244,0.25);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+      font-size: 13px; color: var(--text);
+    }
+    .revisit-card-text { flex: 1; line-height: 1.4; }
+    .revisit-card-review {
+      background: none; border: 1px solid var(--blue); border-radius: 6px;
+      color: var(--blue); font-size: 11px; font-family: 'Syne', sans-serif;
+      font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
+      padding: 4px 10px; white-space: nowrap; transition: background 0.15s;
+    }
+    .revisit-card-review:hover { background: rgba(66,133,244,0.12); }
+    .revisit-card-close {
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      font-size: 18px; line-height: 1; padding: 2px; transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .revisit-card-close:hover { color: var(--text); }
+
     /* Patterns section */
+    .history-section { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .history-nav { display: flex; align-items: center; gap: 6px; margin: 12px 0 16px; }
+    .history-sessions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .history-session-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    }
+    .history-session-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .history-session-label { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-session-meta { display: flex; align-items: center; gap: 8px; }
+    .history-journal { display: flex; flex-direction: column; }
+    .history-subhead { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
     .patterns-section { margin-top: 32px; }
     .heatmap-wrap { margin-bottom: 24px; overflow-x: auto; }
     .heatmap-grid { display: inline-flex; flex-direction: column; gap: 3px; min-width: 100%; }
@@ -1226,15 +1561,56 @@
   <div class="banner" id="errorBanner"></div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="timer">TIMER</button>
-    <button class="tab" data-tab="stats">STATS</button>
+    <button class="tab active" data-tab="timer">
+      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.4"/>
+        <path d="M3.46 10.54 A5 5 0 1 1 10.54 10.54" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="7" cy="7" r="1.1" fill="currentColor"/>
+      </svg>
+      TIMER
+    </button>
+    <button class="tab" data-tab="stats">
+      <svg viewBox="0 0 14 12" width="13" height="11" fill="currentColor" aria-hidden="true">
+        <rect x="0"    y="8"   width="2.8" height="4"    rx="0.6"/>
+        <rect x="3.7"  y="5.5" width="2.8" height="6.5"  rx="0.6"/>
+        <rect x="7.4"  y="3"   width="2.8" height="9"    rx="0.6"/>
+        <rect x="11.1" y="0.5" width="2.9" height="11.5" rx="0.6"/>
+      </svg>
+      STATS
+    </button>
   </div>
 
   <!-- TIMER PANEL -->
   <div class="panel active" id="panel-timer">
+    <div class="timer-main">
+
+    <!-- REVISIT TRIGGER -->
+    <div class="revisit-card" id="revisitCard" style="display:none">
+      <span class="revisit-card-text" id="revisitCardText"></span>
+      <button class="revisit-card-review" id="revisitCardReview">Review →</button>
+      <button class="revisit-card-close" id="revisitCardClose" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Daily target progress -->
+    <div class="daily-target-bar" id="dailyTargetBar">
+      <div class="daily-target-track">
+        <div class="daily-target-fill" id="dailyTargetFill"></div>
+      </div>
+      <div class="daily-target-labels">
+        <span id="dailyTargetDone">0h</span>
+        <span id="dailyTargetRemain"></span>
+      </div>
+    </div>
 
     <div class="mode-toggle">
-      <button class="mode-btn active" data-mode="pomodoro">POMODORO</button>
+      <button class="mode-btn active" data-mode="pomodoro">
+        <svg viewBox="0 0 14 14" width="12" height="12" fill="none" aria-hidden="true">
+          <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.4"/>
+          <path d="M3.46 10.54 A5 5 0 1 1 10.54 10.54" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="7" cy="7" r="1.1" fill="currentColor"/>
+        </svg>
+        POMODORO
+      </button>
       <button class="mode-btn" data-mode="stopwatch">STOPWATCH</button>
     </div>
 
@@ -1280,6 +1656,7 @@
         <div class="timer-display" id="timerDisplay">00:00:00</div>
         <div class="timer-state-label" id="timerStateLabel">idle</div>
         <button class="pip-btn" id="pipBtn" title="Float timer">⧉</button>
+        <button class="focus-btn" id="focusBtn" title="Focus mode">⊙</button>
       </div>
     </div>
 
@@ -1306,6 +1683,35 @@
         <button class="bulk-delete" id="bulkDelete">Delete</button>
       </div>
     </div>
+    </div><!-- /.timer-main -->
+
+    <!-- JOURNAL LOG -->
+    <div class="journal-section" id="journalSection">
+      <div class="journal-section-header" id="journalSectionHeader">
+        <span class="journal-section-title">
+          <svg viewBox="0 0 14 12" width="13" height="11" aria-hidden="true">
+            <rect x="4.5" y="5.5" width="9" height="5.5" rx="1" fill="#34A853"/>
+            <rect x="2.5" y="3.5" width="9" height="5.5" rx="1" fill="#FBBC05"/>
+            <rect x="0.5" y="1"   width="9" height="5.5" rx="1" fill="#4285F4"/>
+          </svg>
+          JOURNAL
+        </span>
+        <button class="journal-add-btn" id="journalAddBtn" title="Add note (J)">+</button>
+        <svg class="journal-section-chevron" id="journalChevron" viewBox="0 0 16 16"><polyline points="4 6 8 10 12 6"/></svg>
+      </div>
+      <div class="journal-log" id="journalLog">
+        <div class="journal-controls">
+          <div class="journal-nav">
+            <button class="journal-nav-btn" id="journalNavPrev" title="Previous day">‹</button>
+            <span class="journal-nav-label" id="journalNavLabel">Today</span>
+            <button class="journal-nav-btn" id="journalNavNext" title="Next day" disabled>›</button>
+            <button class="journal-nav-all" id="journalNavAll">All</button>
+          </div>
+          <input class="journal-search" id="journalSearch" type="text" placeholder="Search entries…" autocomplete="off" />
+        </div>
+        <div id="journalEntries"><div class="journal-empty">No entries yet.</div></div>
+      </div>
+    </div>
 
   </div>
 
@@ -1314,28 +1720,24 @@
 
     <!-- 7-day activity chart -->
     <div class="stats-section" style="margin-bottom:40px">
-      <div class="chart-title">Last 7 days</div>
+      <div class="chart-title" style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 14 12" width="13" height="11" aria-hidden="true">
+            <rect x="0"    y="8"   width="2.8" height="4"    rx="0.6" fill="#EA4335"/>
+            <rect x="3.7"  y="5.5" width="2.8" height="6.5"  rx="0.6" fill="#FBBC05"/>
+            <rect x="7.4"  y="3"   width="2.8" height="9"    rx="0.6" fill="#34A853"/>
+            <rect x="11.1" y="0.5" width="2.9" height="11.5" rx="0.6" fill="#4285F4"/>
+          </svg>
+          <span id="chartRangeLabel">Last 30 days</span>
+        </div>
+        <div style="display:flex;gap:2px">
+          <button class="chart-range-btn" data-days="7">7d</button>
+          <button class="chart-range-btn" data-days="15">15d</button>
+          <button class="chart-range-btn active" data-days="30">30d</button>
+        </div>
+      </div>
       <div class="bar-chart" id="barChart">
         <div class="empty-state">Loading…</div>
-      </div>
-    </div>
-
-    <!-- Row 1: streak / week / all-time -->
-    <div class="kpi-row">
-      <div class="stat-card">
-        <div class="stat-label">Streak</div>
-        <div class="stat-value" id="statStreak">—</div>
-        <div class="stat-sub" id="statStreakSub">days</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">This week</div>
-        <div class="stat-value" id="statWeek">—</div>
-        <div class="stat-sub">Mon–today</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">All time</div>
-        <div class="stat-value" id="statAllTime">—</div>
-        <div class="stat-sub">hours</div>
       </div>
     </div>
 
@@ -1352,7 +1754,26 @@
       </div>
     </div>
 
-    <!-- Row 2: avg session / total sessions / best day -->
+    <!-- Avg deep work row -->
+    <div class="kpi-row" style="margin-bottom:24px">
+      <div class="stat-card">
+        <div class="stat-label">Avg / day</div>
+        <div class="stat-value" id="statAvg4">—</div>
+        <div class="stat-sub">last 4 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg / day</div>
+        <div class="stat-value" id="statAvg7">—</div>
+        <div class="stat-sub">last 7 days</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg / day</div>
+        <div class="stat-value" id="statAvg30">—</div>
+        <div class="stat-sub">last 30 days</div>
+      </div>
+    </div>
+
+    <!-- Sessions / avg session / best day -->
     <div class="kpi-row" style="margin-bottom:24px">
       <div class="stat-card">
         <div class="stat-label">Avg session</div>
@@ -1375,9 +1796,28 @@
       <div class="dist-list" id="distrList"></div>
     </div>
 
+    <!-- History section -->
+    <div class="history-section">
+      <div class="chart-title">History</div>
+      <div class="history-nav">
+        <button class="journal-nav-btn" id="histNavPrev" title="Previous day">‹</button>
+        <span class="journal-nav-label" id="histNavLabel">Yesterday</span>
+        <button class="journal-nav-btn" id="histNavNext" title="Next day" disabled>›</button>
+      </div>
+      <div id="historyContent"><div class="journal-empty">Loading…</div></div>
+    </div>
+
     <!-- Patterns section -->
     <div class="patterns-section" id="patternsSection" style="display:none">
-      <div class="chart-title">Patterns</div>
+      <div class="chart-title">
+        <svg viewBox="0 0 14 12" width="13" height="11" aria-hidden="true">
+          <rect x="0"    y="8"   width="2.8" height="4"    rx="0.6" fill="#EA4335"/>
+          <rect x="3.7"  y="5.5" width="2.8" height="6.5"  rx="0.6" fill="#FBBC05"/>
+          <rect x="7.4"  y="3"   width="2.8" height="9"    rx="0.6" fill="#34A853"/>
+          <rect x="11.1" y="0.5" width="2.9" height="11.5" rx="0.6" fill="#4285F4"/>
+        </svg>
+        Patterns
+      </div>
       <div id="heatmapWrap"></div>
       <div id="insightList"></div>
       <div id="distImpactList"></div>
@@ -1391,11 +1831,32 @@
 <div class="reflection-overlay" id="reflectionOverlay">
   <div class="reflection-sheet">
     <div class="refl-handle"></div>
-    <div class="refl-title">How did that go?</div>
-    <div class="refl-sub">Optional — takes 10 seconds</div>
 
-    <div class="refl-label">What distracted you?</div>
-    <div class="distraction-chips" id="distractionChips">
+    <!-- Step 1 -->
+    <div id="reflStep1">
+      <div class="refl-title">What did you get done?</div>
+      <div class="refl-sub">Optional — takes 10 seconds</div>
+      <textarea class="reflection-note" id="reflDone" placeholder="Describe what you accomplished…" maxlength="200" rows="2" style="resize:none"></textarea>
+      <div class="refl-label" style="margin-top:16px">How was your focus?</div>
+      <div class="star-row" id="starRow">
+        <button class="star-btn" data-r="1"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+        <button class="star-btn" data-r="2"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+        <button class="star-btn" data-r="3"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+        <button class="star-btn" data-r="4"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+        <button class="star-btn" data-r="5"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+      </div>
+      <div class="refl-actions" style="margin-top:20px">
+        <button class="btn btn-primary" id="reflDoneBtn" style="flex:1">DONE</button>
+        <button class="btn btn-secondary" id="reflMoreBtn">MORE →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="reflStep2" style="display:none">
+      <div class="refl-title">Anything else?</div>
+      <div class="refl-sub" style="margin-bottom:14px">All optional</div>
+      <div class="refl-label">What distracted you?</div>
+      <div class="distraction-chips" id="distractionChips">
 
       <button class="distraction-chip" data-d="phone">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -1507,24 +1968,47 @@
     </div>
     <input type="text" class="other-input" id="otherDistractionInput" placeholder="Describe… (e.g. notifications, loud neighbor)" maxlength="100" />
 
-    <div class="refl-label">Focus rating</div>
-    <div class="star-row" id="starRow">
-      <button class="star-btn" data-r="1"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-      <button class="star-btn" data-r="2"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-      <button class="star-btn" data-r="3"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-      <button class="star-btn" data-r="4"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-      <button class="star-btn" data-r="5"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-    </div>
+    <div class="refl-label" style="margin-top:14px">Brain dump — offload anything on your mind</div>
+    <textarea class="reflection-note" id="reflBrainDump" placeholder="Random thoughts, blockers, tangents to explore later…" maxlength="400" rows="3" style="resize:none"></textarea>
 
-    <div class="refl-label">Any thoughts?</div>
-    <input type="text" class="reflection-note" id="reflectionNote" placeholder="Quick note about this session…" maxlength="200" />
+    <div class="refl-label">What's next?</div>
+    <input type="text" class="reflection-note" id="reflNextUp" placeholder="Next task or intention…" maxlength="200" />
 
-    <div class="refl-actions">
+    <div class="refl-actions" style="margin-top:20px">
       <button class="btn btn-primary" id="reflSave" style="flex:1">SAVE</button>
-      <button class="btn btn-secondary" id="reflSkip">SKIP</button>
+      <button class="btn btn-secondary" id="reflBack">← BACK</button>
+    </div>
+    </div><!-- /reflStep2 -->
+  </div>
+</div>
+
+<!-- QUICK JOURNAL PANEL -->
+<div class="journal-panel" id="journalPanel">
+  <div class="journal-panel-header">
+    <span class="journal-panel-ts" id="journalPanelTs"></span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="journal-range-btn" id="journalRangeBtn">⏱ range</button>
+      <button class="journal-panel-close" id="journalPanelClose" aria-label="Close">×</button>
+    </div>
+  </div>
+  <div class="journal-panel-options" id="journalRangeRow">
+    <input type="time" class="journal-panel-time-input" id="journalTimeFrom" />
+    <span class="journal-time-sep">→</span>
+    <input type="time" class="journal-panel-time-input" id="journalTimeTo" />
+  </div>
+  <textarea class="journal-panel-textarea" id="journalTextarea" maxlength="500" rows="4" placeholder="What's on your mind?"></textarea>
+  <div class="journal-panel-footer">
+    <div class="journal-panel-footer-left">
+      <span class="journal-panel-hint" id="journalHint"></span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="journal-todo-btn" id="journalTodoBtn">todo</button>
+      <button class="journal-save-btn btn btn-primary" id="journalSaveBtn">SAVE</button>
     </div>
   </div>
 </div>
+<div class="journal-saved-toast" id="journalSavedToast">Saved ✓</div>
+<button class="focus-exit-btn" id="focusExitBtn">EXIT FOCUS</button>
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay" style="display:none">
@@ -1701,9 +2185,11 @@
         Continue with Google
       </button>
       <div class="login-divider" style="display:none"><span>or</span></div>
-<input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
-      <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
-      <button class="btn btn-primary" id="btnLogin" style="width:100%;margin-bottom:10px">SIGN IN</button>
+<form id="loginForm" onsubmit="return false" style="display:contents">
+        <input class="login-input" id="loginEmail" type="email" placeholder="Email" autocomplete="email" />
+        <input class="login-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+        <button class="btn btn-primary" id="btnLogin" type="submit" style="width:100%;margin-bottom:10px">SIGN IN</button>
+      </form>
       <button class="btn btn-secondary" id="btnRegister" style="width:100%;font-size:12px">Create account</button>
       <div style="margin-top:14px;text-align:center">
         <button id="btnGuest" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:4px;opacity:0.75;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'">
@@ -1807,7 +2293,7 @@ let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
 let elapsed = 0;         // total seconds elapsed
 let intervalId = null;
-const MIN_SESSION_SECS = 15 * 60; // 15 minutes
+const MIN_SESSION_SECS = 5 * 60; // 5 minutes
 let startTs = null;      // performance.now() snapshot when last started/resumed
 let timerStartedAt = null; // Date for Firestore
 
@@ -1820,6 +2306,22 @@ let todaySessions = [];
 let isGuest = false;
 const GUEST_KEY = 'dwt_guest_sessions';
 
+// ─── Journal state ───────────────────────────────────────────────────────────
+const GUEST_JOURNAL_KEY = 'dwt_guest_journal';
+let journalOpen = false;
+let journalLogOpen = false;
+let journalEntries = [];
+let journalViewDate = 'today';   // 'today' | 'all' | 'YYYY-MM-DD'
+let journalSearchQuery = '';
+const JOURNAL_PLACEHOLDERS = [
+  "What are you working on right now?",
+  "What did you just finish?",
+  "What's next on your list?",
+  "Capture before it vanishes…",
+  "Note to self…",
+];
+let _placeholderIdx = 0;
+
 // ─── Email/Password Auth ─────────────────────────────────────────────────────
 const loginEmail    = $('loginEmail');
 const loginPassword = $('loginPassword');
@@ -1828,6 +2330,7 @@ const btnLogin      = $('btnLogin');
 const btnRegister   = $('btnRegister');
 const btnGuest      = $('btnGuest');
 
+$('loginForm').addEventListener('submit', () => btnLogin.click());
 btnLogin.addEventListener('click', async () => {
   const email = loginEmail.value.trim();
   const pass  = loginPassword.value;
@@ -1871,6 +2374,8 @@ btnGuest.addEventListener('click', () => {
   authStatus.textContent = 'guest';
   statusDot.style.background = 'var(--yellow)';
   loginOverlay.style.display = 'none';
+  runJournalV2Migration();
+  checkRevisitTrigger();
   // "sign in" link next to auth badge
   const link = document.createElement('button');
   link.id = 'guestSignInLink';
@@ -1944,6 +2449,8 @@ async function initFirebase(cfg) {
         loginOverlay.style.display = 'none';
         subscribeToday();
         renderStats();
+        runJournalV2Migration();
+        checkRevisitTrigger();
       } else {
         uid = null; isGuest = false;
         statusDot.style.background = 'var(--muted)';
@@ -2036,34 +2543,44 @@ function tsMs(ts) {
 // ─── Guest migration ──────────────────────────────────────────────────────
 async function migrateGuestSessions(uid) {
   const sessions = guestGetAll();
-  if (!sessions.length) return;
-  const col = collection(db, 'users', uid, 'sessions');
-  await Promise.all(sessions.map(s => {
-    const data = {
-      date: s.date, label: s.label || '', duration: s.duration,
-      startedAt: Timestamp.fromMillis(typeof s.startedAt === 'number' ? s.startedAt : s.startedAt * 1000),
-      endedAt:   Timestamp.fromMillis(typeof s.endedAt   === 'number' ? s.endedAt   : s.endedAt   * 1000),
-      type: s.type || 'stopwatch',
-      ...(s.focusRating  !== undefined && { focusRating:  s.focusRating  }),
-      ...(s.distractions !== undefined && { distractions: s.distractions }),
-      ...(s.note         !== undefined && { note:         s.note         }),
-    };
-    return addDoc(col, data);
-  }));
-  localStorage.removeItem(GUEST_KEY); // clear only after all writes succeed
-  gaEvent('guest_migration', { session_count: sessions.length });
+  const guestJournal = guestGetJournal();
+  if (!sessions.length && !guestJournal.length) return;
+  const sessionCol = collection(db, 'users', uid, 'sessions');
+  const journalCol = collection(db, 'users', uid, 'journal');
+  await Promise.all([
+    ...sessions.map(s => {
+      const data = {
+        date: s.date, label: s.label || '', duration: s.duration,
+        startedAt: Timestamp.fromMillis(typeof s.startedAt === 'number' ? s.startedAt : s.startedAt * 1000),
+        endedAt:   Timestamp.fromMillis(typeof s.endedAt   === 'number' ? s.endedAt   : s.endedAt   * 1000),
+        type: s.type || 'stopwatch',
+        ...(s.focusRating  !== undefined && { focusRating:  s.focusRating  }),
+        ...(s.distractions !== undefined && { distractions: s.distractions }),
+        ...(s.note         !== undefined && { note:         s.note         }),
+      };
+      return addDoc(sessionCol, data);
+    }),
+    ...guestJournal.map(e => addDoc(journalCol, {
+      text: e.text, type: e.type, sessionId: e.sessionId || null,
+      date: e.date, tags: e.tags || parseTags(e.text || ''), resolved: e.resolved ?? false,
+      timestamp: Timestamp.fromMillis(e.ts || Date.now()),
+    })),
+  ]);
+  if (sessions.length) localStorage.removeItem(GUEST_KEY);
+  if (guestJournal.length) localStorage.removeItem(GUEST_JOURNAL_KEY);
+  gaEvent('guest_migration', { session_count: sessions.length, journal_count: guestJournal.length });
 }
 
 // ─── Firestore subscriptions ───────────────────────────────────────────────
 function subscribeToday() {
-  if (isGuest) { todaySessions = guestGetToday(); renderSessions(); return; }
+  if (isGuest) { todaySessions = guestGetToday(); renderSessions(); loadJournalEntries(); return; }
   if (!uid || !db) return;
   if (todayUnsubscribe) todayUnsubscribe();
 
+  loadJournalEntries();
+
   const col = collection(db, 'users', uid, 'sessions');
-  const q = query(col,
-    where('date', '==', todayStr())
-  );
+  const q = query(col, where('date', '==', todayStr()));
 
   todayUnsubscribe = onSnapshot(q, snap => {
     todaySessions = snap.docs
@@ -2157,11 +2674,434 @@ $('bulkDelete').addEventListener('click', async () => {
   await Promise.all(ids.map(id => deleteSession(id)));
 });
 
+// ─── Journal ─────────────────────────────────────────────────────────────────
+
+function parseTags(text) {
+  const matches = (text || '').match(/#[a-zA-Z][a-zA-Z0-9_]*/g) || [];
+  return [...new Set(matches.map(t => t.slice(1).toLowerCase()))];
+}
+
+function guestGetJournal() {
+  try { return JSON.parse(localStorage.getItem(GUEST_JOURNAL_KEY) || '[]'); } catch { return []; }
+}
+function guestGetJournalForDate(date) {
+  const all = guestGetJournal().sort((a, b) => b.ts - a.ts);
+  if (date === 'all') return all;
+  return all.filter(e => e.date === date);
+}
+
+async function saveJournalEntry({ text, type, sessionId = null, startedAt = null, endedAt = null, isTodo = false, todoCompleted = false }) {
+  if (!text) return;
+  const now = Date.now();
+  const tags = parseTags(text);
+  const entry = { text, type, sessionId, date: todayStr(), tags, resolved: false,
+    startedAt: startedAt ?? null, endedAt: endedAt ?? null,
+    isTodo, todoCompleted };
+  if (isGuest) {
+    const all = guestGetJournal();
+    all.push({ id: 'g' + now, ...entry, ts: now });
+    localStorage.setItem(GUEST_JOURNAL_KEY, JSON.stringify(all));
+    if (journalViewDate === 'today' || journalViewDate === 'all') {
+      journalEntries.unshift({ ...entry, ts: now });
+      renderJournalEntries();
+    }
+  } else {
+    if (!uid || !db) return;
+    try {
+      const fsEntry = { ...entry, timestamp: Timestamp.fromDate(new Date(now)) };
+      if (startedAt) fsEntry.startedAt = Timestamp.fromDate(new Date(startedAt));
+      if (endedAt)   fsEntry.endedAt   = Timestamp.fromDate(new Date(endedAt));
+      if (journalViewDate === 'today' || journalViewDate === 'all') {
+        journalEntries.unshift({ ...entry, ts: now });
+        renderJournalEntries();
+      }
+      await addDoc(collection(db, 'users', uid, 'journal'), fsEntry);
+    } catch { /* non-critical */ }
+  }
+  // auto-expand journal section on mobile so the entry is immediately visible
+  if (!journalLogOpen && window.innerWidth < 800) {
+    journalLogOpen = true;
+    $('journalLog').classList.add('open');
+    $('journalChevron').style.transform = 'rotate(180deg)';
+  }
+}
+
+async function loadJournalEntries(date) {
+  journalViewDate = date ?? journalViewDate;
+  const targetDate = journalViewDate === 'today' ? todayStr() : journalViewDate;
+  updateJournalNav();
+  if (isGuest) {
+    journalEntries = guestGetJournalForDate(targetDate);
+    renderJournalEntries();
+    return;
+  }
+  if (!uid || !db) return;
+  try {
+    const col = collection(db, 'users', uid, 'journal');
+    const q = journalViewDate === 'all'
+      ? query(col, orderBy('timestamp', 'desc'))
+      : query(col, where('date', '==', targetDate));
+    const snap = await getDocs(q);
+    journalEntries = snap.docs.map(d => {
+      const data = d.data();
+      return { id: d.id, ...data,
+        ts: data.timestamp?.toMillis?.() ?? 0,
+        startedAt: data.startedAt?.toMillis?.() ?? null,
+        endedAt:   data.endedAt?.toMillis?.()   ?? null,
+      };
+    }).sort((a, b) => b.ts - a.ts);
+    renderJournalEntries();
+  } catch (err) { console.error('loadJournalEntries:', err); }
+}
+
+function journalNavLabelFor(v) {
+  if (v === 'today' || v === todayStr()) return 'Today';
+  if (v === 'all') return 'All';
+  const d = new Date(v + 'T00:00:00');
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  if (v === dateStr(yesterday)) return 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function updateJournalNav() {
+  const label = $('journalNavLabel');
+  const prev = $('journalNavPrev');
+  const next = $('journalNavNext');
+  const allBtn = $('journalNavAll');
+  if (!label) return;
+  label.textContent = journalNavLabelFor(journalViewDate);
+  const isAll = journalViewDate === 'all';
+  const isToday = journalViewDate === 'today' || journalViewDate === todayStr();
+  if (prev) prev.disabled = isAll;
+  if (next) next.disabled = isAll || isToday;
+  if (allBtn) allBtn.classList.toggle('active', isAll);
+}
+
+function renderJournalEntries() {
+  const container = $('journalEntries');
+  if (!container) return;
+  const emptyMsg = journalViewDate === 'all' ? 'No journal entries yet.' :
+    journalViewDate === 'today' ? 'No entries today.' : 'No entries on this day.';
+  if (!journalEntries.length) {
+    container.innerHTML = `<div class="journal-empty">${emptyMsg}</div>`;
+    return;
+  }
+  const fmtT = ms => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  container.innerHTML = journalEntries.map(e => {
+    const timeStr = (e.startedAt && e.endedAt)
+      ? fmtT(e.startedAt) + ' – ' + fmtT(e.endedAt)
+      : fmtT(e.ts || Date.now());
+    const tags = e.tags || [];
+    const tagsStr = tags.join(' ');
+    const rawText = (e.text || '').replace(/#[a-zA-Z][a-zA-Z0-9_]*/g, '').replace(/\s+/g, ' ').trim();
+    const preview = rawText.slice(0, 120).replace(/</g, '&lt;');
+    const tagsHtml = tags.map(t => `<span class="journal-tag">${t}</span>`).join('');
+    const isDone = e.isTodo && e.todoCompleted;
+    const leftSlot = e.isTodo
+      ? `<input type="checkbox" class="journal-entry-check" ${isDone ? 'checked' : ''} />`
+      : `<div class="journal-entry-dot"></div>`;
+    const badgeHtml = e.isTodo ? '' : `<span class="journal-entry-badge ${e.type}">${e.type}</span>`;
+    return `<div class="journal-entry" data-id="${e.id || ''}" data-text="${(e.text||'').replace(/"/g,'&quot;')}" data-tags="${tagsStr}">
+      ${leftSlot}
+      <span class="journal-entry-ts">${timeStr}</span>
+      <div style="flex:1;min-width:0">
+        <div class="journal-entry-text${isDone ? ' done' : ''}">${preview} ${badgeHtml}${tagsHtml}</div>
+      </div>
+      <button class="journal-entry-del" title="Delete entry">×</button>
+    </div>`;
+  }).join('');
+  if (journalSearchQuery) applyJournalSearch(journalSearchQuery);
+}
+
+async function deleteJournalEntry(id) {
+  journalEntries = journalEntries.filter(e => e.id !== id);
+  renderJournalEntries();
+  if (isGuest) {
+    const all = guestGetJournal().filter(e => e.id !== id);
+    localStorage.setItem(GUEST_JOURNAL_KEY, JSON.stringify(all));
+    return;
+  }
+  if (!uid || !db) return;
+  try { await deleteDoc(doc(db, 'users', uid, 'journal', id)); } catch { /* ignore */ }
+}
+
+$('journalEntries').addEventListener('click', e => {
+  const entry = e.target.closest('.journal-entry');
+  if (!entry) return;
+  const id = entry.dataset.id;
+  if (e.target.closest('.journal-entry-del')) {
+    if (id) deleteJournalEntry(id);
+    return;
+  }
+  if (e.target.classList.contains('journal-entry-check')) {
+    const checked = e.target.checked;
+    if (id) toggleTodoComplete(id, checked);
+  }
+});
+
+async function toggleTodoComplete(id, completed) {
+  const e = journalEntries.find(x => x.id === id);
+  if (e) { e.todoCompleted = completed; renderJournalEntries(); }
+  if (isGuest) {
+    const all = guestGetJournal().map(x => x.id === id ? { ...x, todoCompleted: completed } : x);
+    localStorage.setItem(GUEST_JOURNAL_KEY, JSON.stringify(all));
+    return;
+  }
+  if (!uid || !db) return;
+  try { await updateDoc(doc(db, 'users', uid, 'journal', id), { todoCompleted: completed }); } catch { /* ignore */ }
+}
+
+// kept for backwards-compat call sites
+function renderJournalLog() { updateJournalNav(); renderJournalEntries(); }
+
+function highlightMatch(text, query) {
+  if (!query) return text.replace(/</g, '&lt;');
+  const safe = text.replace(/</g, '&lt;');
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return safe.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function applyJournalSearch(q) {
+  journalSearchQuery = q;
+  const container = $('journalEntries');
+  if (!container) return;
+  const low = q.toLowerCase();
+  container.querySelectorAll('.journal-entry').forEach(el => {
+    const rawText = (el.dataset.text || '').toLowerCase();
+    const rawTags = (el.dataset.tags || '').toLowerCase();
+    const match = !q || rawText.includes(low) || rawTags.includes(low);
+    el.style.display = match ? '' : 'none';
+    if (match) {
+      const textEl = el.querySelector('.journal-entry-text');
+      if (textEl) textEl.innerHTML = highlightMatch((el.dataset.text || '').slice(0, 120), q);
+    }
+  });
+}
+
+function navigateJournalDate(dir) {
+  let current;
+  if (journalViewDate === 'today') current = new Date();
+  else if (journalViewDate === 'all') return;
+  else current = new Date(journalViewDate + 'T00:00:00');
+  current.setDate(current.getDate() + dir);
+  const newDate = dateStr(current);
+  if (newDate > todayStr()) return;
+  journalViewDate = newDate === todayStr() ? 'today' : newDate;
+  loadJournalEntries();
+}
+
+// ─── Journal V2 migration (one-time: adds tags + resolved fields) ────────────
+async function runJournalV2Migration() {
+  if (localStorage.getItem('dwt_journal_v2_migrated')) return;
+  const all = guestGetJournal();
+  if (all.some(e => e.tags === undefined || e.resolved === undefined)) {
+    const updated = all.map(e => ({
+      ...e,
+      tags: e.tags ?? parseTags(e.text || ''),
+      resolved: e.resolved ?? false,
+    }));
+    localStorage.setItem(GUEST_JOURNAL_KEY, JSON.stringify(updated));
+  }
+  if (!isGuest && uid && db) {
+    try {
+      const snap = await getDocs(collection(db, 'users', uid, 'journal'));
+      const needs = snap.docs.filter(d => {
+        const data = d.data();
+        return data.tags === undefined || data.resolved === undefined;
+      });
+      await Promise.all(needs.map(d => {
+        const data = d.data();
+        return updateDoc(doc(db, 'users', uid, 'journal', d.id), {
+          tags: data.tags ?? parseTags(data.text || ''),
+          resolved: data.resolved ?? false,
+        });
+      }));
+    } catch { /* non-critical */ }
+  }
+  localStorage.setItem('dwt_journal_v2_migrated', '1');
+}
+
+// ─── Revisit trigger ──────────────────────────────────────────────────────────
+async function checkRevisitTrigger() {
+  const today = todayStr();
+  const lastOpened = localStorage.getItem('dwt_last_opened_date');
+  localStorage.setItem('dwt_last_opened_date', today);
+  if (lastOpened === today) return; // already ran today
+
+  // Find the most recent date that had entries
+  let prevDate, prevCount;
+  if (isGuest) {
+    const all = guestGetJournal();
+    const byDate = {};
+    all.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + 1; });
+    const pastDates = Object.keys(byDate).filter(d => d < today).sort().reverse();
+    if (!pastDates.length) return;
+    prevDate = pastDates[0];
+    prevCount = byDate[prevDate];
+  } else {
+    if (!uid || !db) return;
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'users', uid, 'journal'), where('date', '<', today), orderBy('date', 'desc'))
+      );
+      if (!snap.docs.length) return;
+      prevDate = snap.docs[0].data().date;
+      prevCount = snap.docs.filter(d => d.data().date === prevDate).length;
+    } catch { return; }
+  }
+
+  const dismissKey = `dwt_revisit_dismissed_${today}`;
+  if (localStorage.getItem(dismissKey)) return;
+
+  showRevisitCard(prevDate, prevCount);
+}
+
+function showRevisitCard(prevDate, count) {
+  const card = $('revisitCard');
+  const text = $('revisitCardText');
+  if (!card || !text) return;
+  const label = journalNavLabelFor(prevDate);
+  text.textContent = `You captured ${count} thought${count !== 1 ? 's' : ''} ${label === 'Yesterday' ? 'yesterday' : `on ${label}`}.`;
+  card.style.display = 'flex';
+  $('revisitCardReview').onclick = () => {
+    card.style.display = 'none';
+    // expand journal log and navigate to that date
+    journalLogOpen = true;
+    $('journalLog').classList.add('open');
+    $('journalChevron').style.transform = 'rotate(180deg)';
+    loadJournalEntries(prevDate);
+    $('journalSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  $('revisitCardClose').onclick = () => {
+    card.style.display = 'none';
+    localStorage.setItem(`dwt_revisit_dismissed_${todayStr()}`, '1');
+  };
+}
+
+// Quick Journal UI
+function nowTimeValue() {
+  const d = new Date();
+  return d.toTimeString().slice(0, 5); // "HH:MM"
+}
+
+function timeInputToMs(val) {
+  if (!val) return null;
+  const [h, m] = val.split(':').map(Number);
+  const d = new Date(); d.setHours(h, m, 0, 0);
+  return d.getTime();
+}
+
+function openQuickJournal() {
+  if (journalOpen) return;
+  journalOpen = true;
+  const ts = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  $('journalPanelTs').textContent = ts;
+  $('journalTextarea').placeholder = JOURNAL_PLACEHOLDERS[_placeholderIdx++ % JOURNAL_PLACEHOLDERS.length];
+  $('journalTimeFrom').value = nowTimeValue();
+  $('journalTimeTo').value = nowTimeValue();
+  $('journalPanel').classList.add('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => $('journalTextarea').focus()));
+}
+
+function closeQuickJournal() {
+  if (!journalOpen) return;
+  journalOpen = false;
+  $('journalPanel').classList.remove('open');
+  $('journalTextarea').value = '';
+  $('journalHint').textContent = '';
+  $('journalRangeBtn').classList.remove('active');
+  $('journalRangeRow').classList.remove('visible');
+  $('journalTodoBtn').classList.remove('active');
+  $('journalTodoBtn').textContent = '☐ todo';
+  $('journalTextarea').blur();
+}
+
+async function saveQuickEntry() {
+  const text = $('journalTextarea').value.trim();
+  const rangeActive = $('journalRangeBtn').classList.contains('active');
+  const isTodo = $('journalTodoBtn').classList.contains('active');
+  const startedAt = rangeActive ? timeInputToMs($('journalTimeFrom').value) : null;
+  const endedAt   = rangeActive ? timeInputToMs($('journalTimeTo').value)   : null;
+  closeQuickJournal();
+  if (!text) return;
+  await saveJournalEntry({ text, type: isTodo ? 'todo' : 'quick', isTodo, startedAt, endedAt });
+  const toast = $('journalSavedToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1200);
+}
+
+// Save if content, dismiss if empty — applies to Esc, close ×, backdrop
+async function smartDismissQuickJournal() {
+  const text = $('journalTextarea').value.trim();
+  if (text) { await saveQuickEntry(); } else { closeQuickJournal(); }
+}
+
+// Event wiring — Quick Journal
+$('journalAddBtn').addEventListener('click', e => { e.stopPropagation(); openQuickJournal(); });
+$('journalRangeBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const btn = $('journalRangeBtn');
+  const active = btn.classList.toggle('active');
+  $('journalRangeRow').classList.toggle('visible', active);
+  if (active) $('journalTimeFrom').focus();
+});
+$('journalTodoBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const btn = $('journalTodoBtn');
+  btn.classList.toggle('active');
+});
+$('journalPanelClose').addEventListener('click', smartDismissQuickJournal);
+$('journalSaveBtn').addEventListener('click', saveQuickEntry);
+$('journalTextarea').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveQuickEntry(); }
+  if (e.key === 'Escape') { e.preventDefault(); smartDismissQuickJournal(); }
+});
+$('journalTextarea').addEventListener('input', () => {
+  const len = $('journalTextarea').value.length;
+  const hint = $('journalHint');
+  if (len >= 450) { hint.textContent = `${500 - len} left`; }
+  else { hint.textContent = ''; }
+});
+
+document.addEventListener('keydown', e => {
+  const active = document.activeElement;
+  const inInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+  if ((e.key === 'j' || e.key === 'J') && !inInput && !journalOpen) openQuickJournal();
+});
+document.addEventListener('click', e => {
+  if (journalOpen && !$('journalPanel').contains(e.target) && !e.target.closest('#journalAddBtn'))
+    smartDismissQuickJournal();
+});
+
+// Event wiring — Journal Log toggle + nav + search
+$('journalSectionHeader').addEventListener('click', e => {
+  if (e.target.closest('#journalAddBtn')) return;
+  if (window.innerWidth >= 800) return;
+  journalLogOpen = !journalLogOpen;
+  $('journalLog').classList.toggle('open', journalLogOpen);
+  $('journalChevron').style.transform = journalLogOpen ? 'rotate(180deg)' : '';
+  if (journalLogOpen && !journalEntries.length) loadJournalEntries();
+});
+$('journalNavPrev').addEventListener('click', () => navigateJournalDate(-1));
+$('journalNavNext').addEventListener('click', () => navigateJournalDate(+1));
+$('journalNavAll').addEventListener('click', () => loadJournalEntries('all'));
+$('journalSearch').addEventListener('input', e => applyJournalSearch(e.target.value.trim()));
+
 // ─── Render sessions ────────────────────────────────────────────────────────
 function renderSessions() {
   updateTodayTotal(currentElapsed());
   const pomoEl = $('pomoCount');
   if (pomoEl) pomoEl.textContent = todaySessions.filter(s => s.type === 'pomodoro').length;
+
+  // Daily target progress
+  const TARGET = 3.5 * 3600;
+  const doneSecs = todaySessions.reduce((s, x) => s + (x.duration || 0), 0);
+  const pct = Math.min(100, Math.round((doneSecs / TARGET) * 100));
+  const remain = Math.max(0, TARGET - doneSecs);
+  $('dailyTargetFill').style.width = pct + '%';
+  $('dailyTargetFill').style.background = pct >= 100 ? 'var(--green)' : 'var(--blue)';
+  $('dailyTargetDone').textContent = fmtHM(doneSecs);
+  $('dailyTargetRemain').textContent = pct >= 100 ? '🎯 target hit!' : fmtHM(remain) + ' to go';
 
   if (todaySessions.length === 0) {
     sessionsList.innerHTML = '<div class="empty-state">No sessions yet. Start your first one!</div>';
@@ -2253,7 +3193,7 @@ function tickTimer() {
     gaEvent('pomodoro_complete', { duration_mins: Math.round(pomodoroDuration / 60) });
     autoCompletePomodoro();
   }
-  // Re-render buttons when stopwatch crosses 15 min threshold
+  // Re-render buttons when stopwatch crosses 5 min threshold
   if (timerMode === 'stopwatch') {
     const lbl = stopLabel();
     if (lbl !== _lastStopLabel) { _lastStopLabel = lbl; renderButtons(); }
@@ -2361,6 +3301,8 @@ function startTimer() {
   setRingColor('running');
   renderButtons();
   labelInput.disabled = true;
+  const startLabel = labelInput.value.trim();
+  if (startLabel) saveJournalEntry({ text: startLabel, type: 'pre' });
 }
 
 function pauseTimer() {
@@ -2407,13 +3349,13 @@ function stopTimer() {
   labelInput.disabled = false;
   renderButtons();
 
-  // Discard silently if under 15 min
+  // Discard silently if under 5 min
   if (isGiveUp) {
     labelInput.value = '';
     return;
   }
 
-  // ≥ 15 min — save and show break prompt then reflection
+  // ≥ 5 min — save and show break prompt then reflection
   pendingSession = {
     durationSecs: Math.floor(finalElapsed),
     label: labelInput.value.trim(),
@@ -2598,13 +3540,26 @@ function burstHeartbreak(originEl) {
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
+let chartRangeDays = 30;
+let _lastAllSessions = null;
+
+document.querySelectorAll('.chart-range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    chartRangeDays = parseInt(btn.dataset.days);
+    document.querySelectorAll('.chart-range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('chartRangeLabel').textContent = `Last ${chartRangeDays} days`;
+    if (_lastAllSessions) renderStatsFromSessions(_lastAllSessions);
+  });
+});
+
 function renderStatsFromSessions(allSessions) {
+  _lastAllSessions = allSessions;
   try {
-    const FOCUS_C = { 5:'#34A853', 4:'#00BFA5', 3:'#4285F4', 2:'#FBBC05', 1:'#EA4335' };
+    const FOCUS_C = { 5:'rgba(66,133,244,1)', 4:'rgba(66,133,244,0.78)', 3:'rgba(66,133,244,0.55)', 2:'rgba(66,133,244,0.35)', 1:'rgba(66,133,244,0.18)' };
     const totalCount = allSessions.length;
     const allTimeSecs = allSessions.reduce((s, x) => s + (x.duration || 0), 0);
 
-    $('statAllTime').textContent = (allTimeSecs / 3600).toFixed(1) + 'h';
     $('statTotalCount').textContent = totalCount;
     $('statAvgLen').textContent = totalCount > 0 ? fmtHM(Math.floor(allTimeSecs / totalCount)) : '—';
 
@@ -2619,14 +3574,18 @@ function renderStatsFromSessions(allSessions) {
     const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     $('statBestDay').textContent = maxDow > 0 ? DOW[byDow.indexOf(maxDow)] : '—';
 
-    // Last 7 days
+    // Chart — build days array for n days ending today
     const today = new Date();
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      days.push(dateStr(d));
-    }
+    let chartDays = chartRangeDays;
+    const buildChartDays = n => {
+      const arr = [];
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date(today); d.setDate(today.getDate() - i);
+        arr.push(dateStr(d));
+      }
+      return arr;
+    };
+    const days = buildChartDays(chartDays);
 
     const recent = allSessions.filter(s => s.date >= days[0]);
 
@@ -2643,16 +3602,23 @@ function renderStatsFromSessions(allSessions) {
     const monday = new Date(today);
     monday.setDate(today.getDate() + (dow === 0 ? -6 : 1 - dow));
     const weekSecs = days.filter(d => d >= dateStr(monday)).reduce((s, d) => s + byDay[d], 0);
-    $('statWeek').textContent = fmtHMfull(weekSecs);
 
-    // Streak
+    // Streak (used for milestone toasts)
     const allDates = new Set(allSessions.map(s => s.date));
     let streak = 0;
     const chk = new Date(today);
     if (!byDay[todayStr()]) chk.setDate(chk.getDate() - 1);
     while (allDates.has(dateStr(chk))) { streak++; chk.setDate(chk.getDate() - 1); }
-    $('statStreak').textContent = streak;
-    $('statStreakSub').textContent = streak === 1 ? 'day streak' : 'day streak';
+
+    // Avg deep work per day — 4 / 7 / 30 days
+    const avgOver = n => {
+      const cutoff = dateStr(new Date(Date.now() - (n - 1) * 86400000));
+      const secs = allSessions.filter(s => s.date >= cutoff).reduce((s, x) => s + (x.duration || 0), 0);
+      return secs > 0 ? fmtHM(Math.round(secs / n)) : '—';
+    };
+    $('statAvg4').textContent  = avgOver(4);
+    $('statAvg7').textContent  = avgOver(7);
+    $('statAvg30').textContent = avgOver(30);
 
     // ── Milestone celebrations ──────────────────────────────────────────────
     const STREAK_MILESTONES = [3, 7, 14, 30, 100];
@@ -2680,9 +3646,10 @@ function renderStatsFromSessions(allSessions) {
     }
 
     // Vertical bar chart
+    const DAILY_TARGET_SECS = 3.5 * 3600;
     const CHART_H = 120; // px for tallest bar
     const SVG_H = 140;   // matches .v-chart height
-    const maxSecs = Math.max(...Object.values(byDay), 1);
+    const maxSecs = Math.max(...Object.values(byDay), DAILY_TARGET_SECS);
     const todayD = todayStr();
     const barChartEl = $('barChart');
     barChartEl.innerHTML = '';
@@ -2722,10 +3689,19 @@ function renderStatsFromSessions(allSessions) {
       col.appendChild(bar);
       vBars.appendChild(col);
 
-      // Day label
+      // Day label — always show day name, add dd/mm below on Sundays
       const dayCell = document.createElement('div');
+      const dow = new Date(d + 'T12:00:00').getDay();
       dayCell.className = 'v-day' + (isToday ? ' today-lbl' : '');
-      dayCell.textContent = dayLabel(d);
+      dayCell.textContent = isToday ? 'today' : dayLabel(d);
+      if (!isToday) {
+        const mm = d.slice(5, 7);
+        const prevMm = i > 0 ? days[i - 1].slice(5, 7) : null;
+        const dateLbl = document.createElement('div');
+        dateLbl.style.cssText = 'font-size:10px;color:var(--text);opacity:0.9;margin-top:2px';
+        dateLbl.textContent = mm !== prevMm ? d.slice(8) + '/' + mm : d.slice(8);
+        dayCell.appendChild(dateLbl);
+      }
       vAxis.appendChild(dayCell);
 
       // Focus dot
@@ -2802,6 +3778,18 @@ function renderStatsFromSessions(allSessions) {
       vBars.appendChild(svg);
     })(splinePts);
 
+    // Target line
+    const targetH = Math.round((DAILY_TARGET_SECS / maxSecs) * CHART_H);
+    const targetLine = document.createElement('div');
+    targetLine.style.cssText = `position:absolute;left:0;right:0;bottom:${targetH}px;` +
+      `border-top:1px dashed rgba(66,133,244,0.5);pointer-events:none;`;
+    const targetLbl = document.createElement('span');
+    targetLbl.style.cssText = `position:absolute;right:0;top:-14px;font-family:'JetBrains Mono',monospace;` +
+      `font-size:9px;color:rgba(66,133,244,0.7);letter-spacing:0.3px`;
+    targetLbl.textContent = '3.5h';
+    targetLine.appendChild(targetLbl);
+    vBars.appendChild(targetLine);
+
     barChartEl.appendChild(vBars);
     barChartEl.appendChild(vAxis);
     if (hasFocusDots) barChartEl.appendChild(vRdotsRow);
@@ -2816,7 +3804,9 @@ function renderStatsFromSessions(allSessions) {
       starsEl.innerHTML = '';
       for (let i = 1; i <= 5; i++) {
         const s = document.createElement('div');
-        s.className = 'fstar' + (i <= Math.round(avgFocus) ? ' on' : '');
+        const filled = i <= Math.round(avgFocus);
+        s.className = 'fstar' + (filled ? ' on' : '');
+        if (filled) s.style.background = `rgba(66,133,244,${0.18 + i * 0.18})`;
         starsEl.appendChild(s);
       }
       // Last 10 rated sessions chronologically
@@ -2829,6 +3819,8 @@ function renderStatsFromSessions(allSessions) {
       last10.forEach(s => {
         const dot = document.createElement('div');
         dot.className = 'fdot';
+        const pct = Math.round((s.focusRating / 5) * 100);
+        dot.style.height = pct + '%';
         dot.style.background = FOCUS_C[s.focusRating] || 'var(--border)';
         dot.title = `${s.focusRating}/5 · ${fmtHM(s.duration || 0)}`;
         dotsEl.appendChild(dot);
@@ -3095,13 +4087,134 @@ function renderStatsFromSessions(allSessions) {
   }
 }
 
+// ─── History ──────────────────────────────────────────────────────────────────
+let historyDate = (() => {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+})();
+
+function histDateLabel(dateStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr + 'T12:00:00');
+  const diff = Math.round((today - d) / 86400000);
+  if (diff === 1) return 'Yesterday';
+  if (diff === 0) return 'Today';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+}
+
+function renderHistoryContent(sessions, journals) {
+  const container = $('historyContent');
+  if (!sessions.length && !journals.length) {
+    container.innerHTML = `<div class="journal-empty">No data for this day.</div>`;
+    return;
+  }
+  const fmtT = ms => {
+    if (!ms) return '?';
+    const d = ms.toDate ? ms.toDate() : new Date(ms);
+    return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  let html = '';
+
+  if (sessions.length) {
+    const totalSecs = sessions.reduce((s, x) => s + (x.duration || 0), 0);
+    html += `<div class="history-subhead">Sessions — ${fmtHM(totalSecs)} total</div>
+    <div class="history-sessions">`;
+    sessions.forEach(s => {
+      const label = s.label || '—';
+      const timeRange = fmtTimeRange(s.startedAt, s.endedAt);
+      const typeDot = s.type === 'pomodoro' ? 'var(--red)' : 'var(--green)';
+      html += `<div class="history-session-card">
+        <div class="session-dot" style="background:${typeDot}"></div>
+        <div class="history-session-info">
+          <div class="history-session-label">${escHtml(label)}</div>
+          <div class="history-session-meta">
+            <span class="session-time-range">${timeRange}</span>
+            <span class="session-badge ${s.type}">${fmtHM(s.duration || 0)}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (journals.length) {
+    html += `<div class="history-subhead" style="margin-top:${sessions.length ? 8 : 0}px">Journal</div>
+    <div class="history-journal">`;
+    const fmtJ = ms => new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    journals.forEach(e => {
+      const timeStr = (e.startedAt && e.endedAt)
+        ? fmtJ(e.startedAt) + ' – ' + fmtJ(e.endedAt)
+        : fmtJ(e.ts || 0);
+      const preview = (e.text || '').slice(0, 120).replace(/</g, '&lt;');
+      html += `<div class="journal-entry">
+        <span class="journal-entry-ts">${timeStr}</span>
+        <span class="journal-entry-badge ${e.type}">${e.type}</span>
+        <div class="journal-entry-text">${preview}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+async function loadHistory(date) {
+  historyDate = date;
+  const today = todayStr();
+  $('histNavNext').disabled = date >= today;
+  $('histNavLabel').textContent = histDateLabel(date);
+  $('historyContent').innerHTML = `<div class="journal-empty">Loading…</div>`;
+
+  if (isGuest) {
+    const sessions = (guestGetAll() || []).filter(s => s.date === date)
+      .sort((a, b) => (a.startedAt || 0) - (b.startedAt || 0));
+    const journals = guestGetJournalForDate(date);
+    renderHistoryContent(sessions, journals);
+    return;
+  }
+  if (!uid || !db) return;
+  try {
+    const [sessSnap, jSnap] = await Promise.all([
+      getDocs(query(collection(db, 'users', uid, 'sessions'), where('date', '==', date))),
+      getDocs(query(collection(db, 'users', uid, 'journal'), where('date', '==', date))),
+    ]);
+    const sessions = sessSnap.docs.map(d => d.data())
+      .sort((a, b) => (a.startedAt?.seconds || 0) - (b.startedAt?.seconds || 0));
+    const journals = jSnap.docs.map(d => {
+      const data = d.data();
+      return { ...data, ts: data.timestamp?.toMillis?.() ?? 0,
+        startedAt: data.startedAt?.toMillis?.() ?? null,
+        endedAt: data.endedAt?.toMillis?.() ?? null };
+    }).sort((a, b) => a.ts - b.ts);
+    renderHistoryContent(sessions, journals);
+  } catch (err) { $('historyContent').innerHTML = `<div class="journal-empty">Failed to load.</div>`; }
+}
+
+$('histNavPrev').addEventListener('click', () => {
+  const d = new Date(historyDate + 'T12:00:00');
+  d.setDate(d.getDate() - 1);
+  loadHistory(d.toISOString().split('T')[0]);
+});
+$('histNavNext').addEventListener('click', () => {
+  const d = new Date(historyDate + 'T12:00:00');
+  d.setDate(d.getDate() + 1);
+  const next = d.toISOString().split('T')[0];
+  if (next <= todayStr()) loadHistory(next);
+});
+
 async function renderStats() {
-  if (isGuest) { renderStatsFromSessions(guestGetAll()); return; }
+  if (isGuest) {
+    renderStatsFromSessions(guestGetAll());
+    loadHistory(historyDate);
+    return;
+  }
   if (!uid || !db) return;
   try {
     const snap = await getDocs(query(collection(db, 'users', uid, 'sessions')));
     renderStatsFromSessions(snap.docs.map(d => d.data()));
   } catch (err) { showError('Stats: ' + err.message); }
+  loadHistory(historyDate);
 }
 
 // ─── Theme toggle ────────────────────────────────────────────────────────────
@@ -3125,6 +4238,14 @@ themeToggle.addEventListener('click', () => {
 });
 
 // ─── Picture-in-Picture ───────────────────────────────────────────────────────
+// ─── Focus mode ──────────────────────────────────────────────────────────────
+$('focusBtn').addEventListener('click', () => document.body.classList.add('focus-mode'));
+$('focusExitBtn').addEventListener('click', () => document.body.classList.remove('focus-mode'));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.body.classList.contains('focus-mode'))
+    document.body.classList.remove('focus-mode');
+});
+
 const pipBtn = $('pipBtn');
 
 pipBtn.addEventListener('click', async () => {
@@ -3296,13 +4417,22 @@ let selectedRating = 0;
 function showReflection() {
   selectedDistractions = new Set();
   selectedRating = 0;
-  document.getElementById('reflectionNote').value = '';
-  const otherInp = document.getElementById('otherDistractionInput');
+  $('reflDone').value = '';
+  $('reflBrainDump').value = '';
+  const nextUpEl = $('reflNextUp');
+  nextUpEl.value = '';
+  const sessionLabel = pendingSession?.label || '';
+  nextUpEl.placeholder = sessionLabel ? `Continue: "${sessionLabel.slice(0, 60)}"` : 'Next task or intention…';
+  const otherInp = $('otherDistractionInput');
   otherInp.value = '';
   otherInp.classList.remove('show');
   document.querySelectorAll('.distraction-chip').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.star-btn').forEach(s => s.classList.remove('filled'));
+  $('reflStep1').style.display = 'block';
+  $('reflStep2').style.display = 'none';
+  closeQuickJournal();
   reflectionOverlay.classList.add('show');
+  setTimeout(() => $('reflDone').focus(), 300);
 }
 
 function hideReflection() {
@@ -3348,33 +4478,61 @@ async function commitPendingSession(reflection = null) {
   pendingSession = null;
   hideReflection();
   await saveSession(ps.durationSecs, ps.label, ps.startedAt, ps.endedAt, ps.type, reflection);
+  const entryText = fmtHM(ps.durationSecs) + (ps.label ? ' · ' + ps.label : '');
+  saveJournalEntry({ text: entryText, type: ps.type,
+    startedAt: ps.startedAt?.getTime?.() ?? null,
+    endedAt:   ps.endedAt?.getTime?.()   ?? null,
+  });
   renderStats();
 }
 
-document.getElementById('reflSave').addEventListener('click', async () => {
+function buildReflection() {
   const distractions = [...selectedDistractions];
-  const otherText = document.getElementById('otherDistractionInput').value.trim();
-  if (distractions.includes('other') && otherText) {
+  const otherText = $('otherDistractionInput').value.trim();
+  if (distractions.includes('other') && otherText)
     distractions[distractions.indexOf('other')] = 'other: ' + otherText;
-  } else if (distractions.includes('other') && !otherText) {
-    // keep 'other' as-is
-  }
-  const reflection = {
-    distractions,
+  return {
+    done: $('reflDone').value.trim() || null,
     focusRating: selectedRating || null,
-    note: document.getElementById('reflectionNote').value.trim() || null,
+    distractions,
+    brainDump: $('reflBrainDump').value.trim() || null,
+    nextUp: $('reflNextUp').value.trim() || null,
   };
-  gaEvent('reflection_submitted', { focus_rating: selectedRating || null, distraction_count: distractions.length });
+}
+
+// Step 1: DONE — save what's filled, close
+$('reflDoneBtn').addEventListener('click', async () => {
+  const done = $('reflDone').value.trim() || null;
+  const reflection = { done, focusRating: selectedRating || null, distractions: [], brainDump: null, nextUp: null };
+  gaEvent('reflection_submitted', { focus_rating: selectedRating || null, distraction_count: 0 });
   await commitPendingSession(reflection);
+  if (done) saveJournalEntry({ text: done, type: 'post' });
 });
 
-document.getElementById('reflSkip').addEventListener('click', async () => {
-  await commitPendingSession(null);
+// Step 1: MORE → advance to step 2
+$('reflMoreBtn').addEventListener('click', () => {
+  $('reflStep1').style.display = 'none';
+  $('reflStep2').style.display = 'block';
 });
 
-// Tap backdrop to skip
+// Step 2: ← BACK
+$('reflBack').addEventListener('click', () => {
+  $('reflStep2').style.display = 'none';
+  $('reflStep1').style.display = 'block';
+});
+
+// Step 2: SAVE — save everything, close
+document.getElementById('reflSave').addEventListener('click', async () => {
+  const reflection = buildReflection();
+  gaEvent('reflection_submitted', { focus_rating: reflection.focusRating, distraction_count: reflection.distractions.length });
+  await commitPendingSession(reflection);
+  if (reflection.done) saveJournalEntry({ text: reflection.done, type: 'post' });
+  if (reflection.brainDump) saveJournalEntry({ text: reflection.brainDump, type: 'post' });
+});
+
+// Tap backdrop to dismiss (commit with no data)
 reflectionOverlay.addEventListener('click', e => {
-  if (e.target === reflectionOverlay) document.getElementById('reflSkip').click();
+  if (e.target === reflectionOverlay) $('reflDoneBtn').click();
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────

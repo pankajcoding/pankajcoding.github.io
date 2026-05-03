@@ -49,3 +49,10 @@ Defined in `build.js` → `CLASS_MAP`. If you add a new class to `portfolio.html
 ## Never
 - Edit `index.html` directly — it gets overwritten on every build
 - Commit `portfolio.html` — it's gitignored intentionally
+
+---
+
+## Tracker App
+
+Source: `tracker/index.html` (single file, no build step)  
+Feature reference: `tracker/FEATURES.md` — keep this updated whenever features are added or changed.
