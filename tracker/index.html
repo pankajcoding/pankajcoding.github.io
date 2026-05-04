@@ -1918,6 +1918,20 @@
       </div>
     </div>
 
+    <!-- Target streak -->
+    <div class="kpi-row" style="margin-bottom:24px">
+      <div class="stat-card stat-card--accent" style="flex:2">
+        <div class="stat-label">Target streak</div>
+        <div class="stat-value" id="statTargetStreak">—</div>
+        <div class="stat-sub" id="statTargetStreakSub">days hitting 3.5h</div>
+      </div>
+      <div class="stat-card" style="flex:1">
+        <div class="stat-label">Best streak</div>
+        <div class="stat-value" id="statBestStreak">—</div>
+        <div class="stat-sub">days</div>
+      </div>
+    </div>
+
     <!-- Avg deep work row -->
     <div class="kpi-row" style="margin-bottom:24px">
       <div class="stat-card">
@@ -3354,7 +3368,12 @@ function renderSessions() {
   $('dailyTargetFill').style.width = pct + '%';
   $('dailyTargetFill').style.background = pct >= 100 ? 'var(--green)' : 'var(--blue)';
   $('dailyTargetDone').textContent = fmtHM(doneSecs);
-  $('dailyTargetRemain').textContent = pct >= 100 ? '🎯 target hit!' : fmtHM(remain) + ' to go';
+  if (pct >= 100) {
+    const ts = parseInt(localStorage.getItem('dwt_target_streak') || '0');
+    $('dailyTargetRemain').textContent = ts > 1 ? `🔥 ${ts} day streak!` : '🎯 target hit!';
+  } else {
+    $('dailyTargetRemain').textContent = fmtHM(remain) + ' to go';
+  }
 
   if (todaySessions.length === 0) {
     sessionsList.innerHTML = '<div class="empty-state">No sessions yet. Start your first one!</div>';
@@ -3877,12 +3896,35 @@ function renderStatsFromSessions(allSessions) {
     monday.setDate(today.getDate() + (dow === 0 ? -6 : 1 - dow));
     const weekSecs = days.filter(d => d >= dateStr(monday)).reduce((s, d) => s + byDay[d], 0);
 
-    // Streak (used for milestone toasts)
+    // Session streak (any day with sessions — used for milestone toasts)
     const allDates = new Set(allSessions.map(s => s.date));
     let streak = 0;
     const chk = new Date(today);
     if (!byDay[todayStr()]) chk.setDate(chk.getDate() - 1);
     while (allDates.has(dateStr(chk))) { streak++; chk.setDate(chk.getDate() - 1); }
+
+    // Target streak — consecutive days hitting 3.5h
+    const DAILY_TARGET_SECS = 3.5 * 3600;
+    const targetDays = new Set(Object.entries(byDay).filter(([,v]) => v >= DAILY_TARGET_SECS).map(([k]) => k));
+    let targetStreak = 0;
+    const tchk = new Date(today);
+    if (!targetDays.has(todayStr())) tchk.setDate(tchk.getDate() - 1);
+    while (targetDays.has(dateStr(tchk))) { targetStreak++; tchk.setDate(tchk.getDate() - 1); }
+    // Best target streak
+    let bestTargetStreak = 0, runLen = 0;
+    const sortedDays = [...targetDays].sort();
+    for (let i = 0; i < sortedDays.length; i++) {
+      if (i === 0) { runLen = 1; }
+      else {
+        const prev = new Date(sortedDays[i - 1]); prev.setDate(prev.getDate() + 1);
+        runLen = dateStr(prev) === sortedDays[i] ? runLen + 1 : 1;
+      }
+      if (runLen > bestTargetStreak) bestTargetStreak = runLen;
+    }
+    $('statTargetStreak').textContent = targetStreak || '—';
+    $('statBestStreak').textContent   = bestTargetStreak || '—';
+    $('statTargetStreakSub').textContent = targetStreak === 1 ? 'day hitting 3.5h' : 'days hitting 3.5h';
+    localStorage.setItem('dwt_target_streak', targetStreak);
 
     // Avg deep work per day — 4 / 7 / 30 days
     const avgOver = n => {
@@ -3895,18 +3937,18 @@ function renderStatsFromSessions(allSessions) {
     $('statAvg30').textContent = avgOver(30);
 
     // ── Milestone celebrations ──────────────────────────────────────────────
-    const STREAK_MILESTONES = [3, 7, 14, 30, 100];
-    const HOURS_MILESTONES  = [10, 25, 50, 100, 200, 500];
+    const TARGET_STREAK_MILESTONES = [3, 7, 14, 30, 60, 100];
+    const HOURS_MILESTONES = [10, 25, 50, 100, 200, 500];
     let celebrated;
     try { celebrated = JSON.parse(localStorage.getItem('dwt_celebrated') || '{}'); } catch { celebrated = {}; }
     const totalHours = Math.floor(allTimeSecs / 3600);
-    const streakHit  = [...STREAK_MILESTONES].reverse().find(m => streak >= m && !celebrated['s' + m]);
-    const hoursHit   = [...HOURS_MILESTONES].reverse().find(m => totalHours >= m && !celebrated['h' + m]);
-    if (streakHit) {
-      celebrated['s' + streakHit] = 1;
+    const targetStreakHit = [...TARGET_STREAK_MILESTONES].reverse().find(m => targetStreak >= m && !celebrated['ts' + m]);
+    const hoursHit = [...HOURS_MILESTONES].reverse().find(m => totalHours >= m && !celebrated['h' + m]);
+    if (targetStreakHit) {
+      celebrated['ts' + targetStreakHit] = 1;
       localStorage.setItem('dwt_celebrated', JSON.stringify(celebrated));
       setTimeout(() => {
-        showToast('🔥', `${streakHit}-day streak!`, 'Consistency is your superpower');
+        showToast('🔥', `${targetStreakHit}-day target streak!`, 'You hit 3.5h for ' + targetStreakHit + ' days straight');
         ringProgress.classList.remove('ring-celebrate');
         void ringProgress.offsetWidth;
         ringProgress.classList.add('ring-celebrate');
@@ -3916,11 +3958,10 @@ function renderStatsFromSessions(allSessions) {
     if (hoursHit) {
       celebrated['h' + hoursHit] = 1;
       localStorage.setItem('dwt_celebrated', JSON.stringify(celebrated));
-      setTimeout(() => showToast('💯', `${hoursHit} hours of deep work!`, "That's serious focus"), streakHit ? 2200 : 400);
+      setTimeout(() => showToast('💯', `${hoursHit} hours of deep work!`, "That's serious focus"), targetStreakHit ? 2200 : 400);
     }
 
     // Vertical bar chart
-    const DAILY_TARGET_SECS = 3.5 * 3600;
     const CHART_H = 120; // px for tallest bar
     const SVG_H = 140;   // matches .v-chart height
     const maxSecs = Math.max(...Object.values(byDay), DAILY_TARGET_SECS);
