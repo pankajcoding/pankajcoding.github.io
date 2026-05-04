@@ -1,4 +1,4 @@
-const CACHE = 'dwt-v1';
+const CACHE = 'dwt-v2';
 const SHELL = ['/tracker/', '/tracker/index.html'];
 
 self.addEventListener('install', e => {
