@@ -1546,6 +1546,114 @@
       100% { stroke: var(--blue); filter: none; }
     }
     .ring-celebrate { animation: ringGold 2.2s ease forwards; }
+
+  /* ─── Break System ───────────────────────────────────────────────────────── */
+  .break-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    z-index: 210; display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .break-overlay.show { opacity: 1; pointer-events: all; }
+  .break-sheet {
+    background: var(--card); border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0; padding: 14px 20px 40px;
+    width: 100%; max-height: 88vh; overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .break-overlay.show .break-sheet { transform: translateY(0); }
+  .break-cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .break-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 12px 12px; cursor: pointer;
+    transition: border-color 0.18s; display: flex; flex-direction: column;
+    gap: 4px; position: relative;
+  }
+  .break-card:hover { border-color: var(--muted); }
+  .break-card.recommended { border-color: var(--green); background: rgba(52,168,83,0.06); }
+  .break-card.selected-card { border-color: var(--blue); background: rgba(66,133,244,0.07); }
+  .break-rec-badge {
+    position: absolute; top: -7px; left: 12px;
+    background: var(--green); color: #fff;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+    letter-spacing: 0.6px; text-transform: uppercase; padding: 2px 7px; border-radius: 6px;
+  }
+  .break-card-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.8px; text-transform: uppercase; color: var(--muted);
+  }
+  .break-card.recommended .break-card-tag { color: var(--green); }
+  .break-card-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .break-card-duration { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .break-card-link-icon {
+    position: absolute; top: 10px; right: 10px;
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    padding: 2px; transition: color 0.15s; line-height: 1;
+  }
+  .break-card-link-icon:hover { color: var(--blue); }
+  .break-anti-distraction { text-align: center; font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .break-sheet-actions { display: flex; gap: 10px; margin-top: 4px; }
+  .break-countdown-overlay {
+    position: fixed; inset: 0; background: var(--bg); z-index: 220;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .break-countdown-overlay.show { opacity: 1; pointer-events: all; }
+  .break-countdown-category { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .break-countdown-activity { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); }
+  .break-countdown-display { font-family: 'JetBrains Mono', monospace; font-size: 72px; font-weight: 500; color: var(--green); letter-spacing: -3px; line-height: 1; text-shadow: 0 0 40px rgba(52,168,83,0.25); }
+  .break-countdown-display.urgent { color: var(--yellow); text-shadow: 0 0 40px rgba(251,188,5,0.25); }
+  .break-countdown-hint { font-size: 11px; color: var(--muted); }
+  .break-countdown-link {
+    display: flex; align-items: center; gap: 6px; padding: 8px 18px;
+    background: rgba(66,133,244,0.12); border: 1px solid rgba(66,133,244,0.3);
+    border-radius: 10px; color: var(--blue); font-size: 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; text-decoration: none; transition: background 0.15s;
+  }
+  .break-countdown-link:hover { background: rgba(66,133,244,0.2); }
+  .break-countdown-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .break-refresh-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 10px; color: var(--muted); font-size: 11px;
+    font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s;
+  }
+  .break-refresh-btn:hover { border-color: var(--muted); color: var(--text); }
+  .break-recent-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .break-recent-item:last-child { border-bottom: none; }
+  .break-recent-ts { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+  .break-editor-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 10px 0; margin-top: 24px;
+    border-top: 1px solid var(--border); user-select: none;
+  }
+  .break-editor-toggle-label {
+    font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); transition: color 0.15s;
+  }
+  .break-editor-toggle:hover .break-editor-toggle-label { color: var(--text); }
+  .break-editor-chevron { width: 16px; height: 16px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+  .break-editor-body { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+  .break-editor-body.open { max-height: 3000px; }
+  .break-editor-cat-name {
+    font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px;
+  }
+  .break-editor-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .break-editor-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .break-editor-input:focus { border-color: var(--blue); }
+  .break-editor-dur { width: 52px; text-align: center; font-family: 'JetBrains Mono', monospace; flex: none; }
+  .break-editor-del {
+    background: none; border: none; cursor: pointer; color: var(--muted);
+    font-size: 16px; padding: 0 2px; transition: color 0.15s; line-height: 1; flex-shrink: 0;
+  }
+  .break-editor-del:hover { color: var(--red); }
   </style>
 </head>
 <body>
@@ -1577,6 +1685,13 @@
         <rect x="11.1" y="0.5" width="2.9" height="11.5" rx="0.6"/>
       </svg>
       STATS
+    </button>
+    <button class="tab" data-tab="break">
+      <svg viewBox="0 0 14 14" width="13" height="13" fill="none" aria-hidden="true">
+        <path d="M2 4h10v5a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V4z" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      BREAK
     </button>
   </div>
 
@@ -1827,6 +1942,33 @@
 
 </div>
 
+  <!-- BREAK PANEL -->
+  <div class="panel" id="panel-break">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span class="section-title">TAKE A BREAK</span>
+      <button class="break-refresh-btn" id="breakRefreshBtn">↻ refresh</button>
+    </div>
+    <div class="break-cards-grid" id="breakSuggestions"></div>
+
+    <div style="margin-top:24px">
+      <div class="section-header" style="margin-bottom:10px"><span class="section-title">RECENT BREAKS</span></div>
+      <div id="breakRecentsList"><div class="empty-state">No breaks logged yet.</div></div>
+    </div>
+
+    <div class="break-editor-toggle" id="breakEditorToggle">
+      <span class="break-editor-toggle-label">Customize Library</span>
+      <svg class="break-editor-chevron" id="breakEditorChevron" viewBox="0 0 16 16">
+        <polyline points="4 6 8 10 12 6"/>
+      </svg>
+    </div>
+    <div class="break-editor-body" id="breakEditorBody">
+      <div id="breakEditorCategories"></div>
+      <button class="btn btn-secondary" id="breakEditorSaveBtn" style="width:100%;margin-top:16px">SAVE LIBRARY</button>
+    </div>
+  </div>
+
+</div>
+
 <!-- REFLECTION BOTTOM SHEET -->
 <div class="reflection-overlay" id="reflectionOverlay">
   <div class="reflection-sheet">
@@ -1979,6 +2121,40 @@
       <button class="btn btn-secondary" id="reflBack">← BACK</button>
     </div>
     </div><!-- /reflStep2 -->
+  </div>
+</div>
+
+<!-- BREAK SUGGESTION SHEET -->
+<div class="break-overlay" id="breakSuggestionOverlay">
+  <div class="break-sheet">
+    <div class="refl-handle"></div>
+    <div class="refl-title">Time for a break</div>
+    <div class="refl-sub" id="breakSheetSub" style="margin-bottom:12px">You've been focused — rest your mind.</div>
+    <div class="break-anti-distraction">avoid phone &amp; social during your break</div>
+    <div class="break-cards-grid" id="breakSheetCards"></div>
+    <div class="break-sheet-actions">
+      <button class="btn btn-primary" id="breakStartBtn" style="flex:1">START BREAK</button>
+      <button class="btn btn-secondary" id="breakSkipBtn">SKIP</button>
+    </div>
+  </div>
+</div>
+
+<!-- BREAK COUNTDOWN -->
+<div class="break-countdown-overlay" id="breakCountdownOverlay">
+  <div class="break-countdown-category" id="breakCountdownCategory"></div>
+  <div class="break-countdown-activity" id="breakCountdownActivity"></div>
+  <div class="break-countdown-display" id="breakCountdownDisplay">05:00</div>
+  <div class="break-countdown-hint">step away from the screen</div>
+  <a class="break-countdown-link" id="breakCountdownLink" href="#" target="_blank" rel="noopener" style="display:none">
+    <svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M5 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9"/>
+      <path d="M8 2h4v4M12 2 7 7"/>
+    </svg>
+    Open link
+  </a>
+  <div class="break-countdown-actions">
+    <button class="btn btn-primary" id="breakCountdownDone">DONE</button>
+    <button class="btn btn-secondary" id="breakCountdownEnd">END EARLY</button>
   </div>
 </div>
 
@@ -4484,7 +4660,389 @@ async function commitPendingSession(reflection = null) {
     endedAt:   ps.endedAt?.getTime?.()   ?? null,
   });
   renderStats();
+  setTimeout(() => showBreakSuggestionSheet(ps.durationSecs), 350);
 }
+
+// ─── Break System ─────────────────────────────────────────────────────────────
+
+const BREAK_RECENTS_KEY = 'dwt_break_recents';
+const GUEST_BREAK_LIBRARY_KEY = 'dwt_guest_break_library';
+const GUEST_BREAK_LOG_KEY     = 'dwt_guest_break_log';
+
+const DEFAULT_BREAK_LIBRARY = { categories: [
+  { id: 'active',  name: 'Active Reset',   activities: [
+    { id: 'walk',     name: 'Walking',              defaultDuration: 5, links: [] },
+    { id: 'squats',   name: 'Squats',               defaultDuration: 3, links: [] },
+    { id: 'pushups',  name: 'Push-ups',             defaultDuration: 3, links: [] },
+    { id: 'jjacks',   name: 'Jumping jacks',        defaultDuration: 3, links: [] },
+    { id: 'wwall',    name: 'Wall sit',             defaultDuration: 2, links: [] },
+  ]},
+  { id: 'stretch', name: 'Stretching',     activities: [
+    { id: 'neck',     name: 'Neck stretch',         defaultDuration: 3, links: [] },
+    { id: 'back',     name: 'Back stretch',         defaultDuration: 3, links: [] },
+    { id: 'shoulder', name: 'Shoulder rolls',       defaultDuration: 2, links: [] },
+    { id: 'wrist',    name: 'Hand & wrist stretch', defaultDuration: 2, links: [] },
+  ]},
+  { id: 'breath',  name: 'Breathing',      activities: [
+    { id: 'box',      name: 'Box breathing',        defaultDuration: 4, links: [] },
+    { id: 'deep',     name: 'Deep breathing',       defaultDuration: 3, links: [] },
+    { id: 'body',     name: 'Body scan',            defaultDuration: 5, links: [] },
+  ]},
+  { id: 'still',   name: 'Stillness',      activities: [
+    { id: 'nothing',  name: 'Do nothing',           defaultDuration: 5, links: [] },
+    { id: 'wall',     name: 'Stare at wall',        defaultDuration: 3, links: [] },
+  ]},
+  { id: 'eyes',    name: 'Eye Reset',      activities: [
+    { id: 'distant',  name: 'Look at distant object', defaultDuration: 2, links: [] },
+    { id: 'eyestr',   name: 'Eye stretching',       defaultDuration: 2, links: [] },
+  ]},
+  { id: 'mind',    name: 'Mind Unload',    activities: [
+    { id: 'braindump', name: 'Brain dump',          defaultDuration: 5, links: [], openJournal: true },
+  ]},
+  { id: 'flow',    name: 'Movement Flow',  activities: [
+    { id: 'qigong',   name: 'Qigong',               defaultDuration: 5, links: ['https://www.youtube.com/results?search_query=5+minute+qigong'] },
+  ]},
+  { id: 'fun',     name: 'Fun Reset',      activities: [
+    { id: 'sing',     name: 'Sing a song',          defaultDuration: 3, links: [] },
+  ]},
+]};
+
+let _breakLibraryCache = null;
+
+async function loadBreakLibrary() {
+  if (_breakLibraryCache) return _breakLibraryCache;
+  if (isGuest) {
+    try { _breakLibraryCache = JSON.parse(localStorage.getItem(GUEST_BREAK_LIBRARY_KEY)) || DEFAULT_BREAK_LIBRARY; }
+    catch { _breakLibraryCache = DEFAULT_BREAK_LIBRARY; }
+    return _breakLibraryCache;
+  }
+  if (!uid || !db) return DEFAULT_BREAK_LIBRARY;
+  try {
+    const snap = await getDocs(collection(db, 'users', uid, 'break_library'));
+    if (!snap.empty) {
+      _breakLibraryCache = snap.docs[0].data();
+    } else {
+      _breakLibraryCache = DEFAULT_BREAK_LIBRARY;
+    }
+  } catch { _breakLibraryCache = DEFAULT_BREAK_LIBRARY; }
+  return _breakLibraryCache;
+}
+
+async function saveBreakLibraryData(lib) {
+  _breakLibraryCache = lib;
+  if (isGuest) { localStorage.setItem(GUEST_BREAK_LIBRARY_KEY, JSON.stringify(lib)); return; }
+  if (!uid || !db) return;
+  try {
+    const snap = await getDocs(collection(db, 'users', uid, 'break_library'));
+    const fsLib = { ...lib, updatedAt: Timestamp.fromDate(new Date()) };
+    if (!snap.empty) {
+      await updateDoc(doc(db, 'users', uid, 'break_library', snap.docs[0].id), fsLib);
+    } else {
+      await addDoc(collection(db, 'users', uid, 'break_library'), fsLib);
+    }
+  } catch { /* non-critical */ }
+}
+
+async function logBreak(activityId, name, category, durationSecs) {
+  const entry = { activityId, name, category, durationSecs, date: todayStr(), ts: Date.now() };
+  if (isGuest) {
+    const log = (() => { try { return JSON.parse(localStorage.getItem(GUEST_BREAK_LOG_KEY) || '[]'); } catch { return []; } })();
+    log.unshift(entry);
+    localStorage.setItem(GUEST_BREAK_LOG_KEY, JSON.stringify(log.slice(0, 50)));
+    return;
+  }
+  if (!uid || !db) return;
+  try {
+    await addDoc(collection(db, 'users', uid, 'break_log'), { ...entry, timestamp: Timestamp.fromDate(new Date()) });
+  } catch { /* non-critical */ }
+}
+
+async function loadBreakLog() {
+  if (isGuest) {
+    try { return JSON.parse(localStorage.getItem(GUEST_BREAK_LOG_KEY) || '[]'); } catch { return []; }
+  }
+  if (!uid || !db) return [];
+  try {
+    const snap = await getDocs(query(collection(db, 'users', uid, 'break_log'), orderBy('timestamp', 'desc')));
+    return snap.docs.map(d => ({ ...d.data(), ts: d.data().timestamp?.toMillis?.() ?? 0 })).slice(0, 50);
+  } catch { return []; }
+}
+
+function getBreakRecents() {
+  try { return JSON.parse(localStorage.getItem(BREAK_RECENTS_KEY) || '[]'); } catch { return []; }
+}
+function pushBreakRecent(activityId, name, category) {
+  const r = getBreakRecents().filter(x => x.activityId !== activityId);
+  r.unshift({ activityId, name, category, ts: Date.now() });
+  localStorage.setItem(BREAK_RECENTS_KEY, JSON.stringify(r.slice(0, 5)));
+}
+
+// ─── Suggestion engine ────────────────────────────────────────────────────────
+function getSuggestedBreaks(allActivities, sessionSecs) {
+  const hour = new Date().getHours();
+  const recents = getBreakRecents().map(r => r.activityId);
+  const scored = allActivities.map(act => {
+    let score = 10;
+    if (hour < 12 && ['breath', 'stretch'].includes(act.categoryId)) score += 5;
+    if (hour >= 18 && ['still', 'eyes'].includes(act.categoryId)) score += 5;
+    if (sessionSecs !== null) {
+      if (sessionSecs > 45 * 60 && act.categoryId === 'active') score += 6;
+      if (sessionSecs > 45 * 60 && act.categoryId === 'stretch') score += 4;
+      if (sessionSecs < 20 * 60 && ['eyes', 'breath'].includes(act.categoryId)) score += 6;
+    }
+    const ri = recents.indexOf(act.id);
+    if (ri !== -1) score -= (5 - ri) * 2;
+    score += Math.random() * 2;
+    return { ...act, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  const picked = [], usedCats = new Set();
+  for (const act of scored) {
+    if (picked.length >= 6) break;
+    if (!usedCats.has(act.categoryId)) { picked.push(act); usedCats.add(act.categoryId); }
+  }
+  for (const act of scored) {
+    if (picked.length >= 6) break;
+    if (!picked.find(p => p.id === act.id)) picked.push(act);
+  }
+  return picked;
+}
+
+function flattenLibrary(lib) {
+  const all = [];
+  (lib.categories || []).forEach(cat => {
+    (cat.activities || []).forEach(act => all.push({ ...act, categoryId: cat.id, categoryName: cat.name }));
+  });
+  return all;
+}
+
+// ─── Break card renderer ──────────────────────────────────────────────────────
+function renderBreakCards(activities, containerEl, onDirectStart, selHolder) {
+  containerEl.innerHTML = '';
+  activities.forEach((act, i) => {
+    const isRec = i === 0;
+    const isSel = selHolder && (selHolder.idx ?? 0) === i;
+    const card = document.createElement('div');
+    card.className = 'break-card' + (isRec ? ' recommended' : '') + (isSel ? ' selected-card' : '');
+    const linkBtn = act.links?.length
+      ? `<button class="break-card-link-icon" data-href="${escHtml(act.links[0])}" title="Open link">
+           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6">
+             <path d="M5 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9"/>
+             <path d="M8 2h4v4M12 2 7 7"/>
+           </svg>
+         </button>`
+      : '';
+    card.innerHTML = `
+      ${isRec ? '<div class="break-rec-badge">pick</div>' : ''}
+      <div class="break-card-tag">${escHtml(act.categoryName)}</div>
+      <div class="break-card-name">${escHtml(act.name)}</div>
+      <div class="break-card-duration">${act.defaultDuration} min</div>
+      ${linkBtn}`;
+    card.addEventListener('click', e => {
+      if (e.target.closest('.break-card-link-icon')) {
+        window.open(e.target.closest('.break-card-link-icon').dataset.href, '_blank', 'noopener');
+        return;
+      }
+      if (onDirectStart) { onDirectStart(act); return; }
+      if (selHolder) {
+        selHolder.idx = i;
+        containerEl.querySelectorAll('.break-card').forEach((c, j) => c.classList.toggle('selected-card', j === i));
+      }
+    });
+    containerEl.appendChild(card);
+  });
+}
+
+// ─── Break suggestion sheet ───────────────────────────────────────────────────
+const breakSuggestionOverlay = $('breakSuggestionOverlay');
+let _breakSheetActivities = [];
+let _breakSheetSel = { idx: 0 };
+
+async function showBreakSuggestionSheet(sessionSecs) {
+  const lib = await loadBreakLibrary();
+  _breakSheetActivities = getSuggestedBreaks(flattenLibrary(lib), sessionSecs);
+  _breakSheetSel = { idx: 0 };
+  const sub = $('breakSheetSub');
+  if (sessionSecs > 45 * 60) sub.textContent = 'Long session — your body needs a real break.';
+  else if (sessionSecs < 20 * 60) sub.textContent = 'Quick check-in — try a micro-reset.';
+  else sub.textContent = 'You\'ve been focused — rest your mind.';
+  renderBreakCards(_breakSheetActivities, $('breakSheetCards'), null, _breakSheetSel);
+  breakSuggestionOverlay.classList.add('show');
+}
+
+function hideBreakSuggestionSheet() { breakSuggestionOverlay.classList.remove('show'); }
+
+$('breakStartBtn').addEventListener('click', () => {
+  const act = _breakSheetActivities[_breakSheetSel.idx ?? 0];
+  hideBreakSuggestionSheet();
+  if (act) startBreakCountdown(act);
+});
+$('breakSkipBtn').addEventListener('click', () => { gaEvent('break_skipped'); hideBreakSuggestionSheet(); });
+breakSuggestionOverlay.addEventListener('click', e => {
+  if (e.target === breakSuggestionOverlay) { gaEvent('break_skipped'); hideBreakSuggestionSheet(); }
+});
+
+// ─── Break countdown ──────────────────────────────────────────────────────────
+const breakCountdownOverlay = $('breakCountdownOverlay');
+let _breakInterval = null;
+let _breakRemaining = 0;
+let _breakActivity = null;
+
+function startBreakCountdown(activity) {
+  _breakActivity = activity;
+  _breakRemaining = activity.defaultDuration * 60;
+  $('breakCountdownActivity').textContent = activity.name;
+  $('breakCountdownCategory').textContent = activity.categoryName;
+  const linkEl = $('breakCountdownLink');
+  if (activity.links?.length) {
+    linkEl.href = activity.links[0];
+    linkEl.style.display = 'flex';
+    setTimeout(() => window.open(activity.links[0], '_blank', 'noopener'), 600);
+  } else {
+    linkEl.style.display = 'none';
+    linkEl.href = '#';
+  }
+  if (activity.openJournal) { setTimeout(openQuickJournal, 300); }
+  _updateBreakDisplay();
+  breakCountdownOverlay.classList.add('show');
+  pushBreakRecent(activity.id, activity.name, activity.categoryName);
+  gaEvent('break_started', { activity: activity.id });
+  clearInterval(_breakInterval);
+  _breakInterval = setInterval(() => {
+    _breakRemaining--;
+    _updateBreakDisplay();
+    if (_breakRemaining <= 0) { clearInterval(_breakInterval); setTimeout(_endBreak, 800); }
+  }, 1000);
+}
+
+function _updateBreakDisplay() {
+  const mm = String(Math.floor(_breakRemaining / 60)).padStart(2, '0');
+  const ss = String(_breakRemaining % 60).padStart(2, '0');
+  const el = $('breakCountdownDisplay');
+  el.textContent = `${mm}:${ss}`;
+  el.classList.toggle('urgent', _breakRemaining <= 30 && _breakRemaining > 0);
+}
+
+function _endBreak() {
+  clearInterval(_breakInterval);
+  if (_breakActivity) {
+    const elapsed = _breakActivity.defaultDuration * 60 - _breakRemaining;
+    logBreak(_breakActivity.id, _breakActivity.name, _breakActivity.categoryName, Math.max(0, elapsed));
+    gaEvent('break_completed', { activity: _breakActivity.id });
+  }
+  _breakActivity = null;
+  breakCountdownOverlay.classList.remove('show');
+  if ($('panel-break').classList.contains('active')) renderBreakPanel();
+}
+
+$('breakCountdownDone').addEventListener('click', _endBreak);
+$('breakCountdownEnd').addEventListener('click', () => { gaEvent('break_ended_early'); _endBreak(); });
+
+// ─── Break tab panel ──────────────────────────────────────────────────────────
+async function renderBreakPanel() {
+  const lib = await loadBreakLibrary();
+  const activities = getSuggestedBreaks(flattenLibrary(lib), null);
+  renderBreakCards(activities, $('breakSuggestions'), act => startBreakCountdown(act), null);
+  const log = await loadBreakLog();
+  const recentsEl = $('breakRecentsList');
+  if (!log.length) { recentsEl.innerHTML = '<div class="empty-state">No breaks logged yet.</div>'; return; }
+  recentsEl.innerHTML = log.slice(0, 5).map(b =>
+    `<div class="break-recent-item">
+      <span>${escHtml(b.name)}</span>
+      <span class="break-recent-ts">${_timeAgo(b.ts)}</span>
+    </div>`
+  ).join('');
+}
+
+function _timeAgo(ts) {
+  const m = Math.floor((Date.now() - ts) / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+$('breakRefreshBtn').addEventListener('click', () => { _breakLibraryCache = null; renderBreakPanel(); });
+
+// ─── Break library editor ──────────────────────────────────────────────────────
+let _breakEditorOpen = false;
+
+$('breakEditorToggle').addEventListener('click', async () => {
+  _breakEditorOpen = !_breakEditorOpen;
+  $('breakEditorBody').classList.toggle('open', _breakEditorOpen);
+  $('breakEditorChevron').style.transform = _breakEditorOpen ? 'rotate(180deg)' : '';
+  if (_breakEditorOpen) renderBreakLibraryEditor(await loadBreakLibrary());
+});
+
+function renderBreakLibraryEditor(lib) {
+  const container = $('breakEditorCategories');
+  container.innerHTML = '';
+  lib.categories.forEach((cat, ci) => {
+    const catDiv = document.createElement('div');
+    catDiv.innerHTML = `<div class="break-editor-cat-name">${escHtml(cat.name)}</div>`;
+    cat.activities.forEach((act, ai) => {
+      const row = document.createElement('div');
+      row.className = 'break-editor-row';
+      row.innerHTML = `
+        <input class="break-editor-input" type="text" value="${escHtml(act.name)}" maxlength="40"
+          placeholder="Activity" data-ci="${ci}" data-ai="${ai}" data-f="name" />
+        <input class="break-editor-input break-editor-dur" type="number" value="${act.defaultDuration}" min="1" max="60"
+          data-ci="${ci}" data-ai="${ai}" data-f="dur" title="minutes" />
+        <input class="break-editor-input" type="text" value="${escHtml(act.links?.[0] || '')}" maxlength="200"
+          placeholder="Link (optional)" style="flex:1.2" data-ci="${ci}" data-ai="${ai}" data-f="link" />
+        <button class="break-editor-del" data-ci="${ci}" data-ai="${ai}" title="Remove">×</button>`;
+      catDiv.appendChild(row);
+    });
+    // Add row
+    const addRow = document.createElement('div');
+    addRow.className = 'break-editor-row';
+    addRow.innerHTML = `
+      <input class="break-editor-input" type="text" placeholder="New activity…" maxlength="40" data-ci="${ci}" data-add-name />
+      <input class="break-editor-input break-editor-dur" type="number" value="3" min="1" max="60" data-ci="${ci}" data-add-dur />
+      <button class="break-refresh-btn" data-ci="${ci}" data-add-btn>+ add</button>`;
+    catDiv.appendChild(addRow);
+    container.appendChild(catDiv);
+  });
+}
+
+$('breakEditorCategories').addEventListener('click', async e => {
+  const lib = await loadBreakLibrary();
+  const delBtn = e.target.closest('[data-ai][data-ci].break-editor-del');
+  if (delBtn) {
+    const ci = +delBtn.dataset.ci, ai = +delBtn.dataset.ai;
+    lib.categories[ci].activities.splice(ai, 1);
+    await saveBreakLibraryData(lib);
+    renderBreakLibraryEditor(lib);
+    return;
+  }
+  const addBtn = e.target.closest('[data-add-btn]');
+  if (addBtn) {
+    const ci = +addBtn.dataset.ci;
+    const nameEl = $('breakEditorCategories').querySelector(`[data-ci="${ci}"][data-add-name]`);
+    const durEl  = $('breakEditorCategories').querySelector(`[data-ci="${ci}"][data-add-dur]`);
+    const name = nameEl?.value.trim();
+    if (!name) return;
+    lib.categories[ci].activities.push({ id: 'u_' + Date.now(), name, defaultDuration: parseInt(durEl?.value) || 3, links: [] });
+    await saveBreakLibraryData(lib);
+    renderBreakLibraryEditor(lib);
+  }
+});
+
+$('breakEditorSaveBtn').addEventListener('click', async () => {
+  const lib = await loadBreakLibrary();
+  $('breakEditorCategories').querySelectorAll('[data-f]').forEach(inp => {
+    const ci = +inp.dataset.ci, ai = +inp.dataset.ai, f = inp.dataset.f;
+    const act = lib.categories[ci]?.activities[ai];
+    if (!act) return;
+    if (f === 'name') act.name = inp.value.trim() || act.name;
+    if (f === 'dur')  act.defaultDuration = parseInt(inp.value) || 3;
+    if (f === 'link') act.links = inp.value.trim() ? [inp.value.trim()] : [];
+  });
+  await saveBreakLibraryData(lib);
+  renderBreakPanel();
+  showToast('✓', 'Break library saved', null);
+});
 
 function buildReflection() {
   const distractions = [...selectedDistractions];
@@ -4543,6 +5101,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.classList.add('active');
     $('panel-' + tab.dataset.tab).classList.add('active');
     if (tab.dataset.tab === 'stats') { gaEvent('stats_view'); renderStats(); }
+    if (tab.dataset.tab === 'break') { gaEvent('break_tab_view'); renderBreakPanel(); }
   });
 });
 

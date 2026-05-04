@@ -111,6 +111,57 @@ resolved: false  ← reserved for future use
 
 ---
 
+## Break System
+
+### Post-session suggestion sheet
+- Slides up automatically 350ms after every completed session (after reflection is saved)
+- Context-aware subtitle: "Long session — your body needs a real break" / "Quick check-in — try a micro-reset" / "You've been focused — rest your mind"
+- 6 activity cards, smart-scored by time of day, session length, and recency; first card is pre-selected
+- Anti-distraction reminder: "avoid phone & social during your break"
+- START BREAK → countdown timer · SKIP / backdrop click → dismiss
+
+### Break tab
+- BREAK tab in nav; shows 6 smart suggestions
+- Tap any card → countdown starts immediately (no select step)
+- ↻ Refresh button re-runs suggestion engine
+- Recent Breaks list: last 5 breaks with time-ago labels
+
+### Break countdown
+- Full-screen overlay, MM:SS in green (turns yellow at ≤30s)
+- If activity has a link: link button shown, auto-opens after 600ms
+- If activity has `openJournal: true`: opens Quick Capture panel (brain dump)
+- DONE → logs break · END EARLY → logs break as ended early
+
+### Customize Library
+- Collapsible editor in Break tab
+- Per-activity: name, duration (min), optional URL
+- Add new activities, delete existing ones
+- SAVE LIBRARY persists to Firestore (auth) or localStorage (guest)
+
+### Smart suggestion algorithm
+- Base score 10 per activity
+- Morning (<12h): +5 breathing/stretching
+- Evening (≥18h): +5 stillness/eye reset
+- Long session (>45min): +6 active reset, +4 stretching
+- Short session (<20min): +6 eye reset/breathing
+- Recently used: −2 to −10 (most recent = −10)
+- Random jitter: +0–2
+- Greedy pick 6 with category variety; index 0 = recommended
+
+### Data
+```
+break_library (Firestore: users/{uid}/break_library/lib | guest: dwt_guest_break_library)
+  → { categories: [{ id, name, activities: [{ id, name, defaultDuration, links[], openJournal? }] }] }
+
+break_log (Firestore: users/{uid}/break_log/{id} | guest: dwt_guest_break_log)
+  → { activityId, name, category, durationSecs, date, timestamp }
+
+dwt_break_recents (localStorage, device-local)
+  → [{ activityId, name, category, ts }]  // max 5
+```
+
+---
+
 ## Stats Panel
 
 Accessible via the STATS tab.
