@@ -5,6 +5,7 @@
   "start_url": "/tracker/",
   "scope": "/tracker/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait-primary",
   "background_color": "#0f1117",
   "theme_color": "#4285F4",
