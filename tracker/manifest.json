@@ -1,0 +1,31 @@
+{
+  "name": "Deep Work Tracker",
+  "short_name": "Deep Work",
+  "description": "Focus timer, session tracking, and break system for deep work.",
+  "start_url": "/tracker/",
+  "scope": "/tracker/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1117",
+  "theme_color": "#4285F4",
+  "icons": [
+    {
+      "src": "/tracker/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/tracker/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/tracker/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

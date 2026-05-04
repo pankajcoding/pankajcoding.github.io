@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Deep Work Tracker</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml"/>
+  <link rel="manifest" href="/tracker/manifest.json"/>
+  <meta name="theme-color" content="#4285F4"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Deep Work"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-B1J4GLC9QM"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -5207,6 +5213,42 @@ window.addEventListener('beforeunload', e => {
     e.returnValue = 'Timer is running. Leave anyway?';
   }
 });
+
+// ─── PWA ──────────────────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/tracker/sw.js', { scope: '/tracker/' })
+    .catch(() => {});
+}
+
+let _deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  // Show install banner if not already standalone
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    showInstallBanner();
+  }
+});
+
+function showInstallBanner() {
+  if ($('pwaInstallBanner')) return;
+  const b = document.createElement('div');
+  b.id = 'pwaInstallBanner';
+  b.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:300;white-space:nowrap';
+  b.innerHTML = `<span>Install Deep Work app</span>
+    <button onclick="installPWA()" style="background:var(--blue);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;letter-spacing:0.5px">INSTALL</button>
+    <button onclick="this.closest('#pwaInstallBanner').remove()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:0 2px">×</button>`;
+  document.body.appendChild(b);
+}
+
+async function installPWA() {
+  if (!_deferredInstallPrompt) return;
+  _deferredInstallPrompt.prompt();
+  const { outcome } = await _deferredInstallPrompt.userChoice;
+  _deferredInstallPrompt = null;
+  $('pwaInstallBanner')?.remove();
+  if (outcome === 'accepted') showToast('📲', 'App installed!', 'Find it in your apps');
+}
 </script>
 </body>
 </html>
