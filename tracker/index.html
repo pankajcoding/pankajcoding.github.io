@@ -4814,6 +4814,18 @@ function flattenLibrary(lib) {
   return all;
 }
 
+// ─── Break helpers ────────────────────────────────────────────────────────────
+function ytSearchUrl(activity) {
+  const q = encodeURIComponent(activity.defaultDuration + ' minute ' + activity.name + ' guided');
+  return 'https://www.youtube.com/results?search_query=' + q;
+}
+function breakLinkUrl(activity) {
+  return activity.links?.length ? activity.links[0] : ytSearchUrl(activity);
+}
+function breakLinkLabel(activity) {
+  return activity.links?.length ? 'Open link' : 'Search YouTube';
+}
+
 // ─── Break card renderer ──────────────────────────────────────────────────────
 function renderBreakCards(activities, containerEl, onDirectStart, selHolder) {
   containerEl.innerHTML = '';
@@ -4822,14 +4834,13 @@ function renderBreakCards(activities, containerEl, onDirectStart, selHolder) {
     const isSel = selHolder && (selHolder.idx ?? 0) === i;
     const card = document.createElement('div');
     card.className = 'break-card' + (isRec ? ' recommended' : '') + (isSel ? ' selected-card' : '');
-    const linkBtn = act.links?.length
-      ? `<button class="break-card-link-icon" data-href="${escHtml(act.links[0])}" title="Open link">
-           <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6">
-             <path d="M5 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9"/>
-             <path d="M8 2h4v4M12 2 7 7"/>
-           </svg>
-         </button>`
-      : '';
+    const isYt = !act.links?.length;
+    const linkHref = breakLinkUrl(act);
+    const linkTitle = isYt ? 'Search YouTube' : 'Open link';
+    const linkIcon = isYt
+      ? `<svg viewBox="0 0 14 10" width="13" height="10" fill="none"><rect x="1" y="1" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 3.5l3 1.5-3 1.5V3.5z" fill="currentColor"/></svg>`
+      : `<svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9"/><path d="M8 2h4v4M12 2 7 7"/></svg>`;
+    const linkBtn = `<button class="break-card-link-icon${isYt ? ' yt' : ''}" data-href="${escHtml(linkHref)}" title="${linkTitle}">${linkIcon}</button>`;
     card.innerHTML = `
       ${isRec ? '<div class="break-rec-badge">pick</div>' : ''}
       <div class="break-card-tag">${escHtml(act.categoryName)}</div>
@@ -4892,14 +4903,13 @@ function startBreakCountdown(activity) {
   $('breakCountdownActivity').textContent = activity.name;
   $('breakCountdownCategory').textContent = activity.categoryName;
   const linkEl = $('breakCountdownLink');
-  if (activity.links?.length) {
-    linkEl.href = activity.links[0];
-    linkEl.style.display = 'flex';
-    setTimeout(() => window.open(activity.links[0], '_blank', 'noopener'), 600);
-  } else {
-    linkEl.style.display = 'none';
-    linkEl.href = '#';
-  }
+  const hasCustomLink = !!activity.links?.length;
+  linkEl.href = breakLinkUrl(activity);
+  linkEl.innerHTML = hasCustomLink
+    ? `<svg viewBox="0 0 14 14" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3H3a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V9"/><path d="M8 2h4v4M12 2 7 7"/></svg> Open link`
+    : `<svg viewBox="0 0 14 10" width="14" height="10" fill="none"><rect x="1" y="1" width="12" height="8" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 3.5l3 1.5-3 1.5V3.5z" fill="currentColor"/></svg> Search YouTube`;
+  linkEl.style.display = 'flex';
+  if (hasCustomLink) setTimeout(() => window.open(activity.links[0], '_blank', 'noopener'), 600);
   if (activity.openJournal) { setTimeout(openQuickJournal, 300); }
   _updateBreakDisplay();
   breakCountdownOverlay.classList.add('show');
