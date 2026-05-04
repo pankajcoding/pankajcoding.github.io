@@ -6,7 +6,7 @@
   <title>Deep Work Tracker</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml"/>
   <link rel="manifest" href="/tracker/manifest.json"/>
-  <meta name="theme-color" content="#0f1117"/>
+  <meta name="theme-color" id="themeColorMeta" content="#181b26"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -4493,22 +4493,27 @@ async function renderStats() {
 
 // ─── Theme toggle ────────────────────────────────────────────────────────────
 const themeToggle = $('themeToggle');
-const savedTheme = localStorage.getItem('dwt_theme') || 'dark';
-if (savedTheme === 'light') {
-  document.documentElement.setAttribute('data-theme', 'light');
-  themeToggle.textContent = '☀️';
-}
-themeToggle.addEventListener('click', () => {
-  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+const themeColorMeta = document.getElementById('themeColorMeta');
+const THEME_COLORS = { dark: '#181b26', light: '#e4e7f0' };
+
+function applyTheme(isLight) {
   if (isLight) {
-    document.documentElement.removeAttribute('data-theme');
-    themeToggle.textContent = '🌙';
-    localStorage.setItem('dwt_theme', 'dark');
-  } else {
     document.documentElement.setAttribute('data-theme', 'light');
     themeToggle.textContent = '☀️';
     localStorage.setItem('dwt_theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    themeToggle.textContent = '🌙';
+    localStorage.setItem('dwt_theme', 'dark');
   }
+  themeColorMeta.content = isLight ? THEME_COLORS.light : THEME_COLORS.dark;
+}
+
+const savedTheme = localStorage.getItem('dwt_theme') || 'dark';
+applyTheme(savedTheme === 'light');
+
+themeToggle.addEventListener('click', () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') !== 'light');
 });
 
 // ─── Picture-in-Picture ───────────────────────────────────────────────────────
