@@ -1481,6 +1481,15 @@
     }
     .revisit-card-close:hover { color: var(--text); }
 
+    .recovery-card {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(251,188,5,0.08); border: 1px solid rgba(251,188,5,0.35);
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+      font-size: 13px; color: var(--text);
+    }
+    .recovery-card-text { flex: 1; line-height: 1.4; }
+    .focus-mode .recovery-card { display: none !important; }
+
     /* Patterns section */
     .history-section { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border); }
     .history-nav { display: flex; align-items: center; gap: 6px; margin: 12px 0 16px; }
@@ -1704,6 +1713,13 @@
       <span class="revisit-card-text" id="revisitCardText"></span>
       <button class="revisit-card-review" id="revisitCardReview">Review →</button>
       <button class="revisit-card-close" id="revisitCardClose" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- CRASH RECOVERY BANNER -->
+    <div class="recovery-card" id="recoveryCard" style="display:none">
+      <span class="recovery-card-text" id="recoveryCardText"></span>
+      <button class="revisit-card-review" id="recoveryCardSave">Save it →</button>
+      <button class="revisit-card-close" id="recoveryCardDismiss" aria-label="Dismiss">×</button>
     </div>
 
     <!-- Daily target progress -->
@@ -2479,6 +2495,7 @@ let todayUnsubscribe = null;
 let todaySessions = [];
 let isGuest = false;
 const GUEST_KEY = 'dwt_guest_sessions';
+const CRASH_KEY = 'dwt_crash_recovery';
 
 // ─── Journal state ───────────────────────────────────────────────────────────
 const GUEST_JOURNAL_KEY = 'dwt_guest_journal';
@@ -2550,6 +2567,7 @@ btnGuest.addEventListener('click', () => {
   loginOverlay.style.display = 'none';
   runJournalV2Migration();
   checkRevisitTrigger();
+  checkCrashRecovery();
   // "sign in" link next to auth badge
   const link = document.createElement('button');
   link.id = 'guestSignInLink';
@@ -2625,6 +2643,7 @@ async function initFirebase(cfg) {
         renderStats();
         runJournalV2Migration();
         checkRevisitTrigger();
+        checkCrashRecovery();
       } else {
         uid = null; isGuest = false;
         statusDot.style.background = 'var(--muted)';
@@ -3095,6 +3114,37 @@ async function runJournalV2Migration() {
   localStorage.setItem('dwt_journal_v2_migrated', '1');
 }
 
+// ─── Crash recovery ───────────────────────────────────────────────────────────
+function checkCrashRecovery() {
+  let raw;
+  try { raw = JSON.parse(localStorage.getItem(CRASH_KEY)); } catch { return; }
+  if (!raw || !raw.elapsed || raw.elapsed < MIN_SESSION_SECS) { clearCrashHeartbeat(); return; }
+
+  // Ignore heartbeats from the current page load (timer already running)
+  if (timerState !== 'idle') { return; }
+
+  const mins = Math.round(raw.elapsed / 60);
+  const startTime = new Date(raw.startedAt);
+  const timeStr = startTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const label = raw.label ? ` · "${raw.label}"` : '';
+  $('recoveryCardText').textContent = `Unsaved session: ${mins} min${label} started at ${timeStr}`;
+
+  const card = $('recoveryCard');
+  card.style.display = 'flex';
+
+  $('recoveryCardSave').onclick = async () => {
+    card.style.display = 'none';
+    clearCrashHeartbeat();
+    const endedAt = new Date(raw.startedAt + raw.elapsed * 1000);
+    await saveSession(raw.elapsed, raw.label, new Date(raw.startedAt), endedAt, raw.mode);
+    saveJournalEntry({ text: fmtHM(raw.elapsed) + (raw.label ? ' · ' + raw.label : '') + ' (recovered)',
+      type: raw.mode, startedAt: raw.startedAt, endedAt: endedAt.getTime() });
+    renderStats();
+    showToast('💾', 'Session recovered', fmtHM(raw.elapsed) + ' saved');
+  };
+  $('recoveryCardDismiss').onclick = () => { card.style.display = 'none'; clearCrashHeartbeat(); };
+}
+
 // ─── Revisit trigger ──────────────────────────────────────────────────────────
 async function checkRevisitTrigger() {
   const today = todayStr();
@@ -3357,11 +3407,30 @@ function escHtml(s) {
 
 // ─── Timer logic ─────────────────────────────────────────────────────────────
 let _lastStopLabel = '';
+function writeCrashHeartbeat() {
+  const current = currentElapsed();
+  try {
+    localStorage.setItem(CRASH_KEY, JSON.stringify({
+      startedAt: timerStartedAt?.getTime() ?? Date.now() - current * 1000,
+      mode: timerMode,
+      pomoDuration: pomodoroDuration,
+      label: labelInput?.value.trim() || '',
+      elapsed: Math.floor(current),
+      ts: Date.now(),
+    }));
+  } catch { }
+}
+
+function clearCrashHeartbeat() {
+  localStorage.removeItem(CRASH_KEY);
+}
+
 function tickTimer() {
   if (timerState !== 'running') return;
   const delta = (performance.now() - startTs) / 1000;
   const current = elapsed + delta;
   updateDisplay(current);
+  if (Math.floor(current) % 30 === 0 && current > 1) writeCrashHeartbeat();
   if (timerMode === 'pomodoro' && current >= pomodoroDuration && !pomodoroComplete) {
     pomodoroComplete = true;
     gaEvent('pomodoro_complete', { duration_mins: Math.round(pomodoroDuration / 60) });
@@ -3475,6 +3544,7 @@ function startTimer() {
   setRingColor('running');
   renderButtons();
   labelInput.disabled = true;
+  writeCrashHeartbeat();
   const startLabel = labelInput.value.trim();
   if (startLabel) saveJournalEntry({ text: startLabel, type: 'pre' });
 }
@@ -3513,6 +3583,7 @@ function stopTimer() {
   }
 
   clearInterval(intervalId);
+  clearCrashHeartbeat();
   timerState = 'idle';
   elapsed = 0;
 
@@ -4650,6 +4721,7 @@ async function commitPendingSession(reflection = null) {
   if (!pendingSession) { hideReflection(); return; }
   const ps = pendingSession;
   pendingSession = null;
+  clearCrashHeartbeat();
   hideReflection();
   await saveSession(ps.durationSecs, ps.label, ps.startedAt, ps.endedAt, ps.type, reflection);
   const entryText = fmtHM(ps.durationSecs) + (ps.label ? ' · ' + ps.label : '');
