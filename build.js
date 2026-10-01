@@ -106,6 +106,11 @@ const CLASS_MAP = {
   'timeline-progress-fill': 'horcrux',
   'timeline-track':         'hallows',
   'typing-cursor':          'nimbus',
+  'hero-meta-g':            'gringotts',
+  'hero-subtitle-cloud':    'fawkes',
+  'hero-meta-icon':         'hedwigs',
+  'tracker-eyebrow-row':    'nagini',
+  'tracker-eyebrow':        'buckbeak',
 };
 
 function obfuscateClasses(html) {
