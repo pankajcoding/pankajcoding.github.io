@@ -1968,6 +1968,12 @@
       </div>
     </div>
 
+    <!-- Top tasks (shown when ≥3 unique labeled sessions exist) -->
+    <div class="stats-section" id="topTasksSection" style="display:none">
+      <div class="chart-title">Top tasks</div>
+      <div class="dist-list" id="topTasksList"></div>
+    </div>
+
     <!-- Distraction breakdown (shown only when data exists) -->
     <div class="stats-section" id="distrSection" style="display:none">
       <div class="chart-title">Top distractions</div>
@@ -2014,6 +2020,12 @@
     <div style="margin-top:24px">
       <div class="section-header" style="margin-bottom:10px"><span class="section-title">RECENT BREAKS</span></div>
       <div id="breakRecentsList"><div class="empty-state">No breaks logged yet.</div></div>
+    </div>
+
+    <div id="breakImpactSection" style="display:none;margin-top:20px">
+      <div class="section-header" style="margin-bottom:10px"><span class="section-title">BREAK IMPACT</span></div>
+      <div class="chart-subtitle" style="font-size:11px;color:var(--muted);margin-bottom:10px">Avg focus in sessions starting within 30 min after each break</div>
+      <div class="dist-list" id="breakImpactList"></div>
     </div>
 
     <div class="break-editor-toggle" id="breakEditorToggle">
@@ -2753,7 +2765,7 @@ function guestGetToday() {
 function guestSaveSession(durationSecs, label, startedAt, endedAt, type = 'stopwatch', reflection = null) {
   const sessions = guestGetAll();
   const entry = {
-    id: guestNewId(), date: todayStr(), label: label || '',
+    id: guestNewId(), date: dateStr(new Date(startedAt)), label: label || '',
     duration: durationSecs,
     startedAt: startedAt instanceof Date ? startedAt.getTime() : startedAt,
     endedAt:   endedAt instanceof Date   ? endedAt.getTime()   : endedAt,
@@ -2841,7 +2853,7 @@ async function saveSession(durationSecs, label, startedAt, endedAt, type = 'stop
   }
   if (!uid || !db) return;
   const data = {
-    date:      todayStr(),
+    date:      dateStr(startedAt),
     label:     label || '',
     duration:  durationSecs,
     startedAt: Timestamp.fromDate(startedAt),
@@ -2926,11 +2938,11 @@ function guestGetJournalForDate(date) {
   return all.filter(e => e.date === date);
 }
 
-async function saveJournalEntry({ text, type, sessionId = null, startedAt = null, endedAt = null, isTodo = false, todoCompleted = false }) {
+async function saveJournalEntry({ text, type, sessionId = null, startedAt = null, endedAt = null, isTodo = false, todoCompleted = false, date = todayStr() }) {
   if (!text) return;
   const now = Date.now();
   const tags = parseTags(text);
-  const entry = { text, type, sessionId, date: todayStr(), tags, resolved: false,
+  const entry = { text, type, sessionId, date, tags, resolved: false,
     startedAt: startedAt ?? null, endedAt: endedAt ?? null,
     isTodo, todoCompleted };
   if (isGuest) {
@@ -3163,8 +3175,8 @@ function checkCrashRecovery() {
   try { raw = JSON.parse(localStorage.getItem(CRASH_KEY)); } catch { return; }
   if (!raw || !raw.elapsed || raw.elapsed < MIN_SESSION_SECS) { clearCrashHeartbeat(); return; }
 
-  // Ignore heartbeats from the current page load (timer already running)
-  if (timerState !== 'idle') { return; }
+  // Ignore heartbeats from the current page load (timer running or reflection open)
+  if (timerState !== 'idle' || pendingSession) { return; }
 
   const mins = Math.round(raw.elapsed / 60);
   const startTime = new Date(raw.startedAt);
@@ -3181,7 +3193,8 @@ function checkCrashRecovery() {
     const endedAt = new Date(raw.startedAt + raw.elapsed * 1000);
     await saveSession(raw.elapsed, raw.label, new Date(raw.startedAt), endedAt, raw.mode);
     saveJournalEntry({ text: fmtHM(raw.elapsed) + (raw.label ? ' · ' + raw.label : '') + ' (recovered)',
-      type: raw.mode, startedAt: raw.startedAt, endedAt: endedAt.getTime() });
+      type: raw.mode, startedAt: raw.startedAt, endedAt: endedAt.getTime(),
+      date: dateStr(new Date(raw.startedAt)) });
     renderStats();
     showToast('💾', 'Session recovered', fmtHM(raw.elapsed) + ' saved');
   };
@@ -3285,13 +3298,16 @@ function closeQuickJournal() {
 
 async function saveQuickEntry() {
   const text = $('journalTextarea').value.trim();
+  if (!text) { closeQuickJournal(); return; }
   const rangeActive = $('journalRangeBtn').classList.contains('active');
   const isTodo = $('journalTodoBtn').classList.contains('active');
-  const startedAt = rangeActive ? timeInputToMs($('journalTimeFrom').value) : null;
-  const endedAt   = rangeActive ? timeInputToMs($('journalTimeTo').value)   : null;
+  let startedAt = rangeActive ? timeInputToMs($('journalTimeFrom').value) : null;
+  let endedAt   = rangeActive ? timeInputToMs($('journalTimeTo').value)   : null;
+  if (startedAt && endedAt && startedAt > endedAt) { [startedAt, endedAt] = [endedAt, startedAt]; }
+  try {
+    await saveJournalEntry({ text, type: isTodo ? 'todo' : 'quick', isTodo, startedAt, endedAt });
+  } catch { showError("Couldn't save — try again"); return; }
   closeQuickJournal();
-  if (!text) return;
-  await saveJournalEntry({ text, type: isTodo ? 'todo' : 'quick', isTodo, startedAt, endedAt });
   const toast = $('journalSavedToast');
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 1200);
@@ -3469,6 +3485,17 @@ function writeCrashHeartbeat() {
   } catch { }
 }
 
+// Keep a finished-but-unrated session recoverable if the tab closes while the reflection modal is open
+function persistPendingSession() {
+  const ps = pendingSession;
+  try {
+    localStorage.setItem(CRASH_KEY, JSON.stringify({
+      startedAt: ps.startedAt.getTime(), mode: ps.type, pomoDuration: pomodoroDuration,
+      label: ps.label, elapsed: ps.durationSecs, ts: Date.now(),
+    }));
+  } catch { }
+}
+
 function clearCrashHeartbeat() {
   localStorage.removeItem(CRASH_KEY);
 }
@@ -3631,7 +3658,7 @@ function stopTimer() {
   }
 
   clearInterval(intervalId);
-  clearCrashHeartbeat();
+  if (isGiveUp) clearCrashHeartbeat();
   timerState = 'idle';
   elapsed = 0;
 
@@ -3656,6 +3683,7 @@ function stopTimer() {
     endedAt: new Date(),
     type: timerMode,
   };
+  persistPendingSession();
   labelInput.value = '';
   showReflection();
 }
@@ -3722,6 +3750,7 @@ function autoCompletePomodoro() {
     endedAt: new Date(),
     type: 'pomodoro',
   };
+  persistPendingSession();
   labelInput.value = '';
 
   updateDisplay(pomodoroDuration);
@@ -4144,11 +4173,40 @@ function renderStatsFromSessions(allSessions) {
       $('focusCard').style.display = 'none';
     }
 
+    // Top tasks — aggregate session labels by total focus time
+    const taskSecs = {};
+    allSessions.forEach(s => {
+      const lbl = (s.label || '').trim().toLowerCase();
+      if (!lbl) return;
+      taskSecs[lbl] = (taskSecs[lbl] || 0) + (s.duration || 0);
+    });
+    const topTasks = Object.entries(taskSecs).sort((a,b) => b[1]-a[1]).slice(0, 5);
+    const topTasksSection = $('topTasksSection');
+    if (Object.keys(taskSecs).length >= 3) {
+      topTasksSection.style.display = 'block';
+      const maxT = topTasks[0][1];
+      const tasksEl = $('topTasksList');
+      tasksEl.innerHTML = '';
+      topTasks.forEach(([lbl, secs]) => {
+        const row = document.createElement('div');
+        row.className = 'dist-row';
+        const displayLbl = lbl.length > 28 ? lbl.slice(0, 27) + '…' : lbl;
+        row.innerHTML = `
+          <span class="dist-name" title="${escHtml(lbl)}">${escHtml(displayLbl)}</span>
+          <div class="dist-track"><div class="dist-fill" style="width:${(secs/maxT)*100}%"></div></div>
+          <span class="dist-count">${fmtHM(secs)}</span>
+        `;
+        tasksEl.appendChild(row);
+      });
+    } else {
+      topTasksSection.style.display = 'none';
+    }
+
     // Distraction breakdown
     const distrCounts = {};
     allSessions.forEach(s => {
       (s.distractions || []).forEach(d => {
-        const key = typeof d === 'string' && d.startsWith('other:') ? 'other' : d;
+        const key = typeof d === 'string' && d.startsWith('other: ') ? d.slice(7) : d;
         distrCounts[key] = (distrCounts[key] || 0) + 1;
       });
     });
@@ -4518,16 +4576,17 @@ $('histNavNext').addEventListener('click', () => {
   if (next <= todayStr()) loadHistory(next);
 });
 
+async function loadAllSessions() {
+  if (isGuest) return guestGetAll();
+  if (!uid || !db) return null;
+  const snap = await getDocs(query(collection(db, 'users', uid, 'sessions')));
+  return snap.docs.map(d => d.data());
+}
+
 async function renderStats() {
-  if (isGuest) {
-    renderStatsFromSessions(guestGetAll());
-    loadHistory(historyDate);
-    return;
-  }
-  if (!uid || !db) return;
+  if (!isGuest && (!uid || !db)) return;
   try {
-    const snap = await getDocs(query(collection(db, 'users', uid, 'sessions')));
-    renderStatsFromSessions(snap.docs.map(d => d.data()));
+    renderStatsFromSessions(await loadAllSessions());
   } catch (err) { showError('Stats: ' + err.message); }
   loadHistory(historyDate);
 }
@@ -4555,6 +4614,17 @@ applyTheme(savedTheme === 'light');
 
 themeToggle.addEventListener('click', () => {
   applyTheme(document.documentElement.getAttribute('data-theme') !== 'light');
+  const pip = window.documentPictureInPicture?.window;
+  if (pip && !pip.closed) {
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    const r = pip.document.documentElement;
+    r.style.setProperty('--pip-bg',         light ? '#f0f2f8' : '#0f1117');
+    r.style.setProperty('--pip-text',        light ? '#1a1b2e' : '#e2e8f0');
+    r.style.setProperty('--pip-muted',       light ? '#8892a4' : '#64748b');
+    r.style.setProperty('--pip-btn-bg',      light ? '#e8eaf5' : '#2a2b35');
+    r.style.setProperty('--pip-btn-border',  light ? '#dde1ee' : '#3a3d55');
+    r.style.setProperty('--pip-bar-bg',      light ? '#dde1ee' : '#2a2b35');
+  }
 });
 
 // ─── Picture-in-Picture ───────────────────────────────────────────────────────
@@ -4589,9 +4659,12 @@ pipBtn.addEventListener('click', async () => {
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet">
     <style>
       * { margin:0; padding:0; box-sizing:border-box; }
+      :root {
+        --pip-bg: #0f1117; --pip-text: #e2e8f0; --pip-muted: #64748b;
+        --pip-btn-bg: #2a2b35; --pip-btn-border: #3a3d55; --pip-bar-bg: #2a2b35;
+      }
       body {
-        background: ${isDark ? '#0f1117' : '#f0f2f8'};
-        color: ${isDark ? '#e2e8f0' : '#1a1b2e'};
+        background: var(--pip-bg); color: var(--pip-text);
         font-family: 'JetBrains Mono', monospace;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
@@ -4601,13 +4674,13 @@ pipBtn.addEventListener('click', async () => {
         font-family: 'Syne', sans-serif;
         font-size: 9px; font-weight: 700;
         letter-spacing: 1.5px; text-transform: uppercase;
-        color: ${isDark ? '#64748b' : '#8892a4'};
+        color: var(--pip-muted);
       }
       .pip-time { font-size: 38px; font-weight: 500; letter-spacing: -1.5px; line-height: 1; }
       .pip-state {
         font-size: 9px; letter-spacing: 2px;
         text-transform: uppercase;
-        color: ${isDark ? '#64748b' : '#8892a4'};
+        color: var(--pip-muted);
       }
       .pip-dot {
         width: 7px; height: 7px; border-radius: 50%;
@@ -4628,9 +4701,8 @@ pipBtn.addEventListener('click', async () => {
       }
       .pip-action:hover { opacity: 0.8; }
       .pip-pause {
-        background: ${isDark ? '#2a2b35' : '#e8eaf5'};
-        color: ${isDark ? '#e2e8f0' : '#1a1b2e'};
-        border: 1px solid ${isDark ? '#3a3d55' : '#dde1ee'};
+        background: var(--pip-btn-bg); color: var(--pip-text);
+        border: 1px solid var(--pip-btn-border);
       }
       .pip-stop {
         background: rgba(234,67,53,0.12);
@@ -4639,7 +4711,7 @@ pipBtn.addEventListener('click', async () => {
       }
       .pip-bar-wrap {
         width: 80%; height: 4px;
-        background: ${isDark ? '#2a2b35' : '#dde1ee'};
+        background: var(--pip-bar-bg);
         border-radius: 2px;
         overflow: hidden;
         display: none;
@@ -4652,6 +4724,15 @@ pipBtn.addEventListener('click', async () => {
         transition: width 0.5s linear, background 0.4s;
       }
     </style>`;
+  if (!isDark) {
+    const r = pipWin.document.documentElement;
+    r.style.setProperty('--pip-bg', '#f0f2f8');
+    r.style.setProperty('--pip-text', '#1a1b2e');
+    r.style.setProperty('--pip-muted', '#8892a4');
+    r.style.setProperty('--pip-btn-bg', '#e8eaf5');
+    r.style.setProperty('--pip-btn-border', '#dde1ee');
+    r.style.setProperty('--pip-bar-bg', '#dde1ee');
+  }
 
   pipWin.document.body.innerHTML = `
     <div class="pip-dot" id="pipDot"></div>
@@ -4799,13 +4880,16 @@ async function commitPendingSession(reflection = null) {
   clearCrashHeartbeat();
   hideReflection();
   await saveSession(ps.durationSecs, ps.label, ps.startedAt, ps.endedAt, ps.type, reflection);
+  const date = dateStr(ps.startedAt);
   const entryText = fmtHM(ps.durationSecs) + (ps.label ? ' · ' + ps.label : '');
   saveJournalEntry({ text: entryText, type: ps.type,
     startedAt: ps.startedAt?.getTime?.() ?? null,
     endedAt:   ps.endedAt?.getTime?.()   ?? null,
+    date,
   });
   renderStats();
   setTimeout(() => showBreakSuggestionSheet(ps.durationSecs), 350);
+  return date;
 }
 
 // ─── Break System ─────────────────────────────────────────────────────────────
@@ -5107,6 +5191,50 @@ async function renderBreakPanel() {
       <span class="break-recent-ts">${_timeAgo(b.ts)}</span>
     </div>`
   ).join('');
+
+  // Break impact — avg session focus rating within 30 min after each break type
+  const impactSection = $('breakImpactSection');
+  if (!_lastAllSessions && log.length >= 3) {
+    try { _lastAllSessions = await loadAllSessions(); } catch { }
+  }
+  const sessions = _lastAllSessions;
+  if (sessions && log.length >= 3) {
+    const window30 = 30 * 60 * 1000;
+    const actRatings = {};
+    log.forEach(b => {
+      const following = sessions.filter(s => {
+        const t = tsMs(s.startedAt);
+        return t && t >= b.ts && t <= b.ts + window30 && s.focusRating != null;
+      });
+      if (!following.length) return;
+      if (!actRatings[b.name]) actRatings[b.name] = { sum: 0, count: 0 };
+      following.forEach(s => { actRatings[b.name].sum += s.focusRating; actRatings[b.name].count++; });
+    });
+    const ranked = Object.entries(actRatings)
+      .filter(([, v]) => v.count >= 2)
+      .map(([name, v]) => ({ name, avg: v.sum / v.count, count: v.count }))
+      .sort((a, b) => b.avg - a.avg)
+      .slice(0, 4);
+    if (ranked.length > 0) {
+      impactSection.style.display = 'block';
+      const listEl = $('breakImpactList');
+      listEl.innerHTML = '';
+      ranked.forEach(({ name, avg }) => {
+        const row = document.createElement('div');
+        row.className = 'dist-row';
+        row.innerHTML = `
+          <span class="dist-name">${escHtml(name)}</span>
+          <div class="dist-track"><div class="dist-fill" style="width:${(avg/5)*100}%"></div></div>
+          <span class="dist-count">${avg.toFixed(1)}★</span>
+        `;
+        listEl.appendChild(row);
+      });
+    } else {
+      impactSection.style.display = 'none';
+    }
+  } else {
+    impactSection.style.display = 'none';
+  }
 }
 
 function _timeAgo(ts) {
@@ -5218,8 +5346,8 @@ $('reflDoneBtn').addEventListener('click', async () => {
   const done = $('reflDone').value.trim() || null;
   const reflection = { done, focusRating: selectedRating || null, distractions: [], brainDump: null, nextUp: null };
   gaEvent('reflection_submitted', { focus_rating: selectedRating || null, distraction_count: 0 });
-  await commitPendingSession(reflection);
-  if (done) saveJournalEntry({ text: done, type: 'post' });
+  const date = await commitPendingSession(reflection);
+  if (done) saveJournalEntry({ text: done, type: 'post', date });
 });
 
 // Step 1: MORE → advance to step 2
@@ -5238,14 +5366,14 @@ $('reflBack').addEventListener('click', () => {
 document.getElementById('reflSave').addEventListener('click', async () => {
   const reflection = buildReflection();
   gaEvent('reflection_submitted', { focus_rating: reflection.focusRating, distraction_count: reflection.distractions.length });
-  await commitPendingSession(reflection);
-  if (reflection.done) saveJournalEntry({ text: reflection.done, type: 'post' });
-  if (reflection.brainDump) saveJournalEntry({ text: reflection.brainDump, type: 'post' });
+  const date = await commitPendingSession(reflection);
+  if (reflection.done) saveJournalEntry({ text: reflection.done, type: 'post', date });
+  if (reflection.brainDump) saveJournalEntry({ text: reflection.brainDump, type: 'post', date });
 });
 
-// Tap backdrop to dismiss (commit with no data)
+// Tap backdrop = skip (no reflection data saved, same as if user never opened step 2)
 reflectionOverlay.addEventListener('click', e => {
-  if (e.target === reflectionOverlay) $('reflDoneBtn').click();
+  if (e.target === reflectionOverlay) commitPendingSession();
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────

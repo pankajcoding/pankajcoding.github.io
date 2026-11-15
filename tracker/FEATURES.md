@@ -36,6 +36,8 @@ Stays visible while navigating away from the timer tab.
 
 - Today's sessions list below the timer, sorted newest-first
 - Each card: time range, duration, type badge, editable label (tap to edit inline)
+- A session is dated by when it **started**, not when it was saved — rating it (or recovering it) the next day keeps it on the original day
+- A finished session waiting in the reflection modal is kept in crash recovery, so closing the tab before rating doesn't lose it
 - **Bulk delete:** long-press any session card to enter select mode → tick multiple → DELETE
 
 **Data saved per session:**
@@ -132,6 +134,12 @@ resolved: false  ← reserved for future use
 - If activity has `openJournal: true`: opens Quick Capture panel (brain dump)
 - DONE → logs break · END EARLY → logs break as ended early
 
+### Break Impact
+
+Shown below Recent Breaks when ≥3 breaks have been logged (all sessions are loaded on demand if the Stats tab hasn't been opened yet).  
+Finds sessions that started within 30 min of each break type, averages their focus rating, and shows a ranked bar chart.  
+Requires ≥2 qualifying sessions per activity name to appear.
+
 ### Customize Library
 - Collapsible editor in Break tab
 - Per-activity: name, duration (min), optional URL
@@ -170,6 +178,8 @@ Accessible via the STATS tab.
 |---|---|
 | Last 7 days | Bar chart — daily focus time |
 | KPIs | Streak (days), This week (hours), All-time (hours), Best day |
+| Top tasks | Appears when ≥3 unique session labels exist — top 5 tasks by total focus time (horizontal bar, duration labels) |
+| Top distractions | Horizontal bar chart; custom "other: text" distractions shown by their actual text, not collapsed to "Other" |
 | Patterns | Unlocks after enough data — 7-day heatmap by hour, AI insights, distraction impact list |
 
 ---
@@ -196,7 +206,8 @@ match /users/{uid}/journal/{id}  { allow read, write: if request.auth.uid == uid
 ## Theme
 
 🌙 button in the header toggles light / dark. Dark is default.  
-Implemented via `[data-theme="light"]` on `<html>`, persisted in `localStorage[dwt_theme]`.
+Implemented via `[data-theme="light"]` on `<html>`, persisted in `localStorage[dwt_theme]`.  
+PIP window theme syncs with the main window — toggle updates CSS variables on the PIP document root.
 
 ---
 
