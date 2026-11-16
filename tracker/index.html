@@ -1060,15 +1060,12 @@
       justify-content: flex-end;
     }
     .v-time {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      text-align: center;
+      margin-bottom: 4px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 8px;
-      color: var(--muted);
+      font-size: 10px;
+      color: var(--text);
       line-height: 1;
       white-space: nowrap;
-      overflow: hidden;
     }
     .v-bar {
       width: 100%;
@@ -1077,6 +1074,7 @@
       transition: height 0.7s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .v-bar.today { background: var(--green); }
+    .v-bar.below { opacity: 0.5; }
     .v-bar.zero { background: var(--border); opacity: 0.35; border-radius: 3px; }
     .v-axis {
       display: flex;
@@ -3992,7 +3990,6 @@ function renderStatsFromSessions(allSessions) {
 
     // Vertical bar chart
     const CHART_H = 120; // px for tallest bar
-    const SVG_H = 140;   // matches .v-chart height
     const maxSecs = Math.max(...Object.values(byDay), DAILY_TARGET_SECS);
     const todayD = todayStr();
     const barChartEl = $('barChart');
@@ -4005,7 +4002,7 @@ function renderStatsFromSessions(allSessions) {
     const vRdotsRow = document.createElement('div');
     vRdotsRow.className = 'v-rdots';
     let hasFocusDots = false;
-    const splinePts = []; // {x, y, hasData}
+    const bestSecs = Math.max(0, ...days.map(d => byDay[d] || 0));
 
     days.forEach((d, i) => {
       const secs = byDay[d] || 0;
@@ -4014,21 +4011,19 @@ function renderStatsFromSessions(allSessions) {
       const avgF = frs.length ? frs.reduce((a,b)=>a+b,0) / frs.length : null;
       const isToday = d === todayD;
 
-      // Spline point: center-x of column in a 700-unit viewBox, y from top
-      const colW = 700 / days.length;
-      splinePts.push({ x: i * colW + colW / 2, y: SVG_H - barH, hasData: secs > 0 });
-
-      // Bar column
+      // Bar column — only the best day gets a value label; every bar has a hover tooltip
       const col = document.createElement('div');
       col.className = 'v-col';
-      if (secs > 0) {
+      col.title = `${isToday ? 'Today' : dayLabel(d) + ' ' + d.slice(8) + '/' + d.slice(5, 7)} · ${secs > 0 ? fmtHM(secs) : 'no focus'}`;
+      if (secs > 0 && secs === bestSecs) {
         const lbl = document.createElement('span');
         lbl.className = 'v-time';
         lbl.textContent = fmtHM(secs);
         col.appendChild(lbl);
       }
       const bar = document.createElement('div');
-      bar.className = 'v-bar' + (isToday ? ' today' : secs === 0 ? ' zero' : '');
+      bar.className = 'v-bar' + (isToday ? ' today' : secs === 0 ? ' zero' : '') +
+        (secs > 0 && secs < DAILY_TARGET_SECS ? ' below' : '');
       bar.style.height = barH + 'px';
       col.appendChild(bar);
       vBars.appendChild(col);
@@ -4062,75 +4057,15 @@ function renderStatsFromSessions(allSessions) {
       vRdotsRow.appendChild(dotWrap);
     });
 
-    // Spline SVG overlay (Catmull-Rom → cubic Bezier)
-    (function buildSpline(pts) {
-      const ns = 'http://www.w3.org/2000/svg';
-      const W = 700, H = SVG_H;
-
-      // Catmull-Rom to Bezier path
-      let d = `M ${pts[0].x} ${pts[0].y}`;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[Math.max(0, i - 1)];
-        const p1 = pts[i];
-        const p2 = pts[i + 1];
-        const p3 = pts[Math.min(pts.length - 1, i + 2)];
-        const cp1x = p1.x + (p2.x - p0.x) / 6;
-        const cp1y = p1.y + (p2.y - p0.y) / 6;
-        const cp2x = p2.x - (p3.x - p1.x) / 6;
-        const cp2y = p2.y - (p3.y - p1.y) / 6;
-        d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x} ${p2.y}`;
-      }
-
-      const svg = document.createElementNS(ns, 'svg');
-      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-      svg.setAttribute('preserveAspectRatio', 'none');
-      svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible';
-
-      // Gradient fill
-      const defs = document.createElementNS(ns, 'defs');
-      const grad = document.createElementNS(ns, 'linearGradient');
-      grad.id = 'splineGrad'; grad.setAttribute('x1','0'); grad.setAttribute('y1','0'); grad.setAttribute('x2','0'); grad.setAttribute('y2','1');
-      const s1 = document.createElementNS(ns, 'stop'); s1.setAttribute('offset','0%'); s1.setAttribute('stop-color','#4285F4'); s1.setAttribute('stop-opacity','0.22');
-      const s2 = document.createElementNS(ns, 'stop'); s2.setAttribute('offset','100%'); s2.setAttribute('stop-color','#4285F4'); s2.setAttribute('stop-opacity','0');
-      grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad); svg.appendChild(defs);
-
-      // Area fill
-      const area = document.createElementNS(ns, 'path');
-      area.setAttribute('d', d + ` L ${pts[pts.length-1].x} ${H} L ${pts[0].x} ${H} Z`);
-      area.setAttribute('fill', 'url(#splineGrad)');
-      svg.appendChild(area);
-
-      // Line
-      const line = document.createElementNS(ns, 'path');
-      line.setAttribute('d', d);
-      line.setAttribute('fill', 'none');
-      line.setAttribute('stroke', '#4285F4');
-      line.setAttribute('stroke-width', '2');
-      line.setAttribute('stroke-linecap', 'round');
-      line.setAttribute('stroke-linejoin', 'round');
-      svg.appendChild(line);
-
-      // Dots on data points
-      pts.forEach(p => {
-        if (!p.hasData) return;
-        const c = document.createElementNS(ns, 'circle');
-        c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', '4');
-        c.setAttribute('fill', '#4285F4'); c.setAttribute('stroke', 'var(--bg)'); c.setAttribute('stroke-width', '2');
-        svg.appendChild(c);
-      });
-
-      vBars.appendChild(svg);
-    })(splinePts);
-
     // Target line
     const targetH = Math.round((DAILY_TARGET_SECS / maxSecs) * CHART_H);
     const targetLine = document.createElement('div');
     targetLine.style.cssText = `position:absolute;left:0;right:0;bottom:${targetH}px;` +
-      `border-top:1px dashed rgba(66,133,244,0.5);pointer-events:none;`;
+      `border-top:1px dashed var(--green);opacity:0.8;pointer-events:none;`;
     const targetLbl = document.createElement('span');
     targetLbl.style.cssText = `position:absolute;right:0;top:-14px;font-family:'JetBrains Mono',monospace;` +
-      `font-size:9px;color:rgba(66,133,244,0.7);letter-spacing:0.3px`;
-    targetLbl.textContent = '3.5h';
+      `font-size:9px;color:var(--green);letter-spacing:0.3px`;
+    targetLbl.textContent = 'goal 3.5h';
     targetLine.appendChild(targetLbl);
     vBars.appendChild(targetLine);
 

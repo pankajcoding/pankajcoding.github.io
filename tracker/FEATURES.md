@@ -176,7 +176,7 @@ Accessible via the STATS tab.
 
 | Section | Content |
 |---|---|
-| Last 7 days | Bar chart — daily focus time |
+| Daily chart | Bar chart — daily focus time over 7 / 15 / 30 days. Green dashed goal line at 3.5h; bars below goal are dimmed; only the best day shows a value label; hover any bar for its date and total. Focus-rating dot under each day |
 | KPIs | Streak (days), This week (hours), All-time (hours), Best day |
 | Top tasks | Appears when ≥3 unique session labels exist — top 5 tasks by total focus time (horizontal bar, duration labels) |
 | Top distractions | Horizontal bar chart; custom "other: text" distractions shown by their actual text, not collapsed to "Other" |
@@ -208,6 +208,12 @@ match /users/{uid}/journal/{id}  { allow read, write: if request.auth.uid == uid
 🌙 button in the header toggles light / dark. Dark is default.  
 Implemented via `[data-theme="light"]` on `<html>`, persisted in `localStorage[dwt_theme]`.  
 PIP window theme syncs with the main window — toggle updates CSS variables on the PIP document root.
+
+---
+
+## Offline / PWA
+
+`sw.js` is network-first for `/tracker/` requests and falls back to the cache when offline, so new deploys load right away. Bump `CACHE` when changing caching behaviour so old caches are cleared on activate.
 
 ---
 
