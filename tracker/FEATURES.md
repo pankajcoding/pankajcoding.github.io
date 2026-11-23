@@ -108,6 +108,7 @@ ADHD-friendly timestamped note capture. Three entry points:
 - **Date navigator:** ‹ Today › arrows step by day; "All" loads every entry ever
 - **Search:** client-side substring match on text and tags; highlights matches with `<mark>`; searches within the current date range
 - Each row: type badge (quick=blue · pre=green · post=yellow), text preview (120 chars), timestamp
+- Finished sessions are **not** journal entries: they live in Today's sessions, Stats → History and the charts. Older builds logged each session as a `pomodoro`/`stopwatch` journal entry ("25m · label"); those stay in storage but are hidden everywhere (journal log, History, revisit count) via `isNoteEntry`
 
 ### Revisit Trigger
 - On first open of a new day, checks if the previous date with entries had ≥1 entry

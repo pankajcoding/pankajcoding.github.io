@@ -2754,6 +2754,9 @@ const GUEST_JOURNAL_KEY = 'dwt_guest_journal';
 let journalOpen = false;
 let journalLogOpen = false;
 let journalEntries = [];
+// Old builds logged every finished session ("25m · label") as a journal entry; those stay in storage
+// but are no longer shown — the journal is for notes, intentions and reflections.
+const isNoteEntry = e => e.type !== 'pomodoro' && e.type !== 'stopwatch';
 let journalViewDate = 'today';   // 'today' | 'all' | 'YYYY-MM-DD'
 let journalSearchQuery = '';
 const JOURNAL_PLACEHOLDERS = [
@@ -3132,7 +3135,7 @@ function guestGetJournal() {
   try { return JSON.parse(localStorage.getItem(GUEST_JOURNAL_KEY) || '[]'); } catch { return []; }
 }
 function guestGetJournalForDate(date) {
-  const all = guestGetJournal().sort((a, b) => b.ts - a.ts);
+  const all = guestGetJournal().filter(isNoteEntry).sort((a, b) => b.ts - a.ts);
   if (date === 'all') return all;
   return all.filter(e => e.date === date);
 }
@@ -3196,7 +3199,7 @@ async function loadJournalEntries(date) {
         startedAt: data.startedAt?.toMillis?.() ?? null,
         endedAt:   data.endedAt?.toMillis?.()   ?? null,
       };
-    }).sort((a, b) => b.ts - a.ts);
+    }).filter(isNoteEntry).sort((a, b) => b.ts - a.ts);
     renderJournalEntries();
   } catch (err) { console.error('loadJournalEntries:', err); }
 }
@@ -3391,9 +3394,6 @@ function checkCrashRecovery() {
     clearCrashHeartbeat();
     const endedAt = new Date(raw.startedAt + raw.elapsed * 1000);
     await saveSession(raw.elapsed, raw.label, new Date(raw.startedAt), endedAt, raw.mode);
-    saveJournalEntry({ text: fmtHM(raw.elapsed) + (raw.label ? ' · ' + raw.label : '') + ' (recovered)',
-      type: raw.mode, startedAt: raw.startedAt, endedAt: endedAt.getTime(),
-      date: dateStr(new Date(raw.startedAt)) });
     renderStats();
     showToast('💾', 'Session recovered', fmtHM(raw.elapsed) + ' saved');
   };
@@ -3410,7 +3410,7 @@ async function checkRevisitTrigger() {
   // Find the most recent date that had entries
   let prevDate, prevCount;
   if (isGuest) {
-    const all = guestGetJournal();
+    const all = guestGetJournal().filter(isNoteEntry);
     const byDate = {};
     all.forEach(e => { byDate[e.date] = (byDate[e.date] || 0) + 1; });
     const pastDates = Object.keys(byDate).filter(d => d < today).sort().reverse();
@@ -3423,9 +3423,10 @@ async function checkRevisitTrigger() {
       const snap = await getDocs(
         query(collection(db, 'users', uid, 'journal'), where('date', '<', today), orderBy('date', 'desc'))
       );
-      if (!snap.docs.length) return;
-      prevDate = snap.docs[0].data().date;
-      prevCount = snap.docs.filter(d => d.data().date === prevDate).length;
+      const notes = snap.docs.map(d => d.data()).filter(isNoteEntry);
+      if (!notes.length) return;
+      prevDate = notes[0].date;
+      prevCount = notes.filter(e => e.date === prevDate).length;
     } catch { return; }
   }
 
@@ -5094,7 +5095,7 @@ async function loadHistory(date) {
       return { ...data, ts: data.timestamp?.toMillis?.() ?? 0,
         startedAt: data.startedAt?.toMillis?.() ?? null,
         endedAt: data.endedAt?.toMillis?.() ?? null };
-    }).sort((a, b) => a.ts - b.ts);
+    }).filter(isNoteEntry).sort((a, b) => a.ts - b.ts);
     renderHistoryContent(sessions, journals);
   } catch (err) { $('historyContent').innerHTML = `<div class="journal-empty">Failed to load.</div>`; }
 }
@@ -5461,12 +5462,6 @@ async function commitPendingSession(reflection = null) {
   hideReflection();
   await saveSession(ps.durationSecs, ps.label, ps.startedAt, ps.endedAt, ps.type, reflection);
   const date = dateStr(ps.startedAt);
-  const entryText = fmtHM(ps.durationSecs) + (ps.label ? ' · ' + ps.label : '');
-  saveJournalEntry({ text: entryText, type: ps.type,
-    startedAt: ps.startedAt?.getTime?.() ?? null,
-    endedAt:   ps.endedAt?.getTime?.()   ?? null,
-    date,
-  });
   renderStats();
   setTimeout(() => showBreakSuggestionSheet(ps.durationSecs), 350);
   return date;
