@@ -1753,6 +1753,13 @@
       <button class="revisit-card-close" id="recoveryCardDismiss" aria-label="Dismiss">×</button>
     </div>
 
+    <!-- LOST SESSION BANNER (no device tracked the running timer for a while) -->
+    <div class="recovery-card" id="lostCard" style="display:none;flex-wrap:wrap">
+      <span class="recovery-card-text" id="lostCardText"></span>
+      <button class="revisit-card-review" id="lostCardKeep">Keep all time</button>
+      <button class="revisit-card-review" id="lostCardStop"></button>
+    </div>
+
     <!-- Daily target progress -->
     <div class="daily-target-bar" id="dailyTargetBar">
       <div class="daily-target-track">
@@ -1782,6 +1789,7 @@
         <button class="pill" data-mins="20">20m</button>
         <button class="pill selected" data-mins="25">25m</button>
         <button class="pill" data-mins="30">30m</button>
+        <button class="pill" data-mins="35">35m</button>
         <button class="pill" data-mins="40">40m</button>
         <button class="pill" data-mins="45">45m</button>
         <button class="pill" data-mins="50">50m</button>
@@ -2451,7 +2459,7 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
          signInWithPopup, GoogleAuthProvider,
          onAuthStateChanged, browserLocalPersistence, setPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc,
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, setDoc, getDoc, runTransaction,
          query, where, orderBy, onSnapshot, getDocs, Timestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -2539,6 +2547,14 @@ let intervalId = null;
 const MIN_SESSION_SECS = 5 * 60; // 5 minutes
 let startTs = null;      // performance.now() snapshot when last started/resumed
 let timerStartedAt = null; // Date for Firestore
+let activeSid = null;      // id of the running/paused session, shared across devices
+const endedSids = new Set(); // sessions this device ended — never re-adopt them
+let runStartedWall = 0;    // Date.now() when the current run started (elapsed = time before it)
+let lastTickAt = 0;        // Date.now() of the last tick — a big gap means the device slept
+let lastPingAt = 0;        // last heartbeat (crash backup + Firestore lastSeen)
+let lostAt = 0;            // when tracking was lost, while the lost-session card is open
+let checkingGap = false;
+const STALE_MS = 3 * 60 * 1000; // no heartbeat for this long = nobody was tracking
 
 // ─── Firebase state ──────────────────────────────────────────────────────────
 let db = null;
@@ -2697,6 +2713,7 @@ async function initFirebase(cfg) {
         runJournalV2Migration();
         checkRevisitTrigger();
         checkCrashRecovery();
+        subscribeActiveTimer();
       } else {
         uid = null; isGuest = false;
         statusDot.style.background = 'var(--muted)';
@@ -3498,12 +3515,197 @@ function clearCrashHeartbeat() {
   localStorage.removeItem(CRASH_KEY);
 }
 
-function tickTimer() {
+// ─── Live timer sync across devices ──────────────────────────────────────────
+// One doc holds the running/paused session. It is written on start/pause/resume/end, plus a
+// lastSeen heartbeat every 30s from each device running it; other devices derive the live time
+// from runStartedAt. If lastSeen goes stale (> STALE_MS) the session is paused and the user asked.
+// An ended session leaves a {sid, state:'ended'} marker so other devices stop too.
+function activeTimerRef() { return doc(db, 'users', uid, 'meta', 'activeTimer'); }
+
+function activeTimerData() {
+  return {
+    sid: activeSid, state: timerState, mode: timerMode, pomoDuration: pomodoroDuration,
+    label: labelInput.value.trim(), startedAt: timerStartedAt.getTime(),
+    elapsedBefore: elapsed,
+    runStartedAt: timerState === 'running' ? runStartedWall : null,
+    lastSeen: Date.now(),
+  };
+}
+
+function pushTimerSync() {
+  if (uid && activeSid) setDoc(activeTimerRef(), activeTimerData()).catch(() => {});
+}
+
+function endTimerSync() {
+  if (!activeSid) return;
+  endedSids.add(activeSid);
+  if (uid) setDoc(activeTimerRef(), { sid: activeSid, state: 'ended' }).catch(() => {});
+  activeSid = null;
+}
+
+// Pomodoro end fires on every open device — only the one that marks it ended saves it
+async function claimTimerEnd() {
+  const sid = activeSid;
+  activeSid = null;
+  if (!uid || !sid) return true;
+  endedSids.add(sid);
+  if (document.hidden) await new Promise(r => setTimeout(r, 3000)); // let a visible device take it
+  try {
+    return await runTransaction(db, async tx => {
+      const snap = await tx.get(activeTimerRef());
+      const r = snap.exists() ? snap.data() : null;
+      if (r && r.sid === sid && r.state === 'ended') return false;
+      if (!r || r.sid === sid) tx.set(activeTimerRef(), { sid, state: 'ended' });
+      return true;
+    });
+  } catch { return true; } // offline or sync unavailable — save here
+}
+
+function subscribeActiveTimer() {
+  onSnapshot(activeTimerRef(), snap => { if (snap.exists()) applyRemoteTimer(snap.data()); },
+    err => console.warn('Live timer sync unavailable:', err.message));
+}
+
+function applyRemoteTimer(r) {
+  const localActive = timerState !== 'idle';
+  if (r.state === 'ended') {
+    if (localActive && r.sid === activeSid) endLocalTimer();
+    return;
+  }
+  // A stale pause/resume from another device brought back a session we ended
+  if (endedSids.has(r.sid)) {
+    setDoc(activeTimerRef(), { sid: r.sid, state: 'ended' }).catch(() => {});
+    return;
+  }
+  if (localActive && r.sid !== activeSid) {
+    // Two sessions started independently (e.g. offline): the earlier one wins
+    const mine = timerStartedAt.getTime();
+    if (mine < r.startedAt || (mine === r.startedAt && activeSid < r.sid)) { pushTimerSync(); return; }
+    const cur = currentElapsed();
+    if (cur >= MIN_SESSION_SECS) saveSession(Math.floor(cur), labelInput.value.trim(), timerStartedAt, new Date(), timerMode);
+  }
+  if (localActive && r.sid === activeSid && r.state === timerState) return; // already in step
+  if (r.state === 'running' && Date.now() - r.lastSeen > STALE_MS) {
+    // Nobody has been tracking it (tab closed, laptop asleep, phone locked) — pause where it was lost and ask
+    adoptRemoteTimer({ ...r, state: 'paused', runStartedAt: null,
+      elapsedBefore: r.elapsedBefore + Math.max(0, (r.lastSeen - r.runStartedAt) / 1000) });
+    pushTimerSync();
+    showLostCard(r.lastSeen);
+    return;
+  }
+  adoptRemoteTimer(r);
+}
+
+function adoptRemoteTimer(r) {
+  const wasIdle = timerState === 'idle';
+  clearInterval(intervalId);
+  activeSid = r.sid;
+  timerMode = r.mode;
+  pomodoroDuration = r.pomoDuration;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === r.mode));
+  $('pomodoroControls').style.display = r.mode === 'pomodoro' ? 'flex' : 'none';
+  document.querySelectorAll('.pill').forEach(p => p.classList.toggle('selected', parseInt(p.dataset.mins) * 60 === r.pomoDuration));
+  labelInput.value = r.label;
+  labelInput.disabled = true;
+  timerStartedAt = new Date(r.startedAt);
+  pomodoroComplete = false;
+  timerState = r.state;
+  hideLostCard();
+  startTs = performance.now();
+  runStartedWall = lastTickAt = Date.now();
+  elapsed = r.elapsedBefore + (r.state === 'running' ? Math.max(0, (Date.now() - r.runStartedAt) / 1000) : 0);
+  if (r.state === 'running') intervalId = setInterval(tickTimer, 500);
+  timerLabel.textContent = r.state === 'paused' ? 'paused' : (r.mode === 'pomodoro' ? 'focus' : 'running');
+  setRingColor(r.state);
+  _lastStopLabel = stopLabel();
+  renderButtons();
+  updateDisplay(currentElapsed());
+  // This session is live again — the crash-recovery card for it is no longer needed
+  try { if (JSON.parse(localStorage.getItem(CRASH_KEY))?.startedAt === r.startedAt) $('recoveryCard').style.display = 'none'; } catch { }
+  writeCrashHeartbeat();
+  if (wasIdle) showToast('🔄', 'Synced from another device', r.label || '');
+}
+
+function endLocalTimer() {
+  clearInterval(intervalId);
+  hideLostCard();
+  timerState = 'idle';
+  elapsed = 0;
+  activeSid = null;
+  clearCrashHeartbeat();
+  resetRingToIdle();
+  timerLabel.textContent = 'idle';
+  document.title = 'Deep Work Tracker';
+  setRingColor('idle');
+  labelInput.disabled = false;
+  labelInput.value = '';
+  renderButtons();
+  showToast('🔄', 'Session ended on another device');
+}
+
+// This device went quiet for > STALE_MS (sleep / locked phone). Lost only if no other device kept pinging.
+async function checkOwnGap(gapStart) {
+  checkingGap = true;
+  let lastAlive = gapStart, r = null;
+  if (uid) {
+    try {
+      r = (await getDoc(activeTimerRef())).data();
+      if (r?.sid !== activeSid) r = null;
+      if (r?.lastSeen > lastAlive) lastAlive = r.lastSeen;
+    } catch { }
+  }
+  checkingGap = false;
+  lastTickAt = 0;
   if (timerState !== 'running') return;
+  if (r && r.state !== 'running') return applyRemoteTimer(r); // paused/ended elsewhere meanwhile
+  if (Date.now() - lastAlive <= STALE_MS) { if (r) adoptRemoteTimer(r); return; } // another device kept tracking — resync time
+  clearInterval(intervalId);
+  elapsed += Math.max(0, (lastAlive - runStartedWall) / 1000);
+  timerState = 'paused';
+  timerLabel.textContent = 'paused';
+  setRingColor('paused');
+  renderButtons();
+  updateDisplay(elapsed);
+  writeCrashHeartbeat();
+  pushTimerSync();
+  showLostCard(lastAlive);
+}
+
+function showLostCard(at) {
+  lostAt = at;
+  const t = new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  $('lostCardText').textContent = `Lost track at ${t} (${fmtHM(Math.floor(elapsed))} in)`;
+  $('lostCardStop').textContent = `Stop at ${t}`;
+  $('lostCard').style.display = 'flex';
+}
+
+function hideLostCard() {
+  lostAt = 0;
+  $('lostCard').style.display = 'none';
+}
+
+$('lostCardKeep').onclick = () => {
+  if (timerState !== 'paused' || !lostAt) return hideLostCard();
+  elapsed += (Date.now() - lostAt) / 1000; // count the untracked gap
+  resumeTimer();
+};
+
+$('lostCardStop').onclick = () => {
+  const at = lostAt;
+  if (timerState !== 'paused' || !at) return hideLostCard();
+  stopTimer();
+  if (pendingSession) pendingSession.endedAt = new Date(at);
+};
+
+function tickTimer() {
+  if (timerState !== 'running' || checkingGap) return;
+  const now = Date.now();
+  if (lastTickAt && now - lastTickAt > STALE_MS) { checkOwnGap(lastTickAt); return; }
+  lastTickAt = now;
   const delta = (performance.now() - startTs) / 1000;
   const current = elapsed + delta;
   updateDisplay(current);
-  if (Math.floor(current) % 30 === 0 && current > 1) writeCrashHeartbeat();
+  if (now - lastPingAt >= 30000) { lastPingAt = now; writeCrashHeartbeat(); pushTimerSync(); }
   if (timerMode === 'pomodoro' && current >= pomodoroDuration && !pomodoroComplete) {
     pomodoroComplete = true;
     gaEvent('pomodoro_complete', { duration_mins: Math.round(pomodoroDuration / 60) });
@@ -3617,6 +3819,9 @@ function startTimer() {
   setRingColor('running');
   renderButtons();
   labelInput.disabled = true;
+  activeSid = crypto.randomUUID();
+  runStartedWall = lastTickAt = lastPingAt = Date.now();
+  pushTimerSync();
   writeCrashHeartbeat();
   const startLabel = labelInput.value.trim();
   if (startLabel) saveJournalEntry({ text: startLabel, type: 'pre' });
@@ -3630,16 +3835,20 @@ function pauseTimer() {
   setRingColor('paused');
   renderButtons();
   syncPip();
+  pushTimerSync();
 }
 
 function resumeTimer() {
   timerState = 'running';
+  hideLostCard();
   startTs = performance.now();
+  runStartedWall = lastTickAt = Date.now();
   intervalId = setInterval(tickTimer, 500);
   timerLabel.textContent = timerMode === 'pomodoro' ? 'focus' : 'running';
   setRingColor('running');
   renderButtons();
   syncPip();
+  pushTimerSync();
 }
 
 function stopTimer() {
@@ -3656,6 +3865,8 @@ function stopTimer() {
   }
 
   clearInterval(intervalId);
+  hideLostCard();
+  endTimerSync();
   if (isGiveUp) clearCrashHeartbeat();
   timerState = 'idle';
   elapsed = 0;
@@ -3736,19 +3947,18 @@ document.querySelectorAll('.pill').forEach(pill => {
 });
 
 // ─── Pomodoro auto-complete ───────────────────────────────────────────────────
-function autoCompletePomodoro() {
+async function autoCompletePomodoro() {
   clearInterval(intervalId);
   timerState = 'idle';
   elapsed = 0;
 
-  pendingSession = {
+  const session = {
     durationSecs: pomodoroDuration,
     label: labelInput.value.trim(),
     startedAt: timerStartedAt,
     endedAt: new Date(),
     type: 'pomodoro',
   };
-  persistPendingSession();
   labelInput.value = '';
 
   updateDisplay(pomodoroDuration);
@@ -3756,6 +3966,14 @@ function autoCompletePomodoro() {
   setRingColor('idle');
   labelInput.disabled = false;
   renderButtons();
+
+  if (!(await claimTimerEnd())) {
+    clearCrashHeartbeat();
+    showToast('🔄', 'Pomodoro saved on another device');
+    return;
+  }
+  pendingSession = session;
+  persistPendingSession();
   playCompletionBeep();
   showPomodoroFlash();
   burstConfetti(document.querySelector('.ring-wrap') || document.body);

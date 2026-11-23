@@ -9,7 +9,7 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 **Modes:** Pomodoro | Stopwatch (toggle at top)
 
 **Pomodoro**
-- Duration pills: 15 / 20 / 25 (default) / 30 / 40 / 45 / 50 min
+- Duration pills: 15 / 20 / 25 (default) / 30 / 35 / 40 / 45 / 50 min
 - Circular SVG ring shows progress; ring flashes gold on completion
 - Auto-completes and opens reflection modal when duration is reached
 - Pomodoro count for today shown next to mode toggle
@@ -21,6 +21,15 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 **Controls:** START → PAUSE / GIVE UP (pomodoro) or FINISH (stopwatch) → RESUME
 
 **Label input:** "What are you working on?" — attached to the saved session, editable after the fact
+
+**Live sync across devices (signed in only)**
+- Start on one device and every other open device shows the same running timer; pause / resume / stop from any of them
+- Firestore doc `users/{uid}/meta/activeTimer` holds the session; it's written on start, pause, resume and end, and other devices calculate the live time from `runStartedAt`
+- Every device running the timer writes a `lastSeen` heartbeat every 30s (same cadence as the local crash backup)
+- **Lost session:** if no device has checked in for 3+ min (tab closed, laptop asleep, phone locked), the timer pauses at the last check-in and a card asks: **Keep all time** (counts the gap and resumes) or **Stop at <time>** (ends it there → reflection if ≥ 5 min). This applies whether the gap is found when a device opens or when the sleeping device itself wakes up; it first checks whether another device kept tracking
+- When a session ends, the doc keeps an `{sid, state: 'ended'}` marker so other devices stop too; a stale pause or resume that brings back an ended session gets reverted
+- When a Pomodoro reaches zero, every open device tries to claim it through a transaction; only the winner shows the reflection and saves it (a hidden tab waits 3s so a visible device wins)
+- If two sessions were started separately (e.g. offline), the one that started earlier wins; the other is saved first if it reached 5 min
 
 ---
 
@@ -199,6 +208,7 @@ Accessible via the STATS tab.
 ```
 match /users/{uid}/sessions/{id} { allow read, write: if request.auth.uid == uid; }
 match /users/{uid}/journal/{id}  { allow read, write: if request.auth.uid == uid; }
+match /users/{uid}/meta/{id}     { allow read, write: if request.auth.uid == uid; }
 ```
 
 ---
