@@ -4410,7 +4410,7 @@ function drawColumns(el, model, { mini = false } = {}) {
   if (!W) return; // hidden panel — the ResizeObserver redraws once it's visible
   el.replaceChildren();
   const n = model.length, todayKey = todayStr();
-  const padL = mini ? 0 : 28, padT = mini ? 8 : 18, plotH = mini ? 56 : 150;
+  const padL = mini ? 0 : 28, padT = mini ? 8 : 18, plotH = mini ? 84 : 150;
   const rowH = 13, axisH = 8 + rowH * 2;       // two label rows: day initial, then date
   const base = padT + plotH, H = base + axisH;
   const plotW = W - padL;
