@@ -20,6 +20,8 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 
 **Controls:** START → PAUSE / GIVE UP (pomodoro) or FINISH (stopwatch) → RESUME
 
+**Last 30 days card:** at the bottom of the timer screen, a compact version of the stats chart (same drawing code and colours) showing avg/day and goal days, with today marked by a dot. Tap it to open Stats. Hidden in focus mode.
+
 **Label input:** "What are you working on?" — attached to the saved session, editable after the fact
 
 **Live sync across devices (signed in only)**
@@ -185,7 +187,7 @@ Accessible via the STATS tab.
 
 | Section | Content |
 |---|---|
-| Daily chart | Bar chart — daily focus time over 7 / 15 / 30 days. Green dashed goal line at 3.5h; bars below goal are dimmed; only the best day shows a value label; hover any bar for its date and total. Focus-rating dot under each day |
+| Daily chart | SVG column chart of daily focus over 7 / 15 / 30 days, with a summary row above it (avg/day, goal days, best day for that range). Days that hit the 3.5h goal are bright; days below it use a dimmer step of the same blue; empty days show as a small tick. There's a light 0/2h/4h scale, a green goal line with a "goal 3.5h" label, and only the best day gets a value label. Axis labels show Mondays and Today (every day in the 7d view). Hover or tap a bar for date, hours, sessions, avg focus and distance from the goal. Colours come from the `--chart-*` CSS variables (per theme) |
 | KPIs | Streak (days), This week (hours), All-time (hours), Best day |
 | Top tasks | Appears when ≥3 unique session labels exist — top 5 tasks by total focus time (horizontal bar, duration labels) |
 | Top distractions | Horizontal bar chart; custom "other: text" distractions shown by their actual text, not collapsed to "Other" |
@@ -215,9 +217,19 @@ match /users/{uid}/meta/{id}     { allow read, write: if request.auth.uid == uid
 
 ## Theme
 
-🌙 button in the header toggles light / dark. Dark is default.  
-Implemented via `[data-theme="light"]` on `<html>`, persisted in `localStorage[dwt_theme]`.  
-PIP window theme syncs with the main window — toggle updates CSS variables on the PIP document root.
+🎨 button in the header opens the theme picker (Esc or tapping outside closes it).
+
+**13 themes**, each a set of CSS variables (colours, ring colours, chart colours, fonts) defined in `THEMES` in `index.html`:
+- Dark: Current (default), Ember, Forest, Nocturne, Mono + Lime, Ocean, Aurora (gradient ring while running), Neon, Graphite
+- Light: Arctic (the old light mode), Dawn, Matcha, Sakura
+
+**How it applies:** `applyTheme(id)` sets the variables on `<html>`, sets `data-theme="light"` for light themes (the few light-only CSS rules still key off that), loads the theme's Google Fonts on demand, and updates the PiP window and the timer ring. Accent tints use `color-mix()` on `--blue`, so nothing needs a per-theme override.
+- **No flash on load:** the resolved theme's variables are cached in `localStorage[dwt_theme_paint]`, and a small inline `<head>` script applies them before first render.
+- **Follow system light / dark:** toggle in the picker. It uses the dark pick when the device is dark and the light pick when it's light (shown as "night" / "day" tags), and switches live with the device appearance.
+- **Saved:** prefs `{ id, follow, dark, light }` are kept in `localStorage[dwt_theme_prefs]` and, when signed in, in Firestore `users/{uid}/meta/prefs` (`theme` field). They're read once at sign-in, so a change on one device reaches another on its next load or sign-in. The old `dwt_theme = light` setting is carried over as Arctic.
+- Status colours (red delete, yellow warnings, the focus-quality heatmap scale) and Google-coloured icons stay the same in every theme.
+
+**Adding a theme:** add a `makeTheme(...)` entry to `THEMES`. Check the chart pair (`below`, `hit`) with the dataviz palette validator against the theme's `card`, and keep `onAccent` on `accent` at ≥ 4.5:1.
 
 ---
 
