@@ -20,7 +20,7 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 
 **Controls:** START → PAUSE / GIVE UP (pomodoro) or FINISH (stopwatch) → RESUME
 
-**Last 30 days card:** at the bottom of the timer screen, a compact version of the stats chart (same drawing code and colours) showing avg/day and goal days, with today marked by a dot. Tap it to open Stats. Hidden in focus mode.
+**Last 15 / 30 days card:** at the bottom of the timer screen, a compact version of the stats chart (same drawing code and colours) showing avg/day and goal days. A **15d / 30d** switch in its header is remembered per device (`localStorage[dwt_month_range]`). Tap anywhere else on the card to open Stats. Hidden in focus mode.
 
 **Label input:** "What are you working on?" — attached to the saved session, editable after the fact
 
@@ -187,7 +187,7 @@ Accessible via the STATS tab.
 
 | Section | Content |
 |---|---|
-| Daily chart | SVG column chart of daily focus over 7 / 15 / 30 days, with a summary row above it (avg/day, goal days, best day for that range). Days that hit the 3.5h goal are bright; days below it use a dimmer step of the same blue; empty days show as a small tick. There's a light 0/2h/4h scale, a green goal line with a "goal 3.5h" label, and only the best day gets a value label. Axis labels show Mondays and Today (every day in the 7d view). Hover or tap a bar for date, hours, sessions, avg focus and distance from the goal. Colours come from the `--chart-*` CSS variables (per theme) |
+| Daily chart | SVG column chart of daily focus over 7 / 15 / 30 days, with a summary row above it (avg/day, goal days, best day for that range). Days that hit the 3.5h goal are bright; days below it use a dimmer step of the same blue; empty days show as a small tick. There's a light 0/2h/4h scale, a green goal line with a "goal 3.5h" label, and only the best day gets a value label. Weeks (Monday start) are marked with faint alternating background bands, counted back from the current week. The axis has two rows: a day initial under every bar (today in bold) and the date at the start of each week (every date in the 7d view). Hover or tap a bar to show its date in a pill on the axis, plus a tooltip with date, hours, sessions, avg focus and distance from the goal. Colours come from the `--chart-*` CSS variables (per theme) |
 | KPIs | Streak (days), This week (hours), All-time (hours), Best day |
 | Top tasks | Appears when ≥3 unique session labels exist — top 5 tasks by total focus time (horizontal bar, duration labels) |
 | Top distractions | Horizontal bar chart; custom "other: text" distractions shown by their actual text, not collapsed to "Other" |

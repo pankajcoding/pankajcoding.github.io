@@ -50,7 +50,7 @@
       --yellow: #FBBC05;
       --red: #EA4335;
       --text: #ffffff;
-      --muted: #7a8499;
+      --muted: #9fa6b6;
       --ring-size: 270px;
       --ring-stroke: 10;
       --dial-inner: #1e2030;
@@ -1137,7 +1137,9 @@
     .cc .cc-bar.hit { fill: var(--chart-hit); }
     .cc .cc-bar.zero { fill: var(--chart-zero); }
     .cc .cc-bar.dim { opacity: .7; }
-    .cc .cc-today-dot { fill: var(--text); }
+    .cc .cc-band { fill: var(--text); opacity: .045; }
+    .cc .cc-pill rect { fill: var(--text); }
+    .cc .cc-pill text { fill: var(--bg); }
     .cc .cc-hit { fill: transparent; }
     .chart-kpis { display: flex; gap: 22px; margin-bottom: 14px; flex-wrap: wrap; }
     .chart-kpis .v { font-size: 18px; font-weight: 500; color: var(--text); }
@@ -1157,8 +1159,10 @@
     }
     .month-card:hover { border-color: var(--muted); }
     .month-card .chart-title { margin-bottom: 10px; justify-content: space-between; }
-    .month-card-sum { font: 400 11px var(--f-mono); letter-spacing: 0; text-transform: none; color: var(--muted); }
-    .month-card-ends { display: flex; justify-content: space-between; font: 400 10px var(--f-mono); color: var(--muted); margin-top: 6px; }
+    .month-card-sum { font: 400 11px var(--f-mono); letter-spacing: 0; text-transform: none; color: var(--muted); min-width: 0; }
+    .month-card-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .month-card-sum { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .month-card-range { display: inline-flex; gap: 2px; flex-shrink: 0; }
 
     /* Enhanced stats */
     .kpi-row {
@@ -1929,11 +1933,16 @@
     <!-- LAST 30 DAYS (tap → stats) -->
     <div class="month-card" id="monthCard" style="display:none" role="button" tabindex="0" aria-label="Last 30 days — open stats">
       <div class="chart-title">
-        <span>Last 30 days</span>
-        <span class="month-card-sum" id="monthCardSum"></span>
+        <span id="monthCardTitle">Last 30 days</span>
+        <span class="month-card-right">
+          <span class="month-card-sum" id="monthCardSum"></span>
+          <span class="month-card-range" id="monthCardRange">
+            <button class="chart-range-btn" data-days="15">15d</button>
+            <button class="chart-range-btn" data-days="30">30d</button>
+          </span>
+        </span>
       </div>
       <div class="cc" id="monthChart"></div>
-      <div class="month-card-ends"><span id="monthCardStart"></span><span>Today</span></div>
     </div>
     </div><!-- /.timer-main -->
 
@@ -2619,31 +2628,31 @@ function makeTheme(name, kind, c, f) {
 const GOOGLE_RING = { idle: '#4285F4', running: '#34A853', paused: '#FBBC05' };
 const THEMES = {
   // ── dark ──
-  current: makeTheme('Current', 'dark', { bg: '#0f1117', card: '#1a1b23', border: '#2a2b35', text: '#ffffff', muted: '#7a8499', accent: '#4285F4', goal: '#34A853', onAccent: '#ffffff', onGoal: '#ffffff',
+  current: makeTheme('Current', 'dark', { bg: '#0f1117', card: '#1a1b23', border: '#2a2b35', text: '#ffffff', muted: '#9fa6b6', accent: '#4285F4', goal: '#34A853', onAccent: '#ffffff', onGoal: '#ffffff',
     dialInner: '#1e2030', tickMajor: '#3a3d55', tickMinor: '#252736', track: '#1e2030', hit: '#a6c8ff', below: '#3a6fd0', zero: '#3a3d50', grid: '#262833', tip: '#252733', meta: '#181b26', ring: GOOGLE_RING },
     { head: FONT.syne, body: FONT.dmSans, mono: FONT.jb }),
-  ember: makeTheme('Ember', 'dark', { bg: '#12100e', card: '#1c1916', border: '#2c2722', text: '#f6efe7', muted: '#9a8f84', accent: '#ff7a3d', goal: '#ffd27a', onAccent: '#1a0f08', onGoal: '#1a0f08',
+  ember: makeTheme('Ember', 'dark', { bg: '#12100e', card: '#1c1916', border: '#2c2722', text: '#fffaf4', muted: '#aea49a', accent: '#ff7a3d', goal: '#ffd27a', onAccent: '#1a0f08', onGoal: '#1a0f08',
     dialInner: '#1f1b17', tickMajor: '#3d352d', tickMinor: '#26211c', track: '#26211c', hit: '#ffb37a', below: '#a8501f', zero: '#3a332c', grid: '#26211c', tip: '#26211c' },
     { head: FONT.fraunces, body: FONT.manrope, mono: FONT.plexMono, url: fontUrl('Fraunces:opsz,wght@9..144,400..800', 'Manrope:wght@400..800', 'IBM+Plex+Mono:wght@400;500;600') }),
-  forest: makeTheme('Forest', 'dark', { bg: '#0c1210', card: '#131c18', border: '#22302a', text: '#eaf4ee', muted: '#84988d', accent: '#4fd28b', goal: '#f2d16b', onAccent: '#06140d', onGoal: '#06140d',
+  forest: makeTheme('Forest', 'dark', { bg: '#0c1210', card: '#131c18', border: '#22302a', text: '#f6fffa', muted: '#99aba1', accent: '#4fd28b', goal: '#f2d16b', onAccent: '#06140d', onGoal: '#06140d',
     dialInner: '#16211c', tickMajor: '#2e4037', tickMinor: '#1a2621', track: '#1a2621', hit: '#8ff0bb', below: '#2f7a55', zero: '#2a3a33', grid: '#1a2621', tip: '#1a2621' },
     { head: FONT.outfit, body: FONT.outfit, mono: FONT.dmMono, url: fontUrl('Outfit:wght@400..800', 'DM+Mono:wght@400;500') }),
-  nocturne: makeTheme('Nocturne', 'dark', { bg: '#0e0d18', card: '#171527', border: '#272440', text: '#f1efff', muted: '#8d89b0', accent: '#9b8cff', goal: '#6ee7b7', onAccent: '#100c2a', onGoal: '#100c2a',
+  nocturne: makeTheme('Nocturne', 'dark', { bg: '#0e0d18', card: '#171527', border: '#272440', text: '#faf9ff', muted: '#a39fc0', accent: '#9b8cff', goal: '#6ee7b7', onAccent: '#100c2a', onGoal: '#100c2a',
     dialInner: '#1a1830', tickMajor: '#363257', tickMinor: '#1e1b33', track: '#1e1b33', hit: '#c9c1ff', below: '#5b4fc4', zero: '#2c2946', grid: '#1e1b33', tip: '#1e1b33' },
     { head: FONT.sora, body: FONT.sora, mono: FONT.jb, url: fontUrl('Sora:wght@400..800') }),
-  lime: makeTheme('Mono + Lime', 'dark', { bg: '#0b0b0b', card: '#151515', border: '#262626', text: '#f5f5f5', muted: '#8a8a8a', accent: '#c6f432', goal: '#f5f5f5', onAccent: '#0b0b0b', onGoal: '#0b0b0b',
+  lime: makeTheme('Mono + Lime', 'dark', { bg: '#0b0b0b', card: '#151515', border: '#262626', text: '#ffffff', muted: '#a1a1a1', accent: '#c6f432', goal: '#ffffff', onAccent: '#0b0b0b', onGoal: '#0b0b0b',
     dialInner: '#181818', tickMajor: '#333333', tickMinor: '#1f1f1f', track: '#1f1f1f', hit: '#c6f432', below: '#4a4a4a', zero: '#2a2a2a', grid: '#1f1f1f', tip: '#1f1f1f' },
     { head: FONT.grotesk, body: FONT.grotesk, mono: FONT.spaceMono, url: fontUrl('Space+Grotesk:wght@400..700', 'Space+Mono:wght@400;700') }),
-  ocean: makeTheme('Ocean', 'dark', { bg: '#071417', card: '#0e1f24', border: '#1a3238', text: '#e6f6f7', muted: '#7fa0a6', accent: '#2ec4c4', goal: '#ff8f7a', onAccent: '#04191a', onGoal: '#04191a',
+  ocean: makeTheme('Ocean', 'dark', { bg: '#071417', card: '#0e1f24', border: '#1a3238', text: '#f5feff', muted: '#90adb2', accent: '#2ec4c4', goal: '#ff8f7a', onAccent: '#04191a', onGoal: '#04191a',
     dialInner: '#10242a', tickMajor: '#24434a', tickMinor: '#12292e', track: '#12292e', hit: '#8eeae6', below: '#1f7f86', zero: '#1f363b', grid: '#12292e', tip: '#12292e' },
     { head: FONT.jakarta, body: FONT.jakarta, mono: FONT.fira, url: fontUrl('Plus+Jakarta+Sans:wght@400..800', 'Fira+Code:wght@400..600') }),
-  aurora: makeTheme('Aurora', 'dark', { bg: '#0a0f1a', card: '#111827', border: '#1f2a3d', text: '#eef3ff', muted: '#8494b0', accent: '#5eead4', goal: '#fbbf77', onAccent: '#04201c', onGoal: '#04201c',
+  aurora: makeTheme('Aurora', 'dark', { bg: '#0a0f1a', card: '#111827', border: '#1f2a3d', text: '#f8faff', muted: '#97a4bd', accent: '#5eead4', goal: '#fbbf77', onAccent: '#04201c', onGoal: '#04201c',
     dialInner: '#131c2e', tickMajor: '#2a3854', tickMinor: '#172235', track: '#172235', hit: '#99f6e4', below: '#2a8f86', zero: '#22304a', grid: '#172235', tip: '#172235', gradient: ['#5eead4', '#a78bfa'] },
     { head: FONT.jakarta, body: FONT.jakarta, mono: FONT.jb, url: fontUrl('Plus+Jakarta+Sans:wght@400..800') }),
-  neon: makeTheme('Neon', 'dark', { bg: '#0d0716', card: '#160d24', border: '#2a1a40', text: '#f8f0ff', muted: '#9a86b8', accent: '#ff3ea5', goal: '#2de2e6', onAccent: '#1a0010', onGoal: '#1a0010',
+  neon: makeTheme('Neon', 'dark', { bg: '#0d0716', card: '#160d24', border: '#2a1a40', text: '#fdf9ff', muted: '#aa98c3', accent: '#ff3ea5', goal: '#2de2e6', onAccent: '#1a0010', onGoal: '#1a0010',
     dialInner: '#1a0f2b', tickMajor: '#3a2558', tickMinor: '#1f1233', track: '#1f1233', hit: '#ff8ac9', below: '#a0307a', zero: '#2c1d42', grid: '#1f1233', tip: '#1f1233' },
     { head: FONT.unbounded, body: FONT.grotesk, mono: FONT.spaceMono, url: fontUrl('Unbounded:wght@400..800', 'Space+Grotesk:wght@400..700', 'Space+Mono:wght@400;700') }),
-  graphite: makeTheme('Graphite', 'dark', { bg: '#111214', card: '#18191c', border: '#2a2c30', text: '#ececec', muted: '#8b8e95', accent: '#e8e8e8', goal: '#7dd3a7', onAccent: '#111214', onGoal: '#111214',
+  graphite: makeTheme('Graphite', 'dark', { bg: '#111214', card: '#18191c', border: '#2a2c30', text: '#fafafa', muted: '#a1a4a9', accent: '#e8e8e8', goal: '#7dd3a7', onAccent: '#111214', onGoal: '#111214',
     dialInner: '#1b1c1f', tickMajor: '#34363b', tickMinor: '#222428', track: '#222428', hit: '#e8e8e8', below: '#575757', zero: '#2c2e33', grid: '#222428', tip: '#222428' },
     { head: FONT.inter, body: FONT.inter, mono: FONT.jb, url: fontUrl('Inter:wght@400..800') }),
   // ── light ──
@@ -4257,10 +4266,10 @@ function burstHeartbreak(originEl) {
 let chartRangeDays = 30;
 let _lastAllSessions = null;
 
-document.querySelectorAll('.chart-range-btn').forEach(btn => {
+document.querySelectorAll('#panel-stats .chart-range-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     chartRangeDays = parseInt(btn.dataset.days);
-    document.querySelectorAll('.chart-range-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#panel-stats .chart-range-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     $('chartRangeLabel').textContent = `Last ${chartRangeDays} days`;
     if (_lastAllSessions) renderStatsFromSessions(_lastAllSessions);
@@ -4272,6 +4281,7 @@ document.querySelectorAll('.chart-range-btn').forEach(btn => {
 // --chart-* CSS variables, so theme switches need no redraw.
 const GOAL_SECS = 3.5 * 3600;
 let statsChartModel = null, monthChartModel = null;
+let monthRangeDays = (() => { try { return localStorage.getItem('dwt_month_range') === '15' ? 15 : 30; } catch { return 30; } })();
 
 function buildDayModel(allSessions, n) {
   const model = [], idx = {};
@@ -4316,8 +4326,9 @@ function renderMonthCard() {
   if (!monthChartModel) return;
   const { avg, goalDays } = chartSummary(monthChartModel);
   $('monthCard').style.display = '';
-  $('monthCardSum').textContent = `avg ${avg ? fmtHM(avg) : '0m'} · ${goalDays} goal day${goalDays === 1 ? '' : 's'} →`;
-  $('monthCardStart').textContent = fmtDayMonth(monthChartModel[0].date);
+  $('monthCardTitle').textContent = `Last ${monthChartModel.length} days`;
+  $('monthCardSum').textContent = `avg ${avg ? fmtHM(avg) : '0m'} · ${goalDays} goal day${goalDays === 1 ? '' : 's'}`;
+  $('monthCardRange').querySelectorAll('button').forEach(b => b.classList.toggle('active', +b.dataset.days === monthChartModel.length));
   drawColumns($('monthChart'), monthChartModel, { mini: true });
 }
 
@@ -4350,13 +4361,25 @@ function drawColumns(el, model, { mini = false } = {}) {
   if (!W) return; // hidden panel — the ResizeObserver redraws once it's visible
   el.replaceChildren();
   const n = model.length, todayKey = todayStr();
-  const padL = mini ? 0 : 28, padT = mini ? 4 : 18, plotH = mini ? 56 : 150, axisH = mini ? 8 : 24;
+  const padL = mini ? 0 : 28, padT = mini ? 8 : 18, plotH = mini ? 56 : 150;
+  const rowH = 13, axisH = 8 + rowH * 2;       // two label rows: day initial, then date
+  const base = padT + plotH, H = base + axisH;
   const plotW = W - padL;
   const maxSecs = Math.max(...model.map(m => m.secs));
   const yMaxH = Math.max(5, Math.ceil(maxSecs / 3600 / 2) * 2);
-  const y = secs => padT + plotH - (secs / 3600) / yMaxH * plotH;
-  const svg = svgEl('svg', { width: W, height: padT + plotH + axisH, role: 'img',
-    'aria-label': `Focus per day, last ${n} days` }, el);
+  const y = secs => base - (secs / 3600) / yMaxH * plotH;
+  const svg = svgEl('svg', { width: W, height: H, role: 'img', 'aria-label': `Focus per day, last ${n} days` }, el);
+  const slot = plotW / n;
+  const x0 = i => padL + slot * i;
+  const days = model.map(m => new Date(m.date + 'T12:00:00'));
+
+  // Weeks (Monday start); alternate weeks get a faint band, counted back from the current week
+  const weeks = [];
+  model.forEach((m, i) => { if (i === 0 || days[i].getDay() === 1) weeks.push({ start: i, end: i }); weeks[weeks.length - 1].end = i; });
+  weeks.forEach((w, k) => {
+    if ((weeks.length - 1 - k) % 2 === 1)
+      svgEl('rect', { class: 'cc-band', x: x0(w.start), y: padT - 6, width: slot * (w.end - w.start + 1), height: plotH + axisH + 4, rx: 5 }, svg);
+  });
 
   if (!mini) for (let t = 0; t <= yMaxH; t += 2) {
     svgEl('line', { class: 'cc-grid', x1: padL, x2: W, y1: y(t * 3600), y2: y(t * 3600) }, svg);
@@ -4364,31 +4387,32 @@ function drawColumns(el, model, { mini = false } = {}) {
   }
   svgEl('line', { class: 'cc-goal', x1: padL, x2: W, y1: y(GOAL_SECS), y2: y(GOAL_SECS), opacity: mini ? 0.55 : 0.9 }, svg);
 
-  const slot = plotW / n;
-  const bw = Math.max(2, Math.min(mini ? 10 : 24, slot - 2));
+  const bw = Math.max(2, Math.min(mini ? (n <= 15 ? 16 : 10) : 24, slot - 2));
   const best = model.reduce((a, m) => (m.secs > a.secs ? m : a), model[0]);
-  model.forEach((m, i) => {
-    const cx = padL + slot * i + slot / 2;
+  const row1 = base + 8 + 9, row2 = row1 + rowH;
+  const bars = model.map((m, i) => {
+    const cx = x0(i) + slot / 2;
     const isToday = m.date === todayKey;
     let bar;
     if (m.secs > 0) {
-      const h = Math.max(2, padT + plotH - y(m.secs));
-      bar = svgEl('path', { class: 'cc-bar' + (m.secs >= GOAL_SECS ? ' hit' : ''),
-        d: colPath(cx - bw / 2, padT + plotH - h, bw, h, mini ? 2 : 4) }, svg);
+      const h = Math.max(2, base - y(m.secs));
+      bar = svgEl('path', { class: 'cc-bar' + (m.secs >= GOAL_SECS ? ' hit' : ''), d: colPath(cx - bw / 2, base - h, bw, h, mini ? 2 : 4) }, svg);
     } else {
-      bar = svgEl('rect', { class: 'cc-bar zero', x: cx - bw / 2, y: padT + plotH - 2, width: bw, height: 2, rx: 1 }, svg);
+      bar = svgEl('rect', { class: 'cc-bar zero', x: cx - bw / 2, y: base - 2, width: bw, height: 2, rx: 1 }, svg);
     }
-    if (mini && isToday) svgEl('circle', { class: 'cc-today-dot', cx, cy: padT + plotH + 5, r: 2 }, svg);
-    if (!mini) {
-      if (m === best && m.secs > 0) svgText(svg, cx, y(m.secs) - 5, fmtHM(m.secs), { 'text-anchor': 'middle', class: 'cc-strong' });
-      const lx = padT + plotH + 16;
-      if (isToday) svgText(svg, Math.min(cx, W - 14), lx, 'Today', { 'text-anchor': 'middle', class: 'cc-strong' });
-      else if (n <= 7) svgText(svg, cx, lx, dayLabel(m.date), { 'text-anchor': 'middle' });
-      else if (new Date(m.date + 'T12:00:00').getDay() === 1 && n - 1 - i >= 4)
-        svgText(svg, cx, lx, fmtDayMonth(m.date), { 'text-anchor': 'middle' });
+    if (!mini && m === best && m.secs > 0) svgText(svg, cx, y(m.secs) - 5, fmtHM(m.secs), { 'text-anchor': 'middle', class: 'cc-strong' });
+    // Row 1: day initial under every bar (today in bold text colour)
+    if (slot >= 8) svgText(svg, cx, row1, days[i].toLocaleDateString('en-US', { weekday: 'narrow' }), { 'text-anchor': 'middle', class: isToday ? 'cc-strong' : '' });
+    // Row 2: date at the start of each week (every day in the 7-day view)
+    const nextMon = model.findIndex((_, j) => j > i && days[j].getDay() === 1);
+    const showDate = n <= 7 || days[i].getDay() === 1 || (i === 0 && (nextMon === -1 || nextMon >= 3));
+    if (showDate) {
+      const txt = fmtDayMonth(m.date);
+      if (n <= 7) svgText(svg, cx, row2, txt, { 'text-anchor': 'middle' });
+      else if (x0(i) + 1 + txt.length * 6.1 <= W) svgText(svg, x0(i) + 1, row2, txt);
+      else svgText(svg, W, row2, txt, { 'text-anchor': 'end' });
     }
-    const hit = svgEl('rect', { class: 'cc-hit', x: padL + slot * i, y: 0, width: slot, height: padT + plotH + axisH }, svg);
-    bindChartTip(hit, m, bar);
+    return bar;
   });
 
   if (!mini) { // goal label on top of the bars
@@ -4396,6 +4420,27 @@ function drawColumns(el, model, { mini = false } = {}) {
     svgEl('rect', { class: 'cc-goal-chip', x: W - 62, y: y(GOAL_SECS) - 8, width: 62, height: 16, rx: 8 }, g);
     svgText(g, W - 31, y(GOAL_SECS) + 3.5, 'goal 3.5h', { 'text-anchor': 'middle', class: 'cc-goal-txt' });
   }
+
+  // Hover / tap: date pill on the axis under the bar, plus the tooltip
+  const pill = svgEl('g', { class: 'cc-pill', opacity: 0 }, svg);
+  const pillRect = svgEl('rect', { rx: 6, height: 15, y: row1 - 11 }, pill);
+  const pillText = svgText(pill, 0, row1, '', { 'text-anchor': 'middle' });
+  model.forEach((m, i) => {
+    const hit = svgEl('rect', { class: 'cc-hit', x: x0(i), y: 0, width: slot, height: H }, svg);
+    hit.addEventListener('pointerenter', () => {
+      const label = days[i].toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + fmtDayMonth(m.date);
+      const tw = label.length * 6.1 + 12;
+      const px = Math.min(Math.max(x0(i) + slot / 2, tw / 2), W - tw / 2);
+      pillText.textContent = label;
+      pillText.setAttribute('x', px);
+      pillRect.setAttribute('x', px - tw / 2);
+      pillRect.setAttribute('width', tw);
+      pill.setAttribute('opacity', 1);
+    });
+    hit.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') pill.setAttribute('opacity', 0); });
+    bindChartTip(hit, m, bars[i]);
+  });
+  svg.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') pill.setAttribute('opacity', 0); });
 }
 
 // Shared hover/tap tooltip
@@ -4443,6 +4488,16 @@ const chartResize = new ResizeObserver(entries => entries.forEach(({ target }) =
 }));
 chartResize.observe($('barChart'));
 chartResize.observe($('monthChart'));
+
+$('monthCardRange').addEventListener('click', e => {
+  e.stopPropagation(); // the card itself opens Stats
+  const btn = e.target.closest('button');
+  if (!btn || !_lastAllSessions) return;
+  monthRangeDays = +btn.dataset.days;
+  try { localStorage.setItem('dwt_month_range', String(monthRangeDays)); } catch { }
+  monthChartModel = buildDayModel(_lastAllSessions, monthRangeDays);
+  renderMonthCard();
+});
 
 const openStatsTab = () => document.querySelector('.tab[data-tab="stats"]').click();
 $('monthCard').addEventListener('click', openStatsTab);
@@ -4564,7 +4619,7 @@ function renderStatsFromSessions(allSessions) {
 
     // Column charts — stats (selected range) + timer-screen card (always 30 days)
     statsChartModel = buildDayModel(allSessions, chartRangeDays);
-    monthChartModel = chartRangeDays === 30 ? statsChartModel : buildDayModel(allSessions, 30);
+    monthChartModel = chartRangeDays === monthRangeDays ? statsChartModel : buildDayModel(allSessions, monthRangeDays);
     renderChartKpis($('chartKpis'), statsChartModel);
     drawColumns($('barChart'), statsChartModel);
     renderMonthCard();
