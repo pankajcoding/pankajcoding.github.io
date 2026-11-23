@@ -12,6 +12,7 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 - Duration pills: 15 / 20 / 25 (default) / 30 / 35 / 40 / 45 / 50 min
 - Circular SVG ring shows progress; ring flashes gold on completion
 - Auto-completes and opens reflection modal when duration is reached
+- **End alert:** a one-shot timeout fires at the exact end time, because background tabs throttle the 500ms tick to as slow as once a minute. The chime plays through an audio context unlocked on START/RESUME, so it works from a background tab. If the page isn't in front, a system notification "Pomodoro done 🍅" shows the task, minutes and today's count; clicking it focuses the tracker tab (`notificationclick` in `sw.js`). Notification permission is requested on the first START. Only the device that claims the end (see live sync) alerts. A locked phone can't be alerted: the browser suspends the page, and that would need push from a server
 - Pomodoro count for today shown next to mode toggle
 
 **Stopwatch**
@@ -37,9 +38,10 @@ Single-file app (`index.html`). All HTML, CSS, JS inline. Deployed at `pankajcod
 
 ## Picture-in-Picture (PiP)
 
-⧉ button floats a compact timer overlay (fixed, draggable-ish).  
-Shows: mode, time, state dot, progress bar, PAUSE / GIVE UP buttons.  
-Stays visible while navigating away from the timer tab.
+⧉ button opens a floating always-on-top window (Document PiP, Chrome 116+), 240×270 and resizable.
+Shows: 🍅 Pomodoro / ⏱ Stopwatch label, today's 🍅 count, a progress ring (counts down for Pomodoro, fills each hour for Stopwatch, same colours as the main ring including Aurora's gradient), time + state, and the current task.
+Buttons: **START** when idle (so you can begin the next Pomodoro without switching tabs), **PAUSE/RESUME** and **GIVE UP/FINISH** while running.
+Uses the active theme's colours and fonts and updates live when the theme changes.
 
 ---
 

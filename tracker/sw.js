@@ -30,3 +30,14 @@ self.addEventListener('fetch', e => {
     }).catch(() => caches.match(e.request))
   );
 });
+
+// "Pomodoro done" notification → focus the open tracker tab, or open one
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const tab = list.find(c => c.url.includes('/tracker/'));
+      return tab ? tab.focus() : self.clients.openWindow('/tracker/');
+    })
+  );
+});

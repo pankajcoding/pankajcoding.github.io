@@ -2721,7 +2721,7 @@ ringGlow.style.strokeDashoffset = `${RING_CIRC}`;
 // ─── Timer state ─────────────────────────────────────────────────────────────
 let timerState = 'idle'; // idle | running | paused
 let pendingSession = null; // held while reflection modal is open
-let pipTimeEl = null, pipStateEl = null, pipDotEl = null, pipModeEl = null, pipBarEl = null, pipBarWrapEl = null;
+let pipTimeEl = null, pipStateEl = null, pipModeEl = null, pipCountEl = null, pipTaskEl = null, pipArcEl = null;
 let timerMode = 'pomodoro';      // 'stopwatch' | 'pomodoro'
 let pomodoroDuration = 25 * 60;  // seconds
 let pomodoroComplete = false;
@@ -3804,6 +3804,7 @@ function adoptRemoteTimer(r) {
   _lastStopLabel = stopLabel();
   renderButtons();
   updateDisplay(currentElapsed());
+  scheduleEndTimer();
   // This session is live again — the crash-recovery card for it is no longer needed
   try { if (JSON.parse(localStorage.getItem(CRASH_KEY))?.startedAt === r.startedAt) $('recoveryCard').style.display = 'none'; } catch { }
   writeCrashHeartbeat();
@@ -3812,6 +3813,7 @@ function adoptRemoteTimer(r) {
 
 function endLocalTimer() {
   clearInterval(intervalId);
+  clearTimeout(endTimeoutId);
   hideLostCard();
   timerState = 'idle';
   elapsed = 0;
@@ -3844,6 +3846,7 @@ async function checkOwnGap(gapStart) {
   if (r && r.state !== 'running') return applyRemoteTimer(r); // paused/ended elsewhere meanwhile
   if (Date.now() - lastAlive <= STALE_MS) { if (r) adoptRemoteTimer(r); return; } // another device kept tracking — resync time
   clearInterval(intervalId);
+  clearTimeout(endTimeoutId);
   elapsed += Math.max(0, (lastAlive - runStartedWall) / 1000);
   timerState = 'paused';
   timerLabel.textContent = 'paused';
@@ -3962,7 +3965,7 @@ function setRingColor(state) {
   ringGlow.style.stroke = stroke;
   ringTip.style.fill = c;
   ringTip.style.filter = `drop-shadow(0 0 5px ${c})`;
-  if (pipDotEl) { pipDotEl.style.background = c; pipDotEl.style.boxShadow = `0 0 6px ${c}`; }
+  syncPip();
   timerDisplay.style.textShadow = `0 0 40px ${c}22`;
 }
 
@@ -3992,6 +3995,44 @@ function makeBtn(text, variant, handler) {
   return b;
 }
 
+// ─── End-of-pomodoro alert ────────────────────────────────────────────────────
+// The 500ms tick is throttled in background tabs (down to once a minute), so a separate one-shot
+// timeout fires at the exact end time. Audio is unlocked on the START/RESUME click so the chime can
+// play later from a background tab, and a system notification is shown if the page isn't in front.
+let endTimeoutId = null, audioCtx = null;
+
+function scheduleEndTimer() {
+  clearTimeout(endTimeoutId);
+  endTimeoutId = null;
+  if (timerState !== 'running' || timerMode !== 'pomodoro') return;
+  const ms = (pomodoroDuration - currentElapsed()) * 1000;
+  endTimeoutId = setTimeout(tickTimer, Math.max(0, ms) + 50);
+}
+
+function unlockAlerts() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch { }
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => { });
+}
+
+async function notifyPomodoroDone(session) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible' && document.hasFocus()) return; // the on-screen celebration covers it
+  const count = todaySessions.filter(x => x.type === 'pomodoro').length + 1;
+  const title = 'Pomodoro done 🍅';
+  const opts = {
+    body: `${session.label ? session.label + ' · ' : ''}${Math.round(session.durationSecs / 60)} min of focus · ${count} today. Time for a break.`,
+    tag: 'dwt-pomodoro', renotify: true, icon: '/tracker/icon-192.png', badge: '/tracker/icon-192.png',
+  };
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration('/tracker/');
+    if (reg) return await reg.showNotification(title, opts);
+  } catch { }
+  try { new Notification(title, opts); } catch { }
+}
+
 function startTimer() {
   timerState = 'running';
   elapsed = 0;
@@ -4008,6 +4049,8 @@ function startTimer() {
   runStartedWall = lastTickAt = lastPingAt = Date.now();
   pushTimerSync();
   writeCrashHeartbeat();
+  scheduleEndTimer();
+  unlockAlerts();
   const startLabel = labelInput.value.trim();
   if (startLabel) saveJournalEntry({ text: startLabel, type: 'pre' });
 }
@@ -4021,6 +4064,7 @@ function pauseTimer() {
   renderButtons();
   syncPip();
   pushTimerSync();
+  scheduleEndTimer();
 }
 
 function resumeTimer() {
@@ -4034,6 +4078,8 @@ function resumeTimer() {
   renderButtons();
   syncPip();
   pushTimerSync();
+  scheduleEndTimer();
+  unlockAlerts();
 }
 
 function stopTimer() {
@@ -4052,6 +4098,7 @@ function stopTimer() {
   clearInterval(intervalId);
   hideLostCard();
   endTimerSync();
+  clearTimeout(endTimeoutId);
   if (isGiveUp) clearCrashHeartbeat();
   timerState = 'idle';
   elapsed = 0;
@@ -4134,6 +4181,7 @@ document.querySelectorAll('.pill').forEach(pill => {
 // ─── Pomodoro auto-complete ───────────────────────────────────────────────────
 async function autoCompletePomodoro() {
   clearInterval(intervalId);
+  clearTimeout(endTimeoutId);
   timerState = 'idle';
   elapsed = 0;
 
@@ -4159,6 +4207,7 @@ async function autoCompletePomodoro() {
   }
   pendingSession = session;
   persistPendingSession();
+  notifyPomodoroDone(session);
   playCompletionBeep();
   showPomodoroFlash();
   burstConfetti(document.querySelector('.ring-wrap') || document.body);
@@ -4167,7 +4216,7 @@ async function autoCompletePomodoro() {
 
 function playCompletionBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') ctx.resume();
 
     // 3-note ascending chime: C5 → E5 → G5 (major triad)
@@ -5141,6 +5190,19 @@ function syncPipTheme(win = window.documentPictureInPicture?.window) {
   r.style.setProperty('--pip-btn-bg', v['--border']);
   r.style.setProperty('--pip-btn-border', v['--tick-major']);
   r.style.setProperty('--pip-bar-bg', v['--border']);
+  r.style.setProperty('--pip-accent', v['--blue']);
+  r.style.setProperty('--pip-on-accent', v['--on-accent']);
+  r.style.setProperty('--pip-head', v['--f-head']);
+  r.style.setProperty('--pip-mono', v['--f-mono']);
+  const t = activeTheme || THEMES.current, [ga, gb] = t.gradient || [v['--blue'], v['--blue']];
+  win.document.getElementById('pipGradA')?.setAttribute('stop-color', ga);
+  win.document.getElementById('pipGradB')?.setAttribute('stop-color', gb);
+  if (t.fontUrl) {
+    let link = win.document.getElementById('pipThemeFonts');
+    if (!link) { link = win.document.createElement('link'); link.id = 'pipThemeFonts'; link.rel = 'stylesheet'; win.document.head.appendChild(link); }
+    if (link.href !== t.fontUrl) link.href = t.fontUrl;
+  }
+  syncPip();
 }
 
 function renderThemePicker() {
@@ -5216,154 +5278,116 @@ pipBtn.addEventListener('click', async () => {
   }
 
   gaEvent('pip_open');
-  const pipWin = await documentPictureInPicture.requestWindow({ width: 220, height: 190 });
-
+  const pipWin = await documentPictureInPicture.requestWindow({ width: 240, height: 270 });
   pipWin.document.head.innerHTML = `
+    <title>Deep Work</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet">
     <style>
       * { margin:0; padding:0; box-sizing:border-box; }
       :root {
-        --pip-bg: #0f1117; --pip-text: #e2e8f0; --pip-muted: #64748b;
+        --pip-bg: #0f1117; --pip-text: #ffffff; --pip-muted: #9fa6b6;
         --pip-btn-bg: #2a2b35; --pip-btn-border: #3a3d55; --pip-bar-bg: #2a2b35;
+        --pip-accent: #4285F4; --pip-on-accent: #ffffff;
+        --pip-head: 'Syne', sans-serif; --pip-mono: 'JetBrains Mono', monospace;
       }
       body {
-        background: var(--pip-bg); color: var(--pip-text);
-        font-family: 'JetBrains Mono', monospace;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        height: 100vh; gap: 5px; position: relative;
+        background: var(--pip-bg); color: var(--pip-text); font-family: var(--pip-mono);
+        height: 100vh; overflow: hidden; padding: 10px 12px 12px;
+        display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 6px;
       }
-      .pip-label {
-        font-family: 'Syne', sans-serif;
-        font-size: 9px; font-weight: 700;
-        letter-spacing: 1.5px; text-transform: uppercase;
-        color: var(--pip-muted);
+      .pip-top {
+        width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        font-family: var(--pip-head); font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+        text-transform: uppercase; color: var(--pip-muted); white-space: nowrap;
       }
-      .pip-time { font-size: 38px; font-weight: 500; letter-spacing: -1.5px; line-height: 1; }
-      .pip-state {
-        font-size: 9px; letter-spacing: 2px;
-        text-transform: uppercase;
-        color: var(--pip-muted);
-      }
-      .pip-dot {
-        width: 7px; height: 7px; border-radius: 50%;
-        background: #4285F4;
-        position: absolute; top: 12px; right: 12px;
-        box-shadow: 0 0 6px #4285F4;
-      }
-      .pip-btns {
-        display: flex; gap: 8px; margin-top: 4px;
-      }
+      .pip-count { font-family: var(--pip-mono); font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--pip-text); }
+      .pip-ring { position: relative; width: min(64vw, 50vh); aspect-ratio: 1; flex-shrink: 1; min-height: 0; }
+      .pip-ring svg { width: 100%; height: 100%; display: block; }
+      .pip-track { fill: none; stroke: var(--pip-bar-bg); stroke-width: 7; }
+      .pip-arc { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset .5s linear, stroke .3s; }
+      .pip-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .pip-time { font-size: min(12vw, 10vh); font-weight: 500; letter-spacing: -1px; line-height: 1; }
+      .pip-time.long { font-size: min(8.5vw, 7.5vh); }
+      .pip-state { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--pip-muted); margin-top: 5px; }
+      .pip-task { max-width: 100%; font-size: 11px; color: var(--pip-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .pip-task:empty { display: none; }
+      .pip-btns { display: flex; gap: 8px; }
       .pip-action {
-        padding: 6px 14px;
-        border: none; border-radius: 7px;
-        font-family: 'Syne', sans-serif;
-        font-size: 10px; font-weight: 700;
-        letter-spacing: 0.8px; cursor: pointer;
-        transition: opacity 0.2s;
+        padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: opacity .2s;
+        font-family: var(--pip-head); font-size: 10px; font-weight: 700; letter-spacing: .8px;
       }
-      .pip-action:hover { opacity: 0.8; }
-      .pip-pause {
-        background: var(--pip-btn-bg); color: var(--pip-text);
-        border: 1px solid var(--pip-btn-border);
-      }
-      .pip-stop {
-        background: rgba(234,67,53,0.12);
-        color: #EA4335;
-        border: 1px solid rgba(234,67,53,0.25);
-      }
-      .pip-bar-wrap {
-        width: 80%; height: 4px;
-        background: var(--pip-bar-bg);
-        border-radius: 2px;
-        overflow: hidden;
-        display: none;
-      }
-      .pip-bar-wrap.visible { display: block; }
-      .pip-bar {
-        height: 100%; width: 100%;
-        background: #34A853;
-        border-radius: 2px;
-        transition: width 0.5s linear, background 0.4s;
-      }
+      .pip-action:hover { opacity: .85; }
+      .pip-start { background: var(--pip-accent); color: var(--pip-on-accent); border: none; }
+      .pip-pause { background: var(--pip-btn-bg); color: var(--pip-text); border: 1px solid var(--pip-btn-border); }
+      .pip-stop { background: rgba(234,67,53,0.12); color: #EA4335; border: 1px solid rgba(234,67,53,0.25); }
     </style>`;
-  syncPipTheme(pipWin);
-
   pipWin.document.body.innerHTML = `
-    <div class="pip-dot" id="pipDot"></div>
-    <div class="pip-label" id="pipMode">${timerMode.toUpperCase()}</div>
-    <div class="pip-time" id="pipTime">${timerDisplay.textContent}</div>
-    <div class="pip-state" id="pipState">${timerLabel.textContent}</div>
-    <div class="pip-btns" id="pipBtns" style="display:none">
-      <button class="pip-action pip-pause" id="pipPauseBtn">PAUSE</button>
-      <button class="pip-action pip-stop" id="pipStopBtn">${timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH'}</button>
+    <div class="pip-top"><span id="pipMode"></span><span class="pip-count" id="pipCount" title="Pomodoros today"></span></div>
+    <div class="pip-ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <defs><linearGradient id="pipGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" id="pipGradA"/><stop offset="1" id="pipGradB"/></linearGradient></defs>
+        <circle class="pip-track" cx="60" cy="60" r="52"/>
+        <circle class="pip-arc" id="pipArc" cx="60" cy="60" r="52" transform="rotate(-90 60 60)"/>
+      </svg>
+      <div class="pip-center"><div class="pip-time" id="pipTime"></div><div class="pip-state" id="pipState"></div></div>
     </div>
-    <div class="pip-bar-wrap${timerMode === 'pomodoro' ? ' visible' : ''}" id="pipBarWrap">
-      <div class="pip-bar" id="pipBar"></div>
+    <div class="pip-task" id="pipTask"></div>
+    <div class="pip-btns">
+      <button class="pip-action pip-start" id="pipStartBtn">START</button>
+      <button class="pip-action pip-pause" id="pipPauseBtn">PAUSE</button>
+      <button class="pip-action pip-stop" id="pipStopBtn">GIVE UP</button>
     </div>`;
-
-  pipTimeEl    = pipWin.document.getElementById('pipTime');
-  pipStateEl   = pipWin.document.getElementById('pipState');
-  pipDotEl     = pipWin.document.getElementById('pipDot');
-  pipModeEl    = pipWin.document.getElementById('pipMode');
-  pipBarEl     = pipWin.document.getElementById('pipBar');
-  pipBarWrapEl = pipWin.document.getElementById('pipBarWrap');
-
-  const pipBtns     = pipWin.document.getElementById('pipBtns');
-  const pipPauseBtn = pipWin.document.getElementById('pipPauseBtn');
-  const pipStopBtn  = pipWin.document.getElementById('pipStopBtn');
-
-  pipPauseBtn.addEventListener('click', () => {
+  const pd = pipWin.document;
+  pipTimeEl  = pd.getElementById('pipTime');
+  pipStateEl = pd.getElementById('pipState');
+  pipModeEl  = pd.getElementById('pipMode');
+  pipCountEl = pd.getElementById('pipCount');
+  pipTaskEl  = pd.getElementById('pipTask');
+  pipArcEl   = pd.getElementById('pipArc');
+  pipArcEl.style.strokeDasharray = PIP_CIRC;
+  pipWin._startBtn = pd.getElementById('pipStartBtn');
+  pipWin._pauseBtn = pd.getElementById('pipPauseBtn');
+  pipWin._stopBtn  = pd.getElementById('pipStopBtn');
+  pipWin._startBtn.addEventListener('click', () => { if (timerState === 'idle') startTimer(); });
+  pipWin._pauseBtn.addEventListener('click', () => {
     if (timerState === 'running') pauseTimer();
     else if (timerState === 'paused') resumeTimer();
   });
-
-  pipStopBtn.addEventListener('click', () => stopTimer());
-
-  // keep pipBtns ref for syncPip to show/hide
-  pipWin._btns     = pipBtns;
-  pipWin._pauseBtn = pipPauseBtn;
-  pipWin._stopBtn  = pipStopBtn;
+  pipWin._stopBtn.addEventListener('click', () => stopTimer());
+  syncPipTheme(pipWin);
+  syncPip();
 
   pipBtn.classList.add('active');
-
   pipWin.addEventListener('pagehide', () => {
-    pipTimeEl = pipStateEl = pipDotEl = pipModeEl = pipBarEl = pipBarWrapEl = null;
+    pipTimeEl = pipStateEl = pipModeEl = pipCountEl = pipTaskEl = pipArcEl = null;
     pipBtn.classList.remove('active');
   });
 });
 
+const PIP_CIRC = 2 * Math.PI * 52;
 function syncPip() {
   if (!pipTimeEl) return;
-  pipTimeEl.textContent  = timerDisplay.textContent;
-  pipStateEl.textContent = timerLabel.textContent;
-  pipModeEl.textContent  = timerMode.toUpperCase();
-
   const pipWin = documentPictureInPicture.window;
-  if (pipWin?._btns) {
-    const active = timerState === 'running' || timerState === 'paused';
-    pipWin._btns.style.display = active ? 'flex' : 'none';
-    if (pipWin._pauseBtn) {
-      pipWin._pauseBtn.textContent = timerState === 'paused' ? 'RESUME' : 'PAUSE';
-    }
-    if (pipWin._stopBtn) {
-      pipWin._stopBtn.textContent = timerMode === 'pomodoro' ? 'GIVE UP' : 'FINISH';
-    }
+  const isPomo = timerMode === 'pomodoro', active = timerState !== 'idle';
+  pipTimeEl.textContent = timerDisplay.textContent;
+  pipTimeEl.classList.toggle('long', timerDisplay.textContent.length > 5);
+  pipStateEl.textContent = timerLabel.textContent;
+  pipModeEl.textContent = isPomo ? '🍅 Pomodoro' : '⏱ Stopwatch';
+  pipCountEl.textContent = `🍅 ${todaySessions.filter(x => x.type === 'pomodoro').length} today`;
+  pipTaskEl.textContent = active ? labelInput.value.trim() : '';
+  if (pipWin?._startBtn) {
+    pipWin._startBtn.style.display = active ? 'none' : '';
+    pipWin._pauseBtn.style.display = active ? '' : 'none';
+    pipWin._stopBtn.style.display = active ? '' : 'none';
+    pipWin._pauseBtn.textContent = timerState === 'paused' ? 'RESUME' : 'PAUSE';
+    pipWin._stopBtn.textContent = stopLabel();
   }
-
-  if (pipBarEl && pipBarWrapEl) {
-    const isPomo = timerMode === 'pomodoro';
-    pipBarWrapEl.classList.toggle('visible', isPomo);
-    if (isPomo) {
-      const elapsed = currentElapsed();
-      const pct = Math.min(100, (currentElapsed() / pomodoroDuration) * 100);
-      pipBarEl.style.width = pct + '%';
-      // colour matches ring state
-      const ring = (activeTheme || THEMES.current).ring;
-      const c = ring[timerState] || ring.idle;
-      pipBarEl.style.background = c;
-    }
-  }
+  // Same geometry as the main ring: pomodoro counts down, stopwatch fills each hour
+  const secs = currentElapsed();
+  const frac = isPomo ? Math.max(0, 1 - secs / pomodoroDuration) : (secs % 3600) / 3600;
+  pipArcEl.style.strokeDashoffset = PIP_CIRC * (1 - frac);
+  const t = activeTheme || THEMES.current;
+  pipArcEl.style.stroke = timerState === 'running' && t.gradient ? 'url(#pipGrad)' : (t.ring[timerState] || t.ring.idle);
 }
 
 // ─── Reflection modal ────────────────────────────────────────────────────────
